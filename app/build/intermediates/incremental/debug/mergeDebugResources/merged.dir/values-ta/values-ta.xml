@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string-array name="exo_controls_playback_speeds">
+    <item>0.25x</item>
+    <item>0.5x</item>
+    <item>0.75x</item>
+    <item>இயல்பு</item>
+    <item>1.25x</item>
+    <item>1.5x</item>
+    <item>2x</item>
+  </string-array>
+    <plurals name="exo_controls_fastforward_by_amount_description">
+    <item quantity="one">%d வினாடி ஃபாஸ்ட் ஃபார்வர்ட் ஆகும்</item>
+    <item quantity="other">%d வினாடிகள் ஃபாஸ்ட் ஃபார்வர்ட் ஆகும்</item>
+  </plurals>
+    <plurals name="exo_controls_rewind_by_amount_description">
+    <item quantity="one">%d வினாடி ரீவைண்ட் ஆகும்</item>
+    <item quantity="other">%d வினாடிகள் ரீவைண்ட் ஆகும்</item>
+  </plurals>
     <string msgid="6128938260108474660" name="bottom_sheet_collapse_description">"கீழ்ப்புறச் சீட்டைச் சுருக்கும்"</string>
     <string msgid="1918297411568599192" name="bottom_sheet_dismiss_description">"கீழ்ப்புறச் சீட்டை நிராகரிக்கும்"</string>
     <string msgid="7772321844937772780" name="bottom_sheet_drag_handle_description">"இழுப்பதற்கான ஹேண்டில்"</string>
@@ -49,6 +66,57 @@
     <string msgid="6312721426453364202" name="default_popup_window_title">"பாப்-அப் சாளரம்"</string>
     <string msgid="4057925834421392736" name="dialog">"உரையாடல்"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"கீழ்த்தோன்றல் மெனு"</string>
+    <string name="exo_controls_cc_disabled_description">சப்டைட்டில்களை இயக்கும்</string>
+    <string name="exo_controls_cc_enabled_description">சப்டைட்டில்களை முடக்கும்</string>
+    <string name="exo_controls_fastforward_description">வேகமாக முன்செல்</string>
+    <string name="exo_controls_fullscreen_enter_description">முழுத்திரையில் காட்ட உதவும் பட்டன்</string>
+    <string name="exo_controls_fullscreen_exit_description">முழுத்திரையை வெளியேற உதவும் பட்டன்</string>
+    <string name="exo_controls_hide">பிளேயர் கட்டுப்பாடுகளை மறைக்கும்</string>
+    <string name="exo_controls_next_description">அடுத்து</string>
+    <string name="exo_controls_overflow_hide_description">கூடுதல் அமைப்புகளை மறைக்கும்</string>
+    <string name="exo_controls_overflow_show_description">கூடுதல் அமைப்புகளைக் காட்டும்</string>
+    <string name="exo_controls_pause_description">இடைநிறுத்து</string>
+    <string name="exo_controls_play_description">இயக்கு</string>
+    <string name="exo_controls_playback_speed">வேகம்</string>
+    <string name="exo_controls_previous_description">முந்தையது</string>
+    <string name="exo_controls_repeat_all_description">தற்போதைய பயன்முறை: அனைத்தையும் மீண்டும் இயக்கும். மீண்டும் இயக்குதலை நிலைமாற்றும்.</string>
+    <string name="exo_controls_repeat_off_description">தற்போதைய பயன்முறை: எதையும் மீண்டும் இயக்காது. மீண்டும் இயக்குதலை நிலைமாற்றும்.</string>
+    <string name="exo_controls_repeat_one_description">தற்போதைய பயன்முறை: ஒன்றை மட்டும் மீண்டும் இயக்கும். மீண்டும் இயக்குதலை நிலைமாற்றும்.</string>
+    <string name="exo_controls_rewind_description">பின்செல்</string>
+    <string name="exo_controls_seek_bar_description">வீடியோவின் இயக்க நிலை</string>
+    <string name="exo_controls_settings_description">அமைப்புகள்</string>
+    <string name="exo_controls_show">பிளேயர் கட்டுப்பாடுகளைக் காட்டும்</string>
+    <string name="exo_controls_shuffle_off_description">கலைத்துப் போடும் பயன்முறையை இயக்கும்</string>
+    <string name="exo_controls_shuffle_on_description">கலைத்துப் போடும் பயன்முறையை முடக்கும்</string>
+    <string name="exo_controls_stop_description">நிறுத்து</string>
+    <string name="exo_controls_vr_description">VR பயன்முறை</string>
+    <string name="exo_download_completed">பதிவிறக்கப்பட்டது</string>
+    <string name="exo_download_description">பதிவிறக்கும் பட்டன்</string>
+    <string name="exo_download_downloading">பதிவிறக்குகிறது</string>
+    <string name="exo_download_failed">பதிவிறக்க முடியவில்லை</string>
+    <string name="exo_download_notification_channel_name">பதிவிறக்கங்கள்</string>
+    <string name="exo_download_paused">பதிவிறக்கங்கள் இடைநிறுத்தப்பட்டன</string>
+    <string name="exo_download_paused_for_network">நெட்வொர்க்கிற்காகக் காத்திருக்கின்றன</string>
+    <string name="exo_download_paused_for_wifi">Wi-Fiகாகக் காத்திருக்கின்றன</string>
+    <string name="exo_download_removing">பதிவிறக்கங்கள் அகற்றப்படுகின்றன</string>
+    <string name="exo_item_list">%1$s, %2$s</string>
+    <string name="exo_track_bitrate">%1$.2f மெ.பை./வி</string>
+    <string name="exo_track_mono">மோனோ</string>
+    <string name="exo_track_resolution">%1$d × %2$d</string>
+    <string name="exo_track_role_alternate">மாற்று டிராக்</string>
+    <string name="exo_track_role_closed_captions">வசனம்</string>
+    <string name="exo_track_role_commentary">வர்ணனை</string>
+    <string name="exo_track_role_supplementary">துணை டிராக்</string>
+    <string name="exo_track_selection_auto">தானியங்கு</string>
+    <string name="exo_track_selection_none">ஏதுமில்லை</string>
+    <string name="exo_track_selection_title_audio">ஆடியோ</string>
+    <string name="exo_track_selection_title_text">உரை</string>
+    <string name="exo_track_selection_title_video">வீடியோ</string>
+    <string name="exo_track_stereo">ஸ்டீரியோ</string>
+    <string name="exo_track_surround">சரவுண்ட் சவுண்ட்</string>
+    <string name="exo_track_surround_5_point_1">5.1 சரவுண்ட் சவுண்ட்</string>
+    <string name="exo_track_surround_7_point_1">7.1 சரவுண்ட் சவுண்ட்</string>
+    <string name="exo_track_unknown">தெரியாதவை</string>
     <string msgid="5974471714631304645" name="expanded">"விரிக்கப்பட்டது"</string>
     <string msgid="6827826412747255547" name="in_progress">"செயலிலுள்ளது"</string>
     <string msgid="7933458017204019916" name="indeterminate">"சில மட்டுமே தேர்ந்தெடுக்கப்பட்டுள்ளன"</string>

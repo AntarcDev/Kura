@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.kemono.app-mergeDebugResources-62:/values-en-rCA/values-en-rCA.xml",
+            "outputFile": "com.example.kemono.app-mergeDebugResources-67:/values-en-rCA/values-en-rCA.xml",
             "map": [
                 {
                     "source": "C:\\Users\\antarc\\.gradle\\caches\\9.0-milestone-1\\transforms\\63dadc6c5ab18e3f24c3731975491ab7\\transformed\\core-1.12.0\\res\\values-en-rCA\\values-en-rCA.xml",

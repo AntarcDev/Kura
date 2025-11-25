@@ -33,6 +33,8 @@ import com.example.kemono.ui.posts.PostViewModel_HiltModules_KeyModule_ProvideFa
 import com.example.kemono.ui.settings.SettingsViewModel;
 import com.example.kemono.ui.settings.SettingsViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.util.NetworkMonitor;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.internal.builders.ActivityComponentBuilder;
@@ -51,11 +53,8 @@ import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideAppl
 import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
-import dagger.internal.MapBuilder;
 import dagger.internal.Preconditions;
 import dagger.internal.Provider;
-import dagger.internal.SetBuilder;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import okhttp3.CookieJar;
@@ -389,7 +388,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return SetBuilder.<String>newSetBuilder(5).add(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PostViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
+      return ImmutableSet.<String>of(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide(), CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide(), FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide(), PostViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -449,12 +448,12 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     @Override
     public Map<String, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(5).put("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider)).put("com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider)).put("com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider)).put("com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider)).put("com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider)).build();
+      return ImmutableMap.<String, javax.inject.Provider<ViewModel>>of("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider), "com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider), "com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider), "com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider), "com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider));
     }
 
     @Override
     public Map<String, Object> getHiltViewModelAssistedMap() {
-      return Collections.<String, Object>emptyMap();
+      return ImmutableMap.<String, Object>of();
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -625,7 +624,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     @Override
     public Set<Boolean> getDisableFragmentGetContextFix() {
-      return Collections.<Boolean>emptySet();
+      return ImmutableSet.<Boolean>of();
     }
 
     @Override

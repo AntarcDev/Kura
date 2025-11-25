@@ -1,13 +1,24 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-31:12
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-36:12
+MERGED from [io.coil-kt:coil-gif:2.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\30d6e1f41966b133ec136c0221360a73\transformed\coil-gif-2.5.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-compose:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\e06033213ed11e0760ca2eab7638f974\transformed\coil-compose-2.6.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-compose-base:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\af401d0301e22d19da6e9b891fbbba30\transformed\coil-compose-base-2.6.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\82bfe03c69bc2b398d22129b21db2f55\transformed\coil-2.6.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-base:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4ad9285fc722dde296093e9c68a9411d\transformed\coil-base-2.6.0\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.media3:media3-ui:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cc04c635ed4fe94cb6ce66c123b69f00\transformed\media3-ui-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-extractor:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\42dbe23fa12e19f83380d5de4fc6334b\transformed\media3-extractor-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-container:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9e35d10a83a9be1550887518b4275cb9\transformed\media3-container-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-datasource:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\aa45698a2296757c3d0b7897b6038c0f\transformed\media3-datasource-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-decoder:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\fd933c58b8a2257545d316b8ca74a85c\transformed\media3-decoder-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-database:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\8c784419765f6704dbe7c17ec314361e\transformed\media3-database-1.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-common:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63d5774100b4c7949e8479e05f2daf01\transformed\media3-common-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media3:media3-exoplayer:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\740ac5057fc3a04011cedbd786f3914b\transformed\media3-exoplayer-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media:media:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\71d1c9ccc0bc42808143b14b3b84a497\transformed\media-1.6.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\98212b96517295b56799b79cfcc46eb9\transformed\recyclerview-1.3.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.work:work-runtime-ktx:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1aa362683284fd55b708f1a91ed5b23f\transformed\work-runtime-ktx-2.9.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:17:1-145:12
 MERGED from [androidx.hilt:hilt-navigation-compose:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\a842ed7f7e3dbcc900c437cc97a703ba\transformed\hilt-navigation-compose-1.1.0\AndroidManifest.xml:2:1-7:12
@@ -21,9 +32,10 @@ MERGED from [androidx.compose.material3:material3:1.1.1] C:\Users\antarc\.gradle
 MERGED from [com.google.dagger:hilt-android:2.50] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c4cb3b1b3457236163322971410dce93\transformed\hilt-android-2.50\AndroidManifest.xml:16:1-19:12
 MERGED from [androidx.fragment:fragment:1.5.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\35515155763380e25388a87a0aa690f2\transformed\fragment-1.5.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c8ab9958908b1f43a265694d5e284d50\transformed\loader-1.0.0\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.compose.material:material-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\0bc78db8a3a9253d6051768acf31696f\transformed\material-release\AndroidManifest.xml:2:1-7:12
-MERGED from [androidx.compose.material:material-icons-core-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\5693cd2afabdb5f8b428ddbc7f9935e5\transformed\material-icons-core-release\AndroidManifest.xml:2:1-7:12
-MERGED from [androidx.compose.material:material-ripple-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cb29d4ed0946fff5669f30831bd3ba64\transformed\material-ripple-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\412b8b83982bff4f2e966b69d1f5b773\transformed\material-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\458b722df2da4a45780b442e63bf2632\transformed\material-icons-core-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\13b72632c40639da6beb5b942e85d9cc\transformed\material-icons-extended-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-ripple-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c373e17197f71edc8a097d8848190284\transformed\material-ripple-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.animation:animation-core-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\77857ed10f763adf6c11062c9ab5f68a\transformed\animation-core-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.animation:animation-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\d68eacf365f81ddb3ad1cb236b751527\transformed\animation-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\33530b832d99c19084f4563cb1d13868\transformed\foundation-layout-release\AndroidManifest.xml:2:1-7:12
@@ -57,10 +69,10 @@ MERGED from [androidx.activity:activity-compose:1.8.2] C:\Users\antarc\.gradle\c
 MERGED from [androidx.activity:activity-ktx:1.8.2] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\e582abd5b5c9cf133eeec8e499dad07c\transformed\activity-ktx-1.8.2\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity:1.8.2] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9bc50ea6d6e38ba0954fff82ed7659b5\transformed\activity-1.8.2\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\b6edd0fed08307125bdcef8eb41d968f\transformed\viewpager-1.0.0\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1600c3e81462beb0e1d6aff27b6c1f08\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9088d74cb9e9f4e9eac1d0a8c2c81e17\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc3cb81c1fe113f56241898e6926adda\transformed\vectordrawable-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\7fe18e53657e5fd11ee30eb9df6b664a\transformed\autofill-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.core:core:1.12.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63dadc6c5ab18e3f24c3731975491ab7\transformed\core-1.12.0\AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\459b4d41a3c8416f77dda94b8c04889b\transformed\customview-poolingcontainer-1.0.0\AndroidManifest.xml:17:1-23:12
@@ -95,8 +107,8 @@ ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:
 	android:name
 		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:5:22-64
 application
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-29:19
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-29:19
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-34:19
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-34:19
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:28:5-143:19
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:28:5-143:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\53fb05d766836231a220cd05456035b9\transformed\ui-test-manifest-1.6.1\AndroidManifest.xml:22:5-26:19
@@ -161,10 +173,22 @@ category#android.intent.category.LAUNCHER
 ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:26:17-77
 	android:name
 		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:26:27-74
+activity#com.example.kemono.ui.components.FullscreenVideoActivity
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:29:9-33:40
+	android:exported
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:33:13-37
+	android:configChanges
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:31:13-74
+	android:theme
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:32:13-48
+	android:name
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:30:13-66
 uses-sdk
 INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
 INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
+MERGED from [io.coil-kt:coil-gif:2.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\30d6e1f41966b133ec136c0221360a73\transformed\coil-gif-2.5.0\AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-gif:2.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\30d6e1f41966b133ec136c0221360a73\transformed\coil-gif-2.5.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-compose:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\e06033213ed11e0760ca2eab7638f974\transformed\coil-compose-2.6.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-compose:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\e06033213ed11e0760ca2eab7638f974\transformed\coil-compose-2.6.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-compose-base:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\af401d0301e22d19da6e9b891fbbba30\transformed\coil-compose-base-2.6.0\AndroidManifest.xml:5:5-44
@@ -173,6 +197,26 @@ MERGED from [io.coil-kt:coil:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone
 MERGED from [io.coil-kt:coil:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\82bfe03c69bc2b398d22129b21db2f55\transformed\coil-2.6.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-base:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4ad9285fc722dde296093e9c68a9411d\transformed\coil-base-2.6.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-base:2.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4ad9285fc722dde296093e9c68a9411d\transformed\coil-base-2.6.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.media3:media3-ui:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cc04c635ed4fe94cb6ce66c123b69f00\transformed\media3-ui-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-ui:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cc04c635ed4fe94cb6ce66c123b69f00\transformed\media3-ui-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\42dbe23fa12e19f83380d5de4fc6334b\transformed\media3-extractor-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\42dbe23fa12e19f83380d5de4fc6334b\transformed\media3-extractor-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9e35d10a83a9be1550887518b4275cb9\transformed\media3-container-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9e35d10a83a9be1550887518b4275cb9\transformed\media3-container-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\aa45698a2296757c3d0b7897b6038c0f\transformed\media3-datasource-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\aa45698a2296757c3d0b7897b6038c0f\transformed\media3-datasource-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\fd933c58b8a2257545d316b8ca74a85c\transformed\media3-decoder-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\fd933c58b8a2257545d316b8ca74a85c\transformed\media3-decoder-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\8c784419765f6704dbe7c17ec314361e\transformed\media3-database-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\8c784419765f6704dbe7c17ec314361e\transformed\media3-database-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63d5774100b4c7949e8479e05f2daf01\transformed\media3-common-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63d5774100b4c7949e8479e05f2daf01\transformed\media3-common-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-exoplayer:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\740ac5057fc3a04011cedbd786f3914b\transformed\media3-exoplayer-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-exoplayer:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\740ac5057fc3a04011cedbd786f3914b\transformed\media3-exoplayer-1.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\71d1c9ccc0bc42808143b14b3b84a497\transformed\media-1.6.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.media:media:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\71d1c9ccc0bc42808143b14b3b84a497\transformed\media-1.6.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\98212b96517295b56799b79cfcc46eb9\transformed\recyclerview-1.3.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.recyclerview:recyclerview:1.3.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\98212b96517295b56799b79cfcc46eb9\transformed\recyclerview-1.3.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.work:work-runtime-ktx:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1aa362683284fd55b708f1a91ed5b23f\transformed\work-runtime-ktx-2.9.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.work:work-runtime-ktx:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1aa362683284fd55b708f1a91ed5b23f\transformed\work-runtime-ktx-2.9.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:21:5-44
@@ -199,12 +243,14 @@ MERGED from [androidx.fragment:fragment:1.5.1] C:\Users\antarc\.gradle\caches\9.
 MERGED from [androidx.fragment:fragment:1.5.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\35515155763380e25388a87a0aa690f2\transformed\fragment-1.5.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c8ab9958908b1f43a265694d5e284d50\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.loader:loader:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c8ab9958908b1f43a265694d5e284d50\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
-MERGED from [androidx.compose.material:material-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\0bc78db8a3a9253d6051768acf31696f\transformed\material-release\AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\0bc78db8a3a9253d6051768acf31696f\transformed\material-release\AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-icons-core-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\5693cd2afabdb5f8b428ddbc7f9935e5\transformed\material-icons-core-release\AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-icons-core-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\5693cd2afabdb5f8b428ddbc7f9935e5\transformed\material-icons-core-release\AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-ripple-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cb29d4ed0946fff5669f30831bd3ba64\transformed\material-ripple-release\AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-ripple-android:1.5.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\cb29d4ed0946fff5669f30831bd3ba64\transformed\material-ripple-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\412b8b83982bff4f2e966b69d1f5b773\transformed\material-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\412b8b83982bff4f2e966b69d1f5b773\transformed\material-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\458b722df2da4a45780b442e63bf2632\transformed\material-icons-core-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\458b722df2da4a45780b442e63bf2632\transformed\material-icons-core-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\13b72632c40639da6beb5b942e85d9cc\transformed\material-icons-extended-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\13b72632c40639da6beb5b942e85d9cc\transformed\material-icons-extended-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c373e17197f71edc8a097d8848190284\transformed\material-ripple-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.6.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\c373e17197f71edc8a097d8848190284\transformed\material-ripple-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.animation:animation-core-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\77857ed10f763adf6c11062c9ab5f68a\transformed\animation-core-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.animation:animation-core-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\77857ed10f763adf6c11062c9ab5f68a\transformed\animation-core-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.animation:animation-android:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\d68eacf365f81ddb3ad1cb236b751527\transformed\animation-release\AndroidManifest.xml:5:5-44
@@ -271,14 +317,14 @@ MERGED from [androidx.activity:activity:1.8.2] C:\Users\antarc\.gradle\caches\9.
 MERGED from [androidx.activity:activity:1.8.2] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9bc50ea6d6e38ba0954fff82ed7659b5\transformed\activity-1.8.2\AndroidManifest.xml:20:5-44
 MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\b6edd0fed08307125bdcef8eb41d968f\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\b6edd0fed08307125bdcef8eb41d968f\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1600c3e81462beb0e1d6aff27b6c1f08\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\1600c3e81462beb0e1d6aff27b6c1f08\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9088d74cb9e9f4e9eac1d0a8c2c81e17\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\9088d74cb9e9f4e9eac1d0a8c2c81e17\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc3cb81c1fe113f56241898e6926adda\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc3cb81c1fe113f56241898e6926adda\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\4c4c0720aa0b0849ee6983eeae148c0b\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\7fe18e53657e5fd11ee30eb9df6b664a\transformed\autofill-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\7fe18e53657e5fd11ee30eb9df6b664a\transformed\autofill-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.core:core:1.12.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63dadc6c5ab18e3f24c3731975491ab7\transformed\core-1.12.0\AndroidManifest.xml:20:5-44
@@ -321,14 +367,18 @@ MERGED from [com.google.dagger:dagger-lint-aar:2.50] C:\Users\antarc\.gradle\cac
 		INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [androidx.media3:media3-common:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63d5774100b4c7949e8479e05f2daf01\transformed\media3-common-1.2.0\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\740ac5057fc3a04011cedbd786f3914b\transformed\media3-exoplayer-1.2.0\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\740ac5057fc3a04011cedbd786f3914b\transformed\media3-exoplayer-1.2.0\AndroidManifest.xml:22:5-79
+MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:24:5-79
+MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:24:5-79
+	android:name
+		ADDED from [androidx.media3:media3-common:1.2.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\63d5774100b4c7949e8479e05f2daf01\transformed\media3-common-1.2.0\AndroidManifest.xml:22:22-76
 uses-permission#android.permission.WAKE_LOCK
 ADDED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:23:5-68
 	android:name
 		ADDED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:23:22-65
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:24:5-79
-	android:name
-		ADDED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:24:22-76
 uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
 ADDED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\9.0-milestone-1\transforms\bc753ddb2f3ac8183e103ad2152c37e0\transformed\work-runtime-2.9.0\AndroidManifest.xml:25:5-81
 	android:name

@@ -66,101 +66,141 @@ fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Un
                     val isOnline by viewModel.isOnline.collectAsState()
                     if (!isOnline) {
                         Text(
-                            text = "Offline Mode - Showing cached content",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.errorContainer)
-                                .padding(8.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.labelMedium,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                text = "Offline Mode - Showing cached content",
+                                modifier =
+                                        Modifier.fillMaxWidth()
+                                                .background(
+                                                        MaterialTheme.colorScheme.errorContainer
+                                                )
+                                                .padding(8.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.labelMedium,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                     post?.let { currentPost ->
                         Column(
-                            modifier =
-                                Modifier.fillMaxSize()
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(16.dp)
+                                modifier =
+                                        Modifier.fillMaxSize()
+                                                .verticalScroll(rememberScrollState())
+                                                .padding(16.dp)
                         ) {
-                        Text(
-                                text = currentPost.title ?: "Untitled",
-                                style = MaterialTheme.typography.headlineMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                                text = "Published: ${currentPost.published ?: "Unknown"}",
-                                style = MaterialTheme.typography.labelMedium
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Render HTML content
-                        val htmlContent = currentPost.content ?: "No content available"
-                        val spanned =
-                                remember(htmlContent) {
-                                    if (android.os.Build.VERSION.SDK_INT >=
-                                                    android.os.Build.VERSION_CODES.N
-                                    ) {
-                                        android.text.Html.fromHtml(
-                                                htmlContent,
-                                                android.text.Html.FROM_HTML_MODE_COMPACT
-                                        )
-                                    } else {
-                                        @Suppress("DEPRECATION")
-                                        android.text.Html.fromHtml(htmlContent)
-                                    }
-                                }
-
-                        Text(text = spanned.toString(), style = MaterialTheme.typography.bodyMedium)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        currentPost.file?.let { file ->
-                            if (!file.path.isNullOrEmpty()) {
-                                AsyncImage(
-                                        model = "https://kemono.cr${file.path}",
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxWidth().height(300.dp),
-                                        contentScale = ContentScale.Fit
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
-
-                        // Attachments
-                        if (currentPost.attachments.isNotEmpty()) {
                             Text(
-                                    text = "Attachments:",
-                                    style = MaterialTheme.typography.titleMedium,
+                                    text = currentPost.title ?: "Untitled",
+                                    style = MaterialTheme.typography.headlineMedium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                    text = "Published: ${currentPost.published ?: "Unknown"}",
+                                    style = MaterialTheme.typography.labelMedium
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Render HTML content
+                            val htmlContent = currentPost.content ?: "No content available"
+                            val spanned =
+                                    remember(htmlContent) {
+                                        if (android.os.Build.VERSION.SDK_INT >=
+                                                        android.os.Build.VERSION_CODES.N
+                                        ) {
+                                            android.text.Html.fromHtml(
+                                                    htmlContent,
+                                                    android.text.Html.FROM_HTML_MODE_COMPACT
+                                            )
+                                        } else {
+                                            @Suppress("DEPRECATION")
+                                            android.text.Html.fromHtml(htmlContent)
+                                        }
+                                    }
+
+                            Text(
+                                    text = spanned.toString(),
                                     modifier = Modifier.padding(vertical = 8.dp)
                             )
-                            currentPost.attachments.forEach { attachment ->
-                                if (!attachment.path.isNullOrEmpty()) {
-                                    AsyncImage(
-                                            model = "https://kemono.cr${attachment.path}",
-                                            contentDescription = attachment.name,
-                                            modifier =
-                                                    Modifier.fillMaxWidth()
-                                                            .height(300.dp)
-                                                            .padding(vertical = 4.dp),
-                                            contentScale = ContentScale.Fit
-                                    )
-                                    Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                                text = attachment.name ?: "Attachment",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                modifier = Modifier.weight(1f)
-                                        )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            currentPost.file?.let { file ->
+                                if (!file.path.isNullOrEmpty()) {
+                                    val url = "https://kemono.cr${file.path}"
+                                    val mediaType = com.example.kemono.util.getMediaType(file.path)
+
+                                    when (mediaType) {
+                                        com.example.kemono.util.MediaType.VIDEO -> {
+                                            com.example.kemono.ui.components.VideoPlayer(
+                                                    url = url,
+                                                    modifier =
+                                                            Modifier.fillMaxWidth().height(300.dp)
+                                            )
+                                        }
+                                        else -> {
+                                            AsyncImage(
+                                                    model = url,
+                                                    contentDescription = null,
+                                                    modifier =
+                                                            Modifier.fillMaxWidth().height(300.dp),
+                                                    contentScale = ContentScale.Fit
+                                            )
+                                        }
                                     }
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+
+                            // Attachments
+                            if (currentPost.attachments.isNotEmpty()) {
+                                Text(
+                                        text = "Attachments:",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                                currentPost.attachments.forEach { attachment ->
+                                    if (!attachment.path.isNullOrEmpty()) {
+                                        val url = "https://kemono.cr${attachment.path}"
+                                        val mediaType =
+                                                com.example.kemono.util.getMediaType(
+                                                        attachment.path
+                                                )
+
+                                        when (mediaType) {
+                                            com.example.kemono.util.MediaType.VIDEO -> {
+                                                com.example.kemono.ui.components.VideoPlayer(
+                                                        url = url,
+                                                        modifier =
+                                                                Modifier.fillMaxWidth()
+                                                                        .height(300.dp)
+                                                                        .padding(vertical = 4.dp)
+                                                )
+                                            }
+                                            else -> {
+                                                AsyncImage(
+                                                        model = url,
+                                                        contentDescription = attachment.name,
+                                                        modifier =
+                                                                Modifier.fillMaxWidth()
+                                                                        .height(300.dp)
+                                                                        .padding(vertical = 4.dp),
+                                                        contentScale = ContentScale.Fit
+                                                )
+                                            }
+                                        }
+
+                                        Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                    text = attachment.name ?: "Attachment",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
                                 }
                             }
                         }
-                    }
                     }
                 }
             }

@@ -1,8 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.kemono.app-mergeDebugResources-62:/values-v21/values-v21.xml",
+            "outputFile": "com.example.kemono.app-mergeDebugResources-67:/values-v21/values-v21.xml",
             "map": [
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\9.0-milestone-1\\transforms\\cc04c635ed4fe94cb6ce66c123b69f00\\transformed\\media3-ui-1.2.0\\res\\values-v21\\values-v21.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,114",
+                        "endLines": "2,7",
+                        "endColumns": "58,10",
+                        "endOffsets": "109,396"
+                    },
+                    "to": {
+                        "startLines": "3,7",
+                        "startColumns": "4,4",
+                        "startOffsets": "173,427",
+                        "endLines": "3,11",
+                        "endColumns": "58,10",
+                        "endOffsets": "227,709"
+                    }
+                },
                 {
                     "source": "C:\\Users\\antarc\\.gradle\\caches\\9.0-milestone-1\\transforms\\63dadc6c5ab18e3f24c3731975491ab7\\transformed\\core-1.12.0\\res\\values-v21\\values-v21.xml",
                     "from": {
@@ -12,6 +31,33 @@
                         "endLines": "2,3,4,5,6,7,8,9,12,17",
                         "endColumns": "117,63,66,63,115,125,125,127,12,12",
                         "endOffsets": "168,232,299,363,479,605,731,859,1031,1383"
+                    },
+                    "to": {
+                        "startLines": "2,4,5,6,12,13,20,24,28,31",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,232,296,363,714,830,1287,1581,1876,2048",
+                        "endLines": "2,4,5,6,12,13,20,24,30,35",
+                        "endColumns": "117,63,66,63,115,125,125,127,12,12",
+                        "endOffsets": "168,291,358,422,825,951,1408,1704,2043,2395"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\9.0-milestone-1\\transforms\\71d1c9ccc0bc42808143b14b3b84a497\\transformed\\media-1.6.0\\res\\values-v21\\values-v21.xml",
+                    "from": {
+                        "startLines": "2,5,8,11",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,223,386,554",
+                        "endLines": "4,7,10,13",
+                        "endColumns": "12,12,12,12",
+                        "endOffsets": "218,381,549,716"
+                    },
+                    "to": {
+                        "startLines": "14,17,21,25",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "956,1124,1413,1709",
+                        "endLines": "16,19,23,27",
+                        "endColumns": "12,12,12,12",
+                        "endOffsets": "1119,1282,1576,1871"
                     }
                 }
             ]

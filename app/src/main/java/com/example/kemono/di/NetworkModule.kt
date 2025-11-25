@@ -177,6 +177,13 @@ object NetworkModule {
     @Singleton
     fun provideImageLoader(@ApplicationContext context: Context): coil.ImageLoader {
         return coil.ImageLoader.Builder(context)
+                .components {
+                    if (android.os.Build.VERSION.SDK_INT >= 28) {
+                        add(coil.decode.ImageDecoderDecoder.Factory())
+                    } else {
+                        add(coil.decode.GifDecoder.Factory())
+                    }
+                }
                 .diskCache {
                     coil.disk.DiskCache.Builder()
                             .directory(context.cacheDir.resolve("image_cache"))

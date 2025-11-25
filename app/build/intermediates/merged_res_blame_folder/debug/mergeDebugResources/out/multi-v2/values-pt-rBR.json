@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.kemono.app-mergeDebugResources-62:/values-pt-rBR/values-pt-rBR.xml",
+            "outputFile": "com.example.kemono.app-mergeDebugResources-67:/values-pt-rBR/values-pt-rBR.xml",
             "map": [
                 {
                     "source": "C:\\Users\\antarc\\.gradle\\caches\\9.0-milestone-1\\transforms\\e960ba5fe4095214676c5b3aea0481c1\\transformed\\material3-1.1.1\\res\\values-pt-rBR\\values-pt-rBR.xml",
