@@ -7,14 +7,18 @@ import android.view.View;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import coil.ImageLoader;
 import com.example.kemono.data.local.AppDatabase;
+import com.example.kemono.data.local.CacheDao;
 import com.example.kemono.data.local.FavoriteDao;
 import com.example.kemono.data.local.SessionManager;
 import com.example.kemono.data.remote.KemonoApi;
 import com.example.kemono.data.repository.KemonoRepository;
 import com.example.kemono.di.DatabaseModule_ProvideAppDatabaseFactory;
+import com.example.kemono.di.DatabaseModule_ProvideCacheDaoFactory;
 import com.example.kemono.di.DatabaseModule_ProvideFavoriteDaoFactory;
 import com.example.kemono.di.NetworkModule_ProvideCookieJarFactory;
+import com.example.kemono.di.NetworkModule_ProvideImageLoaderFactory;
 import com.example.kemono.di.NetworkModule_ProvideKemonoApiFactory;
 import com.example.kemono.di.NetworkModule_ProvideOkHttpClientFactory;
 import com.example.kemono.di.NetworkModule_ProvideRetrofitFactory;
@@ -28,6 +32,7 @@ import com.example.kemono.ui.posts.PostViewModel;
 import com.example.kemono.ui.posts.PostViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.settings.SettingsViewModel;
 import com.example.kemono.ui.settings.SettingsViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.kemono.util.NetworkMonitor;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.internal.builders.ActivityComponentBuilder;
@@ -477,13 +482,13 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           return (T) new CreatorPostListViewModel(singletonCImpl.kemonoRepositoryProvider.get(), viewModelCImpl.savedStateHandle);
 
           case 1: // com.example.kemono.ui.creators.CreatorViewModel 
-          return (T) new CreatorViewModel(singletonCImpl.kemonoRepositoryProvider.get());
+          return (T) new CreatorViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.networkMonitorProvider.get());
 
           case 2: // com.example.kemono.ui.favorites.FavoritesViewModel 
           return (T) new FavoritesViewModel(singletonCImpl.kemonoRepositoryProvider.get());
 
           case 3: // com.example.kemono.ui.posts.PostViewModel 
-          return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), viewModelCImpl.savedStateHandle, ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule));
+          return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), viewModelCImpl.savedStateHandle, ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule), singletonCImpl.networkMonitorProvider.get());
 
           case 4: // com.example.kemono.ui.settings.SettingsViewModel 
           return (T) new SettingsViewModel(singletonCImpl.sessionManagerProvider.get(), singletonCImpl.provideOkHttpClientProvider.get());
@@ -568,6 +573,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<ImageLoader> provideImageLoaderProvider;
+
     private Provider<SessionManager> sessionManagerProvider;
 
     private Provider<CookieJar> provideCookieJarProvider;
@@ -582,6 +589,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<KemonoRepository> kemonoRepositoryProvider;
 
+    private Provider<NetworkMonitor> networkMonitorProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
@@ -592,19 +601,26 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       return DatabaseModule_ProvideFavoriteDaoFactory.provideFavoriteDao(provideAppDatabaseProvider.get());
     }
 
+    private CacheDao cacheDao() {
+      return DatabaseModule_ProvideCacheDaoFactory.provideCacheDao(provideAppDatabaseProvider.get());
+    }
+
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 5));
-      this.provideCookieJarProvider = DoubleCheck.provider(new SwitchingProvider<CookieJar>(singletonCImpl, 4));
-      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 3));
-      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 2));
-      this.provideKemonoApiProvider = DoubleCheck.provider(new SwitchingProvider<KemonoApi>(singletonCImpl, 1));
-      this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 6));
-      this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 0));
+      this.provideImageLoaderProvider = DoubleCheck.provider(new SwitchingProvider<ImageLoader>(singletonCImpl, 0));
+      this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 6));
+      this.provideCookieJarProvider = DoubleCheck.provider(new SwitchingProvider<CookieJar>(singletonCImpl, 5));
+      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 4));
+      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 3));
+      this.provideKemonoApiProvider = DoubleCheck.provider(new SwitchingProvider<KemonoApi>(singletonCImpl, 2));
+      this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 7));
+      this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 1));
+      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 8));
     }
 
     @Override
     public void injectKemonoApp(KemonoApp kemonoApp) {
+      injectKemonoApp2(kemonoApp);
     }
 
     @Override
@@ -622,6 +638,11 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       return new ServiceCBuilder(singletonCImpl);
     }
 
+    private KemonoApp injectKemonoApp2(KemonoApp instance) {
+      KemonoApp_MembersInjector.injectImageLoader(instance, provideImageLoaderProvider.get());
+      return instance;
+    }
+
     private static final class SwitchingProvider<T> implements Provider<T> {
       private final SingletonCImpl singletonCImpl;
 
@@ -636,26 +657,32 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.example.kemono.data.repository.KemonoRepository 
-          return (T) new KemonoRepository(singletonCImpl.provideKemonoApiProvider.get(), singletonCImpl.favoriteDao());
+          case 0: // coil.ImageLoader 
+          return (T) NetworkModule_ProvideImageLoaderFactory.provideImageLoader(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 1: // com.example.kemono.data.remote.KemonoApi 
+          case 1: // com.example.kemono.data.repository.KemonoRepository 
+          return (T) new KemonoRepository(singletonCImpl.provideKemonoApiProvider.get(), singletonCImpl.favoriteDao(), singletonCImpl.cacheDao());
+
+          case 2: // com.example.kemono.data.remote.KemonoApi 
           return (T) NetworkModule_ProvideKemonoApiFactory.provideKemonoApi(singletonCImpl.provideRetrofitProvider.get());
 
-          case 2: // retrofit2.Retrofit 
+          case 3: // retrofit2.Retrofit 
           return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideOkHttpClientProvider.get());
 
-          case 3: // okhttp3.OkHttpClient 
+          case 4: // okhttp3.OkHttpClient 
           return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(singletonCImpl.provideCookieJarProvider.get());
 
-          case 4: // okhttp3.CookieJar 
+          case 5: // okhttp3.CookieJar 
           return (T) NetworkModule_ProvideCookieJarFactory.provideCookieJar(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.sessionManagerProvider.get());
 
-          case 5: // com.example.kemono.data.local.SessionManager 
+          case 6: // com.example.kemono.data.local.SessionManager 
           return (T) new SessionManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 6: // com.example.kemono.data.local.AppDatabase 
+          case 7: // com.example.kemono.data.local.AppDatabase 
           return (T) DatabaseModule_ProvideAppDatabaseFactory.provideAppDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 8: // com.example.kemono.util.NetworkMonitor 
+          return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }

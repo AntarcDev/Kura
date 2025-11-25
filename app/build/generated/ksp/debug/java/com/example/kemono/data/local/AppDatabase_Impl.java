@@ -28,20 +28,26 @@ import javax.annotation.processing.Generated;
 public final class AppDatabase_Impl extends AppDatabase {
   private volatile FavoriteDao _favoriteDao;
 
+  private volatile CacheDao _cacheDao;
+
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `favorite_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `cached_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` INTEGER NOT NULL, `indexed` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `cached_posts` (`id` TEXT NOT NULL, `user` TEXT NOT NULL, `service` TEXT NOT NULL, `title` TEXT, `content` TEXT, `published` TEXT, `fileJson` TEXT, `attachmentsJson` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a1d92ef56090fe4420cf43cfe618a45e')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d78064a7f24a293a91a0e7b5347be21')");
       }
 
       @Override
       public void dropAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS `favorite_creators`");
+        db.execSQL("DROP TABLE IF EXISTS `cached_creators`");
+        db.execSQL("DROP TABLE IF EXISTS `cached_posts`");
         final List<? extends RoomDatabase.Callback> _callbacks = mCallbacks;
         if (_callbacks != null) {
           for (RoomDatabase.Callback _callback : _callbacks) {
@@ -99,9 +105,44 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoFavoriteCreators + "\n"
                   + " Found:\n" + _existingFavoriteCreators);
         }
+        final HashMap<String, TableInfo.Column> _columnsCachedCreators = new HashMap<String, TableInfo.Column>(6);
+        _columnsCachedCreators.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCreators.put("service", new TableInfo.Column("service", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCreators.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCreators.put("updated", new TableInfo.Column("updated", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCreators.put("indexed", new TableInfo.Column("indexed", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedCreators.put("cachedAt", new TableInfo.Column("cachedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysCachedCreators = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesCachedCreators = new HashSet<TableInfo.Index>(0);
+        final TableInfo _infoCachedCreators = new TableInfo("cached_creators", _columnsCachedCreators, _foreignKeysCachedCreators, _indicesCachedCreators);
+        final TableInfo _existingCachedCreators = TableInfo.read(db, "cached_creators");
+        if (!_infoCachedCreators.equals(_existingCachedCreators)) {
+          return new RoomOpenHelper.ValidationResult(false, "cached_creators(com.example.kemono.data.model.CachedCreator).\n"
+                  + " Expected:\n" + _infoCachedCreators + "\n"
+                  + " Found:\n" + _existingCachedCreators);
+        }
+        final HashMap<String, TableInfo.Column> _columnsCachedPosts = new HashMap<String, TableInfo.Column>(9);
+        _columnsCachedPosts.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("user", new TableInfo.Column("user", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("service", new TableInfo.Column("service", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("title", new TableInfo.Column("title", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("content", new TableInfo.Column("content", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("published", new TableInfo.Column("published", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("fileJson", new TableInfo.Column("fileJson", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("attachmentsJson", new TableInfo.Column("attachmentsJson", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCachedPosts.put("cachedAt", new TableInfo.Column("cachedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysCachedPosts = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesCachedPosts = new HashSet<TableInfo.Index>(0);
+        final TableInfo _infoCachedPosts = new TableInfo("cached_posts", _columnsCachedPosts, _foreignKeysCachedPosts, _indicesCachedPosts);
+        final TableInfo _existingCachedPosts = TableInfo.read(db, "cached_posts");
+        if (!_infoCachedPosts.equals(_existingCachedPosts)) {
+          return new RoomOpenHelper.ValidationResult(false, "cached_posts(com.example.kemono.data.model.CachedPost).\n"
+                  + " Expected:\n" + _infoCachedPosts + "\n"
+                  + " Found:\n" + _existingCachedPosts);
+        }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "a1d92ef56090fe4420cf43cfe618a45e", "8a17a9f4837ddfa2c9a33f183cbeac58");
+    }, "1d78064a7f24a293a91a0e7b5347be21", "677ce1575bea3ccd40d4fd565d189ba1");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
@@ -112,7 +153,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected InvalidationTracker createInvalidationTracker() {
     final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
     final HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
-    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "favorite_creators");
+    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "favorite_creators","cached_creators","cached_posts");
   }
 
   @Override
@@ -122,6 +163,8 @@ public final class AppDatabase_Impl extends AppDatabase {
     try {
       super.beginTransaction();
       _db.execSQL("DELETE FROM `favorite_creators`");
+      _db.execSQL("DELETE FROM `cached_creators`");
+      _db.execSQL("DELETE FROM `cached_posts`");
       super.setTransactionSuccessful();
     } finally {
       super.endTransaction();
@@ -137,6 +180,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected Map<Class<?>, List<Class<?>>> getRequiredTypeConverters() {
     final HashMap<Class<?>, List<Class<?>>> _typeConvertersMap = new HashMap<Class<?>, List<Class<?>>>();
     _typeConvertersMap.put(FavoriteDao.class, FavoriteDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(CacheDao.class, CacheDao_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -165,6 +209,20 @@ public final class AppDatabase_Impl extends AppDatabase {
           _favoriteDao = new FavoriteDao_Impl(this);
         }
         return _favoriteDao;
+      }
+    }
+  }
+
+  @Override
+  public CacheDao cacheDao() {
+    if (_cacheDao != null) {
+      return _cacheDao;
+    } else {
+      synchronized(this) {
+        if(_cacheDao == null) {
+          _cacheDao = new CacheDao_Impl(this);
+        }
+        return _cacheDao;
       }
     }
   }

@@ -3,6 +3,7 @@ package com.example.kemono.ui.posts;
 import android.app.Application;
 import androidx.lifecycle.SavedStateHandle;
 import com.example.kemono.data.repository.KemonoRepository;
+import com.example.kemono.util.NetworkMonitor;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -30,27 +31,30 @@ public final class PostViewModel_Factory implements Factory<PostViewModel> {
 
   private final Provider<Application> applicationProvider;
 
+  private final Provider<NetworkMonitor> networkMonitorProvider;
+
   public PostViewModel_Factory(Provider<KemonoRepository> repositoryProvider,
       Provider<SavedStateHandle> savedStateHandleProvider,
-      Provider<Application> applicationProvider) {
+      Provider<Application> applicationProvider, Provider<NetworkMonitor> networkMonitorProvider) {
     this.repositoryProvider = repositoryProvider;
     this.savedStateHandleProvider = savedStateHandleProvider;
     this.applicationProvider = applicationProvider;
+    this.networkMonitorProvider = networkMonitorProvider;
   }
 
   @Override
   public PostViewModel get() {
-    return newInstance(repositoryProvider.get(), savedStateHandleProvider.get(), applicationProvider.get());
+    return newInstance(repositoryProvider.get(), savedStateHandleProvider.get(), applicationProvider.get(), networkMonitorProvider.get());
   }
 
   public static PostViewModel_Factory create(Provider<KemonoRepository> repositoryProvider,
       Provider<SavedStateHandle> savedStateHandleProvider,
-      Provider<Application> applicationProvider) {
-    return new PostViewModel_Factory(repositoryProvider, savedStateHandleProvider, applicationProvider);
+      Provider<Application> applicationProvider, Provider<NetworkMonitor> networkMonitorProvider) {
+    return new PostViewModel_Factory(repositoryProvider, savedStateHandleProvider, applicationProvider, networkMonitorProvider);
   }
 
   public static PostViewModel newInstance(KemonoRepository repository,
-      SavedStateHandle savedStateHandle, Application application) {
-    return new PostViewModel(repository, savedStateHandle, application);
+      SavedStateHandle savedStateHandle, Application application, NetworkMonitor networkMonitor) {
+    return new PostViewModel(repository, savedStateHandle, application, networkMonitor);
   }
 }

@@ -1,5 +1,6 @@
 package com.example.kemono.ui.creators
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -38,10 +40,10 @@ import com.example.kemono.data.model.Creator
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatorScreen(
-    viewModel: CreatorViewModel = hiltViewModel(),
-    onCreatorClick: (Creator) -> Unit,
-    onFavoritesClick: () -> Unit,
-    onSettingsClick: () -> Unit
+        viewModel: CreatorViewModel = hiltViewModel(),
+        onCreatorClick: (Creator) -> Unit,
+        onFavoritesClick: () -> Unit,
+        onSettingsClick: () -> Unit
 ) {
     val creators by viewModel.creators.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -50,60 +52,72 @@ fun CreatorScreen(
     val error by viewModel.error.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Kemono") },
-                actions = {
-                    IconButton(onClick = onFavoritesClick) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Favorites")
-                    }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            )
-        }
+            topBar = {
+                TopAppBar(
+                        title = { Text("Kemono") },
+                        actions = {
+                            IconButton(onClick = { viewModel.fetchCreators() }) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                            }
+                            IconButton(onClick = onFavoritesClick) {
+                                Icon(Icons.Default.Favorite, contentDescription = "Favorites")
+                            }
+                            IconButton(onClick = onSettingsClick) {
+                                Icon(Icons.Default.Settings, contentDescription = "Settings")
+                            }
+                        }
+                )
+            }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = viewModel::onSearchQueryChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                placeholder = { Text("Search creators...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                singleLine = true
+                    value = searchQuery,
+                    onValueChange = viewModel::onSearchQueryChange,
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    placeholder = { Text("Search creators...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    singleLine = true
             )
 
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 } else if (error != null) {
                     Text(
-                        text = error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
+                            text = error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(creators) { creator ->
-                            val isFavorite = favorites.any { it.id == creator.id }
-                            CreatorItem(
-                                creator = creator,
-                                isFavorite = isFavorite,
-                                onClick = { onCreatorClick(creator) },
-                                onFavoriteClick = { viewModel.toggleFavorite(creator) }
+                    Column {
+                        val isOnline by viewModel.isOnline.collectAsState()
+                        if (!isOnline) {
+                            Text(
+                                    text = "Offline Mode - Showing cached content",
+                                    modifier =
+                                            Modifier.fillMaxWidth()
+                                                    .background(
+                                                            MaterialTheme.colorScheme.errorContainer
+                                                    )
+                                                    .padding(8.dp),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                        }
+                        LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(creators) { creator ->
+                                val isFavorite = favorites.any { it.id == creator.id }
+                                CreatorItem(
+                                        creator = creator,
+                                        isFavorite = isFavorite,
+                                        onClick = { onCreatorClick(creator) },
+                                        onFavoriteClick = { viewModel.toggleFavorite(creator) }
+                                )
+                            }
                         }
                     }
                 }
@@ -114,48 +128,49 @@ fun CreatorScreen(
 
 @Composable
 fun CreatorItem(
-    creator: Creator,
-    isFavorite: Boolean,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit
+        creator: Creator,
+        isFavorite: Boolean,
+        onClick: () -> Unit,
+        onFavoriteClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = creator.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
+                        text = creator.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            imageVector =
+                                    if (isFavorite) Icons.Default.Favorite
+                                    else Icons.Default.FavoriteBorder,
+                            contentDescription =
+                                    if (isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint =
+                                    if (isFavorite) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = creator.service,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = creator.service,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "ID: ${creator.id}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "ID: ${creator.id}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

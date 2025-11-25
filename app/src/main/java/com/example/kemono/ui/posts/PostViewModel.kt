@@ -8,20 +8,33 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.workDataOf
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.repository.KemonoRepository
+import com.example.kemono.util.NetworkMonitor
 import com.example.kemono.worker.DownloadWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
-class PostViewModel @Inject constructor(
-    private val repository: KemonoRepository,
-    savedStateHandle: SavedStateHandle,
-    private val application: Application
+class PostViewModel
+@Inject
+constructor(
+        private val repository: KemonoRepository,
+        savedStateHandle: SavedStateHandle,
+        private val application: Application,
+        networkMonitor: NetworkMonitor
 ) : ViewModel() {
+
+    val isOnline =
+            networkMonitor.isOnline.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    true
+            )
 
     private val service: String = checkNotNull(savedStateHandle["service"])
     private val creatorId: String = checkNotNull(savedStateHandle["creatorId"])
@@ -56,13 +69,8 @@ class PostViewModel @Inject constructor(
 
     fun downloadFile(url: String, fileName: String) {
         val workManager = androidx.work.WorkManager.getInstance(application)
-        val data = workDataOf(
-            "key_file_url" to url,
-            "key_file_name" to fileName
-        )
-        val request = OneTimeWorkRequestBuilder<DownloadWorker>()
-            .setInputData(data)
-            .build()
+        val data = workDataOf("key_file_url" to url, "key_file_name" to fileName)
+        val request = OneTimeWorkRequestBuilder<DownloadWorker>().setInputData(data).build()
         workManager.enqueue(request)
     }
 }
