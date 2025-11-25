@@ -183,6 +183,7 @@ object NetworkModule {
                     } else {
                         add(coil.decode.GifDecoder.Factory())
                     }
+                    add(coil.decode.VideoFrameDecoder.Factory())
                 }
                 .diskCache {
                     coil.disk.DiskCache.Builder()

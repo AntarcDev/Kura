@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -29,19 +30,70 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
                     true
             )
 
+    val favorites =
+            repository
+                    .getAllFavorites()
+                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val _allCreators = MutableStateFlow<List<Creator>>(emptyList())
+    private val _popularCreators = MutableStateFlow<List<Creator>>(emptyList())
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _sortOption = MutableStateFlow(SortOption.Updated)
+    val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
+
+    private val _selectedServices = MutableStateFlow<Set<String>>(emptySet())
+    val selectedServices: StateFlow<Set<String>> = _selectedServices.asStateFlow()
+
+    val availableServices: StateFlow<List<String>> =
+            _allCreators
+                    .map { creators -> creators.map { it.service }.distinct().sorted() }
+                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Combine filter and sort options first
+    private val _filterState =
+            combine(_searchQuery, _sortOption, _selectedServices) { query, sort, services ->
+                Triple(query, sort, services)
+            }
+
     val creators: StateFlow<List<Creator>> =
-            combine(_allCreators, _searchQuery) { creators, query ->
-                        if (query.isBlank()) creators
-                        else
-                                creators.filter {
-                                    it.name.contains(query, ignoreCase = true) ||
-                                            it.id.contains(query, ignoreCase = true)
-                                }
+            combine(_allCreators, _popularCreators, favorites, _filterState) {
+                            all,
+                            popular,
+                            favs,
+                            (query, sort, services) ->
+                        val sourceList = if (sort == SortOption.Popular) popular else all
+                        var result = sourceList
+
+                        // Filter by service
+                        if (services.isNotEmpty()) {
+                            result = result.filter { it.service in services }
+                        }
+
+                        // Filter by query
+                        if (query.isNotBlank()) {
+                            result =
+                                    result.filter {
+                                        it.name.contains(query, ignoreCase = true) ||
+                                                it.id.contains(query, ignoreCase = true)
+                                    }
+                        }
+
+                        // Sort
+                        when (sort) {
+                            SortOption.Name -> result.sortedBy { it.name }
+                            SortOption.Updated -> result.sortedByDescending { it.updated }
+                            SortOption.Favorites -> {
+                                val favIds = favs.map { it.id }.toSet()
+                                result.sortedWith(
+                                        compareByDescending<Creator> { it.id in favIds }
+                                                .thenByDescending { it.updated }
+                                )
+                            }
+                            SortOption.Popular -> result
+                        }
                     }
                     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -59,6 +111,27 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
         _searchQuery.value = query
     }
 
+    fun setSortOption(option: SortOption) {
+        _sortOption.value = option
+        if (option == SortOption.Popular && _popularCreators.value.isEmpty()) {
+            fetchPopularCreators()
+        }
+    }
+
+    fun toggleServiceFilter(service: String) {
+        val current = _selectedServices.value
+        if (current.contains(service)) {
+            _selectedServices.value = current - service
+        } else {
+            _selectedServices.value = current + service
+        }
+    }
+
+    fun clearFilters() {
+        _selectedServices.value = emptySet()
+        _sortOption.value = SortOption.Updated
+    }
+
     fun fetchCreators() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -66,6 +139,11 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
             try {
                 val result = repository.getCreators()
                 _allCreators.value = result.sortedByDescending { it.updated }
+
+                // If we are in popular mode, refresh that too
+                if (_sortOption.value == SortOption.Popular) {
+                    fetchPopularCreators()
+                }
             } catch (e: Exception) {
                 _error.value = e.message ?: "Unknown error occurred"
             } finally {
@@ -73,10 +151,24 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
             }
         }
     }
-    val favorites =
-            repository
-                    .getAllFavorites()
-                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private fun fetchPopularCreators() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val result = repository.getPopularCreators()
+                _popularCreators.value = result
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Failed to fetch popular creators"
+                // Fallback to updated if failed?
+                if (_popularCreators.value.isEmpty()) {
+                    _sortOption.value = SortOption.Updated
+                }
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     fun toggleFavorite(creator: Creator) {
         viewModelScope.launch {
@@ -95,4 +187,11 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
             }
         }
     }
+}
+
+enum class SortOption {
+    Name,
+    Updated,
+    Favorites,
+    Popular
 }

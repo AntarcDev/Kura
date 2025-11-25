@@ -3,11 +3,13 @@ package com.example.kemono;
 import com.example.kemono.di.DatabaseModule;
 import com.example.kemono.di.NetworkModule;
 import com.example.kemono.ui.creators.CreatorViewModel_HiltModules;
+import com.example.kemono.ui.downloads.DownloadManagerViewModel_HiltModules;
 import com.example.kemono.ui.favorites.FavoritesViewModel_HiltModules;
 import com.example.kemono.ui.gallery.GalleryViewModel_HiltModules;
 import com.example.kemono.ui.posts.CreatorPostListViewModel_HiltModules;
 import com.example.kemono.ui.posts.PostViewModel_HiltModules;
 import com.example.kemono.ui.settings.SettingsViewModel_HiltModules;
+import com.example.kemono.ui.viewer.ImageViewerViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -153,10 +155,12 @@ public final class KemonoApp_HiltComponents {
       modules = {
           CreatorPostListViewModel_HiltModules.KeyModule.class,
           CreatorViewModel_HiltModules.KeyModule.class,
+          DownloadManagerViewModel_HiltModules.KeyModule.class,
           FavoritesViewModel_HiltModules.KeyModule.class,
           GalleryViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
+          ImageViewerViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
           PostViewModel_HiltModules.KeyModule.class,
@@ -198,9 +202,11 @@ public final class KemonoApp_HiltComponents {
       modules = {
           CreatorPostListViewModel_HiltModules.BindsModule.class,
           CreatorViewModel_HiltModules.BindsModule.class,
+          DownloadManagerViewModel_HiltModules.BindsModule.class,
           FavoritesViewModel_HiltModules.BindsModule.class,
           GalleryViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
+          ImageViewerViewModel_HiltModules.BindsModule.class,
           PostViewModel_HiltModules.BindsModule.class,
           SettingsViewModel_HiltModules.BindsModule.class
       }

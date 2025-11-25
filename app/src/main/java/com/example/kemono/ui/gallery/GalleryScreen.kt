@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,23 +35,11 @@ import java.io.File
 @Composable
 fun GalleryScreen(
         viewModel: GalleryViewModel = hiltViewModel(),
-        onBackClick: () -> Unit,
-        onItemClick: (DownloadedItem) -> Unit
+        onItemClick: (DownloadedItem, Int) -> Unit
 ) {
     val items by viewModel.downloadedItems.collectAsState()
 
-    Scaffold(
-            topBar = {
-                TopAppBar(
-                        title = { Text("Gallery") },
-                        navigationIcon = {
-                            IconButton(onClick = onBackClick) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        }
-                )
-            }
-    ) { paddingValues ->
+    Scaffold(topBar = { TopAppBar(title = { Text("Gallery") }) }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (items.isEmpty()) {
                 Text(
@@ -69,8 +54,8 @@ fun GalleryScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(items) { item ->
-                        GalleryItem(item = item, onClick = { onItemClick(item) })
+                    itemsIndexed(items) { index, item ->
+                        GalleryItem(item = item, onClick = { onItemClick(item, index) })
                     }
                 }
             }

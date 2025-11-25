@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,31 +18,43 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -50,92 +64,176 @@ import com.example.kemono.data.model.Creator
 @Composable
 fun CreatorScreen(
         viewModel: CreatorViewModel = hiltViewModel(),
-        onCreatorClick: (Creator) -> Unit,
-        onFavoritesClick: () -> Unit,
-        onSettingsClick: () -> Unit,
-        onGalleryClick: () -> Unit
+        onCreatorClick: (Creator) -> Unit
 ) {
     val creators by viewModel.creators.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val isRefreshing by viewModel.isLoading.collectAsState() // Reusing isLoading for refresh state
+
+    val sortOption by viewModel.sortOption.collectAsState()
+    val selectedServices by viewModel.selectedServices.collectAsState()
+    val availableServices by viewModel.availableServices.collectAsState()
+
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+    if (showBottomSheet) {
+        ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
+            FilterSortBottomSheet(
+                    sortOption = sortOption,
+                    onSortOptionSelected = viewModel::setSortOption,
+                    availableServices = availableServices,
+                    selectedServices = selectedServices,
+                    onServiceToggle = viewModel::toggleServiceFilter,
+                    onReset = viewModel::clearFilters
+            )
+        }
+    }
 
     Scaffold(
             topBar = {
                 TopAppBar(
                         title = { Text("Kemono") },
                         actions = {
-                            IconButton(onClick = { viewModel.fetchCreators() }) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                            }
-                            IconButton(onClick = onGalleryClick) {
-                                Icon(Icons.Default.Image, contentDescription = "Gallery")
-                            }
-                            IconButton(onClick = onFavoritesClick) {
-                                Icon(Icons.Default.Favorite, contentDescription = "Favorites")
-                            }
-                            IconButton(onClick = onSettingsClick) {
-                                Icon(Icons.Default.Settings, contentDescription = "Settings")
+                            IconButton(onClick = { showBottomSheet = true }) {
+                                Icon(
+                                        Icons.AutoMirrored.Filled.List,
+                                        contentDescription = "Filter & Sort"
+                                )
                             }
                         }
                 )
             }
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = viewModel::onSearchQueryChange,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    placeholder = { Text("Search creators...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    singleLine = true
-            )
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                } else if (error != null) {
-                    Text(
-                            text = error ?: "Unknown error",
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
-                    )
-                } else {
-                    Column {
-                        val isOnline by viewModel.isOnline.collectAsState()
-                        if (!isOnline) {
-                            Text(
-                                    text = "Offline Mode - Showing cached content",
-                                    modifier =
-                                            Modifier.fillMaxWidth()
-                                                    .background(
-                                                            MaterialTheme.colorScheme.errorContainer
-                                                    )
-                                                    .padding(8.dp),
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                        LazyColumn(
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(creators) { creator ->
-                                val isFavorite = favorites.any { it.id == creator.id }
-                                CreatorItem(
-                                        creator = creator,
-                                        isFavorite = isFavorite,
-                                        onClick = { onCreatorClick(creator) },
-                                        onFavoriteClick = { viewModel.toggleFavorite(creator) }
+        PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.fetchCreators() },
+                modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Redesigned Search Bar
+                TextField(
+                        value = searchQuery,
+                        onValueChange = viewModel::onSearchQueryChange,
+                        modifier =
+                                Modifier.fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .clip(RoundedCornerShape(50)),
+                        placeholder = { Text("Search creators...") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        singleLine = true,
+                        colors =
+                                TextFieldDefaults.colors(
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent
                                 )
+                )
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (isLoading && creators.isEmpty()) {
+                        // Initial load
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    } else if (error != null && creators.isEmpty()) {
+                        Text(
+                                text = error ?: "Unknown error",
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        Column {
+                            val isOnline by viewModel.isOnline.collectAsState()
+                            if (!isOnline) {
+                                Text(
+                                        text = "Offline Mode - Showing cached content",
+                                        modifier =
+                                                Modifier.fillMaxWidth()
+                                                        .background(
+                                                                MaterialTheme.colorScheme
+                                                                        .errorContainer
+                                                        )
+                                                        .padding(8.dp),
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        textAlign = TextAlign.Center
+                                )
+                            }
+                            LazyColumn(
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(creators) { creator ->
+                                    val isFavorite = favorites.any { it.id == creator.id }
+                                    CreatorItem(
+                                            creator = creator,
+                                            isFavorite = isFavorite,
+                                            onClick = { onCreatorClick(creator) },
+                                            onFavoriteClick = { viewModel.toggleFavorite(creator) }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun FilterSortBottomSheet(
+        sortOption: SortOption,
+        onSortOptionSelected: (SortOption) -> Unit,
+        availableServices: List<String>,
+        selectedServices: Set<String>,
+        onServiceToggle: (String) -> Unit,
+        onReset: () -> Unit
+) {
+    Column(
+            modifier =
+                    Modifier.fillMaxWidth()
+                            .padding(16.dp)
+                            .padding(bottom = 32.dp), // Add some bottom padding for navigation bar
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Sort By", style = MaterialTheme.typography.titleMedium)
+        Column {
+            SortOption.values().forEach { option ->
+                Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                                Modifier.fillMaxWidth()
+                                        .clickable { onSortOptionSelected(option) }
+                                        .padding(vertical = 4.dp)
+                ) {
+                    RadioButton(
+                            selected = sortOption == option,
+                            onClick = { onSortOptionSelected(option) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(option.name)
+                }
+            }
+        }
+
+        HorizontalDivider()
+
+        Text("Filter by Service", style = MaterialTheme.typography.titleMedium)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            availableServices.forEach { service ->
+                FilterChip(
+                        selected = selectedServices.contains(service),
+                        onClick = { onServiceToggle(service) },
+                        label = { Text(service) }
+                )
+            }
+        }
+
+        Button(onClick = onReset, modifier = Modifier.fillMaxWidth()) { Text("Reset Filters") }
     }
 }
 

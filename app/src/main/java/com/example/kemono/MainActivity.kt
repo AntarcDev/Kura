@@ -12,11 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.kemono.ui.creators.CreatorScreen
-import com.example.kemono.ui.favorites.FavoritesScreen
 import com.example.kemono.ui.posts.CreatorPostListScreen
 import com.example.kemono.ui.posts.PostScreen
-import com.example.kemono.ui.settings.SettingsScreen
 import com.example.kemono.ui.theme.KemonoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,17 +28,17 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "creators") {
-                        composable("creators") {
-                            CreatorScreen(
-                                    onCreatorClick = { creator ->
+                    NavHost(navController = navController, startDestination = "main") {
+                        composable("main") {
+                            com.example.kemono.ui.main.MainScreen(
+                                    onNavigateToCreator = { creator ->
                                         navController.navigate(
                                                 "creator/${creator.service}/${creator.id}"
                                         )
                                     },
-                                    onFavoritesClick = { navController.navigate("favorites") },
-                                    onSettingsClick = { navController.navigate("settings") },
-                                    onGalleryClick = { navController.navigate("gallery") }
+                                    onNavigateToGalleryItem = { index ->
+                                        navController.navigate("viewer/gallery/all/$index")
+                                    }
                             )
                         }
                         composable(
@@ -65,18 +62,6 @@ class MainActivity : ComponentActivity() {
                                     }
                             )
                         }
-                        composable("settings") {
-                            SettingsScreen(onBackClick = { navController.popBackStack() })
-                        }
-                        composable("favorites") {
-                            FavoritesScreen(
-                                    onCreatorClick = { creator ->
-                                        navController.navigate(
-                                                "creator/${creator.service}/${creator.id}"
-                                        )
-                                    }
-                            )
-                        }
                         composable(
                                 route = "post/{service}/{creatorId}/{postId}",
                                 arguments =
@@ -89,42 +74,31 @@ class MainActivity : ComponentActivity() {
                                                 },
                                                 navArgument("postId") { type = NavType.StringType }
                                         )
-                        ) { PostScreen(onBackClick = { navController.popBackStack() }) }
-                        composable("gallery") {
-                            com.example.kemono.ui.gallery.GalleryScreen(
+                        ) {
+                            PostScreen(
                                     onBackClick = { navController.popBackStack() },
-                                    onItemClick = { item ->
-                                        if (item.mediaType == "VIDEO") {
-                                            com.example.kemono.ui.components.FullscreenVideoActivity
-                                                    .launch(this@MainActivity, item.filePath)
-                                        } else {
-                                            val intent =
-                                                    android.content.Intent(
-                                                                    android.content.Intent
-                                                                            .ACTION_VIEW
-                                                            )
-                                                            .apply {
-                                                                setDataAndType(
-                                                                        androidx.core.content
-                                                                                .FileProvider
-                                                                                .getUriForFile(
-                                                                                        this@MainActivity,
-                                                                                        "${applicationContext.packageName}.provider",
-                                                                                        java.io
-                                                                                                .File(
-                                                                                                        item.filePath
-                                                                                                )
-                                                                                ),
-                                                                        "image/*"
-                                                                )
-                                                                addFlags(
-                                                                        android.content.Intent
-                                                                                .FLAG_GRANT_READ_URI_PERMISSION
-                                                                )
-                                                            }
-                                            startActivity(intent)
-                                        }
+                                    onImageClick = { index ->
+                                        val service = it.arguments?.getString("service") ?: ""
+                                        val creatorId = it.arguments?.getString("creatorId") ?: ""
+                                        val postId = it.arguments?.getString("postId") ?: ""
+                                        val id = "$service|$creatorId|$postId"
+                                        navController.navigate("viewer/post/$id/$index")
                                     }
+                            )
+                        }
+                        composable(
+                                route = "viewer/{type}/{id}/{initialIndex}",
+                                arguments =
+                                        listOf(
+                                                navArgument("type") { type = NavType.StringType },
+                                                navArgument("id") { type = NavType.StringType },
+                                                navArgument("initialIndex") {
+                                                    type = NavType.StringType
+                                                }
+                                        )
+                        ) {
+                            com.example.kemono.ui.viewer.ImageViewerScreen(
+                                    onBackClick = { navController.popBackStack() }
                             )
                         }
                     }

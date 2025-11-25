@@ -159,7 +159,7 @@
     <dimen name="notification_main_column_padding_top">10dp</dimen>
     <dimen name="notification_media_narrow_margin">@dimen/notification_content_margin_start</dimen>
     <dimen name="notification_right_icon_size">16dp</dimen>
-    <dimen name="notification_right_side_padding_top">2dp</dimen>
+    <dimen name="notification_right_side_padding_top">4dp</dimen>
     <dimen name="notification_small_icon_background_padding">3dp</dimen>
     <dimen name="notification_small_icon_size_as_large">24dp</dimen>
     <dimen name="notification_subtext_size">13sp</dimen>
@@ -291,6 +291,7 @@
     <item name="exo_time" type="id"/>
     <item name="exo_vr" type="id"/>
     <item name="fragment_container_view_tag" type="id"/>
+    <item name="hide_graphics_layer_in_inspector_tag" type="id"/>
     <item name="hide_in_inspector_tag" type="id"/>
     <item name="inspection_slot_table_set" type="id"/>
     <item name="is_pooling_container_tag" type="id"/>
@@ -327,6 +328,7 @@
     <integer name="cancel_button_image_alpha">127</integer>
     <integer name="exo_media_button_opacity_percentage_disabled">33</integer>
     <integer name="exo_media_button_opacity_percentage_enabled">100</integer>
+    <integer name="m3c_window_layout_in_display_cutout_mode">1</integer>
     <integer name="status_bar_notification_info_maxnum">999</integer>
     <plurals name="exo_controls_fastforward_by_amount_description">
     <item quantity="one">Fast forward <ns1:g example="1" id="fastforward_amount">%d</ns1:g> second</item>
@@ -338,10 +340,6 @@
   </plurals>
     <string name="androidx_startup" translatable="false">androidx.startup</string>
     <string name="app_name">Kemono</string>
-    <string name="bottom_sheet_collapse_description">Collapse bottom sheet</string>
-    <string name="bottom_sheet_dismiss_description">Dismiss bottom sheet</string>
-    <string name="bottom_sheet_drag_handle_description">Drag handle</string>
-    <string name="bottom_sheet_expand_description">Expand bottom sheet</string>
     <string name="call_notification_answer_action">Answer</string>
     <string name="call_notification_answer_video_action">Video</string>
     <string name="call_notification_decline_action">Decline</string>
@@ -351,45 +349,8 @@
     <string name="call_notification_screening_text">Screening an incoming call</string>
     <string name="close_drawer">"Close navigation menu"</string>
     <string name="close_sheet">"Close sheet"</string>
-    <string name="collapsed">Collapsed</string>
-    <string name="date_input_headline">Entered date</string>
-    <string name="date_input_headline_description">Entered date: %1$s</string>
-    <string name="date_input_invalid_for_pattern">Date does not match expected pattern: %1$s</string>
-    <string name="date_input_invalid_not_allowed">Date not allowed: %1$s</string>
-    <string name="date_input_invalid_year_range">
-        Date out of expected year range %1$s - %2$s
-    </string>
-    <string name="date_input_label">Date</string>
-    <string name="date_input_no_input_description">None</string>
-    <string name="date_input_title">Select date</string>
-    <string name="date_picker_headline">"Selected date"</string>
-    <string name="date_picker_headline_description">Current selection: %1$s</string>
-    <string name="date_picker_navigate_to_year_description">Navigate to year %1$s</string>
-    <string name="date_picker_no_selection_description">None</string>
-    <string name="date_picker_scroll_to_earlier_years">Scroll to show earlier years</string>
-    <string name="date_picker_scroll_to_later_years">Scroll to show later years</string>
-    <string name="date_picker_switch_to_calendar_mode">Switch to calendar input mode</string>
-    <string name="date_picker_switch_to_day_selection">
-        "Swipe to select a year, or tap to switch back to selecting a day"
-    </string>
-    <string name="date_picker_switch_to_input_mode">Switch to text input mode</string>
-    <string name="date_picker_switch_to_next_month">"Change to next month"</string>
-    <string name="date_picker_switch_to_previous_month">"Change to previous month"</string>
-    <string name="date_picker_switch_to_year_selection">"Switch to selecting a year"</string>
-    <string name="date_picker_title">"Select date"</string>
-    <string name="date_picker_today_description">Today</string>
-    <string name="date_picker_year_picker_pane_title">Year picker visible</string>
-    <string name="date_range_input_invalid_range_input">Invalid date range input</string>
-    <string name="date_range_input_title">Enter dates</string>
-    <string name="date_range_picker_day_in_range">In range</string>
-    <string name="date_range_picker_end_headline">End date</string>
-    <string name="date_range_picker_scroll_to_next_month">Scroll to show the next month</string>
-    <string name="date_range_picker_scroll_to_previous_month">Scroll to show the previous month</string>
-    <string name="date_range_picker_start_headline">Start date</string>
-    <string name="date_range_picker_title">Select dates</string>
     <string name="default_error_message">"Invalid input"</string>
     <string name="default_popup_window_title" ns2:ignore="ExtraTranslation">"Pop-Up Window"</string>
-    <string name="dialog">"Dialog"</string>
     <string name="dropdown_menu">"Dropdown menu"</string>
     <string name="exo_controls_cc_disabled_description">Enable subtitles</string>
     <string name="exo_controls_cc_enabled_description">Disable subtitles</string>
@@ -444,42 +405,98 @@
     <string name="exo_track_surround_5_point_1">5.1 surround sound</string>
     <string name="exo_track_surround_7_point_1">7.1 surround sound</string>
     <string name="exo_track_unknown">Unknown</string>
-    <string name="expanded">Expanded</string>
     <string name="in_progress">In progress</string>
     <string name="indeterminate">Partially checked</string>
+    <string name="m3c_bottom_sheet_collapse_description">Collapse bottom sheet</string>
+    <string name="m3c_bottom_sheet_dismiss_description">Dismiss bottom sheet</string>
+    <string name="m3c_bottom_sheet_drag_handle_description">Drag handle</string>
+    <string name="m3c_bottom_sheet_expand_description">Expand bottom sheet</string>
     <string name="m3c_bottom_sheet_pane_title">Bottom Sheet</string>
+    <string name="m3c_date_input_headline">Entered date</string>
+    <string name="m3c_date_input_headline_description">Entered date: %1$s</string>
+    <string name="m3c_date_input_invalid_for_pattern">Date does not match expected pattern: %1$s</string>
+    <string name="m3c_date_input_invalid_not_allowed">Date not allowed: %1$s</string>
+    <string name="m3c_date_input_invalid_year_range">
+        Date out of expected year range %1$s - %2$s
+    </string>
+    <string name="m3c_date_input_label">Date</string>
+    <string name="m3c_date_input_no_input_description">None</string>
+    <string name="m3c_date_input_title">Select date</string>
+    <string name="m3c_date_picker_headline">"Selected date"</string>
+    <string name="m3c_date_picker_headline_description">Current selection: %1$s</string>
+    <string name="m3c_date_picker_navigate_to_year_description">Navigate to year %1$s</string>
+    <string name="m3c_date_picker_no_selection_description">None</string>
+    <string name="m3c_date_picker_scroll_to_earlier_years">Scroll to show earlier years</string>
+    <string name="m3c_date_picker_scroll_to_later_years">Scroll to show later years</string>
+    <string name="m3c_date_picker_switch_to_calendar_mode">Switch to calendar input mode</string>
+    <string name="m3c_date_picker_switch_to_day_selection">
+        "Swipe to select a year, or tap to switch back to selecting a day"
+    </string>
+    <string name="m3c_date_picker_switch_to_input_mode">Switch to text input mode</string>
+    <string name="m3c_date_picker_switch_to_next_month">"Change to next month"</string>
+    <string name="m3c_date_picker_switch_to_previous_month">"Change to previous month"</string>
+    <string name="m3c_date_picker_switch_to_year_selection">"Switch to selecting a year"</string>
+    <string name="m3c_date_picker_title">"Select date"</string>
+    <string name="m3c_date_picker_today_description">Today</string>
+    <string name="m3c_date_picker_year_picker_pane_title">Year picker visible</string>
+    <string name="m3c_date_range_input_invalid_range_input">Invalid date range input</string>
+    <string name="m3c_date_range_input_title">Enter dates</string>
+    <string name="m3c_date_range_picker_day_in_range">In range</string>
+    <string name="m3c_date_range_picker_end_headline">End date</string>
+    <string name="m3c_date_range_picker_scroll_to_next_month">Scroll to show the next month</string>
+    <string name="m3c_date_range_picker_scroll_to_previous_month">Scroll to show the previous month</string>
+    <string name="m3c_date_range_picker_start_headline">Start date</string>
+    <string name="m3c_date_range_picker_title">Select dates</string>
+    <string name="m3c_dialog">"Dialog"</string>
+    <string name="m3c_dropdown_menu_collapsed">Collapsed</string>
+    <string name="m3c_dropdown_menu_expanded">Expanded</string>
+    <string name="m3c_dropdown_menu_toggle">Toggle dropdown menu</string>
+    <string name="m3c_search_bar_search">Search</string>
+    <string name="m3c_snackbar_dismiss">Dismiss</string>
+    <string name="m3c_suggestions_available">Suggestions below</string>
+    <string name="m3c_time_picker_am">AM</string>
+    <string name="m3c_time_picker_hour">Hour</string>
+    <string name="m3c_time_picker_hour_24h_suffix">%1$d hours</string>
+    <string name="m3c_time_picker_hour_selection">Select hour</string>
+    <string name="m3c_time_picker_hour_suffix">%1$d o\'clock</string>
+    <string name="m3c_time_picker_hour_text_field">for hour</string>
+    <string name="m3c_time_picker_minute">Minute</string>
+    <string name="m3c_time_picker_minute_selection">Select minutes</string>
+    <string name="m3c_time_picker_minute_suffix">%1$d minutes</string>
+    <string name="m3c_time_picker_minute_text_field">for minutes</string>
+    <string name="m3c_time_picker_period_toggle_description">Select AM or PM</string>
+    <string name="m3c_time_picker_pm">PM</string>
+    <string name="m3c_tooltip_long_press_label">Show tooltip</string>
+    <string name="m3c_tooltip_pane_description">Tooltip</string>
     <string name="navigation_menu">"Navigation menu"</string>
     <string name="not_selected">Not selected</string>
-    <string name="off">Off</string>
-    <string name="on">On</string>
     <string name="range_end">"Range end"</string>
     <string name="range_start">"Range start"</string>
-    <string name="search_bar_search">Search</string>
     <string name="selected">Selected</string>
-    <string name="snackbar_dismiss">Dismiss</string>
+    <string name="state_empty">Empty</string>
+    <string name="state_off">Off</string>
+    <string name="state_on">On</string>
     <string name="status_bar_notification_info_overflow">999+</string>
-    <string name="suggestions_available">Suggestions below</string>
     <string name="switch_role">Switch</string>
     <string name="tab">Tab</string>
     <string name="template_percent"><ns1:g id="percentage">%1$d</ns1:g> percent.</string>
-    <string name="time_picker_am">AM</string>
-    <string name="time_picker_hour">Hour</string>
-    <string name="time_picker_hour_24h_suffix">%1$d hours</string>
-    <string name="time_picker_hour_selection">Select hour</string>
-    <string name="time_picker_hour_suffix">%1$d o\'clock</string>
-    <string name="time_picker_hour_text_field">for hour</string>
-    <string name="time_picker_minute">Minute</string>
-    <string name="time_picker_minute_selection">Select minutes</string>
-    <string name="time_picker_minute_suffix">%1$d minutes</string>
-    <string name="time_picker_minute_text_field">for minutes</string>
-    <string name="time_picker_period_toggle_description">Select AM or PM</string>
-    <string name="time_picker_pm">PM</string>
     <string name="tooltip_description">tooltip</string>
     <string name="tooltip_label">show tooltip</string>
-    <string name="tooltip_long_press_label">Show tooltip</string>
-    <string name="tooltip_pane_description">Tooltip</string>
     <style name="DialogWindowTheme">
         <item name="android:windowClipToOutline">false</item>
+    </style>
+    <style name="EdgeToEdgeFloatingDialogTheme" parent="android:Theme.DeviceDefault.Dialog">
+        <item name="android:windowLayoutInDisplayCutoutMode" ns2:targetApi="27">@integer/m3c_window_layout_in_display_cutout_mode</item>
+        <item name="android:windowClipToOutline">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowElevation">0dp</item>
+    </style>
+    <style name="EdgeToEdgeFloatingDialogWindowTheme">
+        <item name="android:dialogTheme">@style/EdgeToEdgeFloatingDialogTheme</item>
     </style>
     <style name="ExoMediaButton">
     <item name="android:background">?android:attr/selectableItemBackground</item>

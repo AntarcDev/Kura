@@ -22,38 +22,41 @@ import com.example.kemono.ui.creators.CreatorItem
 
 @Composable
 fun FavoritesScreen(
-    viewModel: FavoritesViewModel = hiltViewModel(),
-    onCreatorClick: (Creator) -> Unit
+        viewModel: FavoritesViewModel = hiltViewModel(),
+        onCreatorClick: (Creator) -> Unit
 ) {
     val favorites by viewModel.favorites.collectAsState()
 
-    Scaffold { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Scaffold(
+            topBar = {
+                @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+                androidx.compose.material3.TopAppBar(title = { Text("Favorites") })
+            }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (favorites.isEmpty()) {
                 Text(
-                    text = "No favorites yet",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center)
+                        text = "No favorites yet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.align(Alignment.Center)
                 )
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(favorites) { creator ->
-                        // We can reuse CreatorItem, but we need to handle the favorite toggle if we want it here too.
+                        // We can reuse CreatorItem, but we need to handle the favorite toggle if we
+                        // want it here too.
                         // For now, let's just show it as a list.
-                        // To reuse CreatorItem fully, we'd need to pass isFavorite=true and a dummy or actual toggle.
+                        // To reuse CreatorItem fully, we'd need to pass isFavorite=true and a dummy
+                        // or actual toggle.
                         // Since it's the favorites screen, isFavorite is always true.
                         CreatorItem(
-                            creator = creator,
-                            isFavorite = true,
-                            onClick = { onCreatorClick(creator) },
-                            onFavoriteClick = { /* Optional: Remove from favorites */ }
+                                creator = creator,
+                                isFavorite = true,
+                                onClick = { onCreatorClick(creator) },
+                                onFavoriteClick = { /* Optional: Remove from favorites */}
                         )
                     }
                 }

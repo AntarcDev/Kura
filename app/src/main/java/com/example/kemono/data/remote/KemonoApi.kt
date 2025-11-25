@@ -9,33 +9,38 @@ import retrofit2.http.Query
 
 interface KemonoApi {
 
-    @GET("creators")
-    suspend fun getCreators(): List<Creator>
+    @GET("creators") suspend fun getCreators(): List<Creator>
 
     @GET("posts")
     suspend fun getRecentPosts(
-        @Query("o") offset: Int = 0,
-        @Query("q") query: String? = null
+            @Query("o") offset: Int = 0,
+            @Query("q") query: String? = null
+    ): List<Post>
+
+    @GET("posts/popular")
+    suspend fun getPopularPosts(
+            @Query("o") offset: Int = 0,
+            @Query("q") query: String? = null
     ): List<Post>
 
     @GET("{service}/user/{creatorId}/profile")
     suspend fun getCreatorProfile(
-        @Path("service") service: String,
-        @Path("creatorId") creatorId: String
+            @Path("service") service: String,
+            @Path("creatorId") creatorId: String
     ): Creator
 
     @GET("{service}/user/{creatorId}/posts")
     suspend fun getCreatorPosts(
-        @Path("service") service: String,
-        @Path("creatorId") creatorId: String,
-        @Query("o") offset: Int = 0,
-        @Query("q") query: String? = null
+            @Path("service") service: String,
+            @Path("creatorId") creatorId: String,
+            @Query("o") offset: Int = 0,
+            @Query("q") query: String? = null
     ): List<Post>
 
     @GET("{service}/user/{creatorId}/post/{postId}")
     suspend fun getPost(
-        @Path("service") service: String,
-        @Path("creatorId") creatorId: String,
-        @Path("postId") postId: String
+            @Path("service") service: String,
+            @Path("creatorId") creatorId: String,
+            @Path("postId") postId: String
     ): PostResponse
 }

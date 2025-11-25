@@ -1,6 +1,7 @@
 package com.example.kemono.ui.posts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,7 +37,11 @@ import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Unit) {
+fun PostScreen(
+        viewModel: PostViewModel = hiltViewModel(),
+        onBackClick: () -> Unit,
+        onImageClick: (Int) -> Unit
+) {
     val post by viewModel.post.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -126,10 +131,13 @@ fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Un
 
                             Spacer(modifier = Modifier.height(16.dp))
 
+                            var imageIndex = 0
+
                             currentPost.file?.let { file ->
                                 if (!file.path.isNullOrEmpty()) {
                                     val url = "https://kemono.cr${file.path}"
                                     val mediaType = com.example.kemono.util.getMediaType(file.path)
+                                    val currentIndex = imageIndex++
 
                                     when (mediaType) {
                                         com.example.kemono.util.MediaType.VIDEO -> {
@@ -144,7 +152,11 @@ fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Un
                                                     model = url,
                                                     contentDescription = null,
                                                     modifier =
-                                                            Modifier.fillMaxWidth().height(300.dp),
+                                                            Modifier.fillMaxWidth()
+                                                                    .height(300.dp)
+                                                                    .clickable {
+                                                                        onImageClick(currentIndex)
+                                                                    },
                                                     contentScale = ContentScale.Fit
                                             )
                                         }
@@ -167,6 +179,7 @@ fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Un
                                                 com.example.kemono.util.getMediaType(
                                                         attachment.path
                                                 )
+                                        val currentIndex = imageIndex++
 
                                         when (mediaType) {
                                             com.example.kemono.util.MediaType.VIDEO -> {
@@ -185,7 +198,12 @@ fun PostScreen(viewModel: PostViewModel = hiltViewModel(), onBackClick: () -> Un
                                                         modifier =
                                                                 Modifier.fillMaxWidth()
                                                                         .height(300.dp)
-                                                                        .padding(vertical = 4.dp),
+                                                                        .padding(vertical = 4.dp)
+                                                                        .clickable {
+                                                                            onImageClick(
+                                                                                    currentIndex
+                                                                            )
+                                                                        },
                                                         contentScale = ContentScale.Fit
                                                 )
                                             }

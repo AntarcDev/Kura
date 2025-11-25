@@ -41,9 +41,9 @@ public final class AppDatabase_Impl extends AppDatabase {
         db.execSQL("CREATE TABLE IF NOT EXISTS `favorite_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` INTEGER NOT NULL, `indexed` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_posts` (`id` TEXT NOT NULL, `user` TEXT NOT NULL, `service` TEXT NOT NULL, `title` TEXT, `content` TEXT, `published` TEXT, `fileJson` TEXT, `attachmentsJson` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `downloaded_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `postId` TEXT NOT NULL, `creatorId` TEXT NOT NULL, `fileName` TEXT NOT NULL, `filePath` TEXT NOT NULL, `mediaType` TEXT NOT NULL, `downloadedAt` INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `downloaded_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `postId` TEXT NOT NULL, `creatorId` TEXT NOT NULL, `fileName` TEXT NOT NULL, `filePath` TEXT NOT NULL, `mediaType` TEXT NOT NULL, `downloadId` INTEGER NOT NULL, `downloadedAt` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e49436cbdafa941e325eadc2669740c3')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a0f9828666e36b42df1b860ad4b63c05')");
       }
 
       @Override
@@ -144,13 +144,14 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoCachedPosts + "\n"
                   + " Found:\n" + _existingCachedPosts);
         }
-        final HashMap<String, TableInfo.Column> _columnsDownloadedItems = new HashMap<String, TableInfo.Column>(7);
+        final HashMap<String, TableInfo.Column> _columnsDownloadedItems = new HashMap<String, TableInfo.Column>(8);
         _columnsDownloadedItems.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("postId", new TableInfo.Column("postId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("creatorId", new TableInfo.Column("creatorId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("fileName", new TableInfo.Column("fileName", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("filePath", new TableInfo.Column("filePath", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("mediaType", new TableInfo.Column("mediaType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("downloadId", new TableInfo.Column("downloadId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsDownloadedItems.put("downloadedAt", new TableInfo.Column("downloadedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysDownloadedItems = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesDownloadedItems = new HashSet<TableInfo.Index>(0);
@@ -163,7 +164,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "e49436cbdafa941e325eadc2669740c3", "00c482139b0e8020def79436f41f9768");
+    }, "a0f9828666e36b42df1b860ad4b63c05", "f62f2b28fcb31c0c9f5590cdab8a546d");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
