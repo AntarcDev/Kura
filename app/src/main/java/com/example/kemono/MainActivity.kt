@@ -6,10 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,60 +27,104 @@ class MainActivity : ComponentActivity() {
         setContent {
             KemonoTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "creators") {
                         composable("creators") {
                             CreatorScreen(
-                                onCreatorClick = { creator ->
-                                    navController.navigate("creator/${creator.service}/${creator.id}")
-                                },
-                                onFavoritesClick = {
-                                    navController.navigate("favorites")
-                                },
-                                onSettingsClick = {
-                                    navController.navigate("settings")
-                                }
+                                    onCreatorClick = { creator ->
+                                        navController.navigate(
+                                                "creator/${creator.service}/${creator.id}"
+                                        )
+                                    },
+                                    onFavoritesClick = { navController.navigate("favorites") },
+                                    onSettingsClick = { navController.navigate("settings") },
+                                    onGalleryClick = { navController.navigate("gallery") }
                             )
                         }
                         composable(
-                            route = "creator/{service}/{creatorId}",
-                            arguments = listOf(
-                                navArgument("service") { type = NavType.StringType },
-                                navArgument("creatorId") { type = NavType.StringType }
-                            )
+                                route = "creator/{service}/{creatorId}",
+                                arguments =
+                                        listOf(
+                                                navArgument("service") {
+                                                    type = NavType.StringType
+                                                },
+                                                navArgument("creatorId") {
+                                                    type = NavType.StringType
+                                                }
+                                        )
                         ) {
                             CreatorPostListScreen(
-                                onBackClick = { navController.popBackStack() },
-                                onPostClick = { post ->
-                                    navController.navigate("post/${post.service}/${post.user}/${post.id}")
-                                }
+                                    onBackClick = { navController.popBackStack() },
+                                    onPostClick = { post ->
+                                        navController.navigate(
+                                                "post/${post.service}/${post.user}/${post.id}"
+                                        )
+                                    }
                             )
                         }
                         composable("settings") {
-                            SettingsScreen(
-                                onBackClick = { navController.popBackStack() }
-                            )
+                            SettingsScreen(onBackClick = { navController.popBackStack() })
                         }
                         composable("favorites") {
                             FavoritesScreen(
-                                onCreatorClick = { creator ->
-                                    // Handle click, maybe navigate to posts
-                                }
+                                    onCreatorClick = { creator ->
+                                        navController.navigate(
+                                                "creator/${creator.service}/${creator.id}"
+                                        )
+                                    }
                             )
                         }
                         composable(
-                            route = "post/{service}/{creatorId}/{postId}",
-                            arguments = listOf(
-                                navArgument("service") { type = NavType.StringType },
-                                navArgument("creatorId") { type = NavType.StringType },
-                                navArgument("postId") { type = NavType.StringType }
-                            )
-                        ) {
-                            PostScreen(
-                                onBackClick = { navController.popBackStack() }
+                                route = "post/{service}/{creatorId}/{postId}",
+                                arguments =
+                                        listOf(
+                                                navArgument("service") {
+                                                    type = NavType.StringType
+                                                },
+                                                navArgument("creatorId") {
+                                                    type = NavType.StringType
+                                                },
+                                                navArgument("postId") { type = NavType.StringType }
+                                        )
+                        ) { PostScreen(onBackClick = { navController.popBackStack() }) }
+                        composable("gallery") {
+                            com.example.kemono.ui.gallery.GalleryScreen(
+                                    onBackClick = { navController.popBackStack() },
+                                    onItemClick = { item ->
+                                        if (item.mediaType == "VIDEO") {
+                                            com.example.kemono.ui.components.FullscreenVideoActivity
+                                                    .launch(this@MainActivity, item.filePath)
+                                        } else {
+                                            val intent =
+                                                    android.content.Intent(
+                                                                    android.content.Intent
+                                                                            .ACTION_VIEW
+                                                            )
+                                                            .apply {
+                                                                setDataAndType(
+                                                                        androidx.core.content
+                                                                                .FileProvider
+                                                                                .getUriForFile(
+                                                                                        this@MainActivity,
+                                                                                        "${applicationContext.packageName}.provider",
+                                                                                        java.io
+                                                                                                .File(
+                                                                                                        item.filePath
+                                                                                                )
+                                                                                ),
+                                                                        "image/*"
+                                                                )
+                                                                addFlags(
+                                                                        android.content.Intent
+                                                                                .FLAG_GRANT_READ_URI_PERMISSION
+                                                                )
+                                                            }
+                                            startActivity(intent)
+                                        }
+                                    }
                             )
                         }
                     }
@@ -92,4 +133,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

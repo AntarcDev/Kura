@@ -30,17 +30,20 @@ public final class AppDatabase_Impl extends AppDatabase {
 
   private volatile CacheDao _cacheDao;
 
+  private volatile DownloadDao _downloadDao;
+
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `favorite_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_creators` (`id` TEXT NOT NULL, `service` TEXT NOT NULL, `name` TEXT NOT NULL, `updated` INTEGER NOT NULL, `indexed` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cached_posts` (`id` TEXT NOT NULL, `user` TEXT NOT NULL, `service` TEXT NOT NULL, `title` TEXT, `content` TEXT, `published` TEXT, `fileJson` TEXT, `attachmentsJson` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `downloaded_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `postId` TEXT NOT NULL, `creatorId` TEXT NOT NULL, `fileName` TEXT NOT NULL, `filePath` TEXT NOT NULL, `mediaType` TEXT NOT NULL, `downloadedAt` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d78064a7f24a293a91a0e7b5347be21')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e49436cbdafa941e325eadc2669740c3')");
       }
 
       @Override
@@ -48,6 +51,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         db.execSQL("DROP TABLE IF EXISTS `favorite_creators`");
         db.execSQL("DROP TABLE IF EXISTS `cached_creators`");
         db.execSQL("DROP TABLE IF EXISTS `cached_posts`");
+        db.execSQL("DROP TABLE IF EXISTS `downloaded_items`");
         final List<? extends RoomDatabase.Callback> _callbacks = mCallbacks;
         if (_callbacks != null) {
           for (RoomDatabase.Callback _callback : _callbacks) {
@@ -140,9 +144,26 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoCachedPosts + "\n"
                   + " Found:\n" + _existingCachedPosts);
         }
+        final HashMap<String, TableInfo.Column> _columnsDownloadedItems = new HashMap<String, TableInfo.Column>(7);
+        _columnsDownloadedItems.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("postId", new TableInfo.Column("postId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("creatorId", new TableInfo.Column("creatorId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("fileName", new TableInfo.Column("fileName", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("filePath", new TableInfo.Column("filePath", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("mediaType", new TableInfo.Column("mediaType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsDownloadedItems.put("downloadedAt", new TableInfo.Column("downloadedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysDownloadedItems = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesDownloadedItems = new HashSet<TableInfo.Index>(0);
+        final TableInfo _infoDownloadedItems = new TableInfo("downloaded_items", _columnsDownloadedItems, _foreignKeysDownloadedItems, _indicesDownloadedItems);
+        final TableInfo _existingDownloadedItems = TableInfo.read(db, "downloaded_items");
+        if (!_infoDownloadedItems.equals(_existingDownloadedItems)) {
+          return new RoomOpenHelper.ValidationResult(false, "downloaded_items(com.example.kemono.data.model.DownloadedItem).\n"
+                  + " Expected:\n" + _infoDownloadedItems + "\n"
+                  + " Found:\n" + _existingDownloadedItems);
+        }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "1d78064a7f24a293a91a0e7b5347be21", "677ce1575bea3ccd40d4fd565d189ba1");
+    }, "e49436cbdafa941e325eadc2669740c3", "00c482139b0e8020def79436f41f9768");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
@@ -153,7 +174,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected InvalidationTracker createInvalidationTracker() {
     final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
     final HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
-    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "favorite_creators","cached_creators","cached_posts");
+    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "favorite_creators","cached_creators","cached_posts","downloaded_items");
   }
 
   @Override
@@ -165,6 +186,7 @@ public final class AppDatabase_Impl extends AppDatabase {
       _db.execSQL("DELETE FROM `favorite_creators`");
       _db.execSQL("DELETE FROM `cached_creators`");
       _db.execSQL("DELETE FROM `cached_posts`");
+      _db.execSQL("DELETE FROM `downloaded_items`");
       super.setTransactionSuccessful();
     } finally {
       super.endTransaction();
@@ -181,6 +203,7 @@ public final class AppDatabase_Impl extends AppDatabase {
     final HashMap<Class<?>, List<Class<?>>> _typeConvertersMap = new HashMap<Class<?>, List<Class<?>>>();
     _typeConvertersMap.put(FavoriteDao.class, FavoriteDao_Impl.getRequiredConverters());
     _typeConvertersMap.put(CacheDao.class, CacheDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(DownloadDao.class, DownloadDao_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -223,6 +246,20 @@ public final class AppDatabase_Impl extends AppDatabase {
           _cacheDao = new CacheDao_Impl(this);
         }
         return _cacheDao;
+      }
+    }
+  }
+
+  @Override
+  public DownloadDao downloadDao() {
+    if (_downloadDao != null) {
+      return _downloadDao;
+    } else {
+      synchronized(this) {
+        if(_downloadDao == null) {
+          _downloadDao = new DownloadDao_Impl(this);
+        }
+        return _downloadDao;
       }
     }
   }

@@ -10,12 +10,15 @@ import androidx.lifecycle.ViewModel;
 import coil.ImageLoader;
 import com.example.kemono.data.local.AppDatabase;
 import com.example.kemono.data.local.CacheDao;
+import com.example.kemono.data.local.DownloadDao;
 import com.example.kemono.data.local.FavoriteDao;
 import com.example.kemono.data.local.SessionManager;
 import com.example.kemono.data.remote.KemonoApi;
+import com.example.kemono.data.repository.DownloadRepository;
 import com.example.kemono.data.repository.KemonoRepository;
 import com.example.kemono.di.DatabaseModule_ProvideAppDatabaseFactory;
 import com.example.kemono.di.DatabaseModule_ProvideCacheDaoFactory;
+import com.example.kemono.di.DatabaseModule_ProvideDownloadDaoFactory;
 import com.example.kemono.di.DatabaseModule_ProvideFavoriteDaoFactory;
 import com.example.kemono.di.NetworkModule_ProvideCookieJarFactory;
 import com.example.kemono.di.NetworkModule_ProvideImageLoaderFactory;
@@ -26,6 +29,8 @@ import com.example.kemono.ui.creators.CreatorViewModel;
 import com.example.kemono.ui.creators.CreatorViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.favorites.FavoritesViewModel;
 import com.example.kemono.ui.favorites.FavoritesViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.kemono.ui.gallery.GalleryViewModel;
+import com.example.kemono.ui.gallery.GalleryViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.posts.CreatorPostListViewModel;
 import com.example.kemono.ui.posts.CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.posts.PostViewModel;
@@ -49,7 +54,6 @@ import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_Internal
 import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
 import dagger.hilt.android.internal.managers.SavedStateHandleHolder;
 import dagger.hilt.android.internal.modules.ApplicationContextModule;
-import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideApplicationFactory;
 import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
@@ -388,7 +392,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return ImmutableSet.<String>of(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide(), CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide(), FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide(), PostViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide());
+      return ImmutableSet.<String>of(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide(), CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide(), FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide(), GalleryViewModel_HiltModules_KeyModule_ProvideFactory.provide(), PostViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -422,6 +426,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<FavoritesViewModel> favoritesViewModelProvider;
 
+    private Provider<GalleryViewModel> galleryViewModelProvider;
+
     private Provider<PostViewModel> postViewModelProvider;
 
     private Provider<SettingsViewModel> settingsViewModelProvider;
@@ -442,13 +448,14 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.creatorPostListViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
       this.creatorViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
       this.favoritesViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
-      this.postViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
-      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.galleryViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.postViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
     }
 
     @Override
     public Map<String, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return ImmutableMap.<String, javax.inject.Provider<ViewModel>>of("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider), "com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider), "com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider), "com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider), "com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider));
+      return ImmutableMap.<String, javax.inject.Provider<ViewModel>>builderWithExpectedSize(6).put("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider)).put("com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider)).put("com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider)).put("com.example.kemono.ui.gallery.GalleryViewModel", ((Provider) galleryViewModelProvider)).put("com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider)).put("com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider)).build();
     }
 
     @Override
@@ -486,10 +493,13 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           case 2: // com.example.kemono.ui.favorites.FavoritesViewModel 
           return (T) new FavoritesViewModel(singletonCImpl.kemonoRepositoryProvider.get());
 
-          case 3: // com.example.kemono.ui.posts.PostViewModel 
-          return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), viewModelCImpl.savedStateHandle, ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule), singletonCImpl.networkMonitorProvider.get());
+          case 3: // com.example.kemono.ui.gallery.GalleryViewModel 
+          return (T) new GalleryViewModel(singletonCImpl.downloadRepositoryProvider.get());
 
-          case 4: // com.example.kemono.ui.settings.SettingsViewModel 
+          case 4: // com.example.kemono.ui.posts.PostViewModel 
+          return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.downloadRepositoryProvider.get(), viewModelCImpl.savedStateHandle, singletonCImpl.networkMonitorProvider.get());
+
+          case 5: // com.example.kemono.ui.settings.SettingsViewModel 
           return (T) new SettingsViewModel(singletonCImpl.sessionManagerProvider.get(), singletonCImpl.provideOkHttpClientProvider.get());
 
           default: throw new AssertionError(id);
@@ -590,6 +600,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<NetworkMonitor> networkMonitorProvider;
 
+    private Provider<DownloadRepository> downloadRepositoryProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
@@ -604,6 +616,10 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       return DatabaseModule_ProvideCacheDaoFactory.provideCacheDao(provideAppDatabaseProvider.get());
     }
 
+    private DownloadDao downloadDao() {
+      return DatabaseModule_ProvideDownloadDaoFactory.provideDownloadDao(provideAppDatabaseProvider.get());
+    }
+
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
       this.provideImageLoaderProvider = DoubleCheck.provider(new SwitchingProvider<ImageLoader>(singletonCImpl, 0));
@@ -615,6 +631,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 7));
       this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 1));
       this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 8));
+      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 9));
     }
 
     @Override
@@ -682,6 +699,9 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
           case 8: // com.example.kemono.util.NetworkMonitor 
           return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 9: // com.example.kemono.data.repository.DownloadRepository 
+          return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
 
           default: throw new AssertionError(id);
         }

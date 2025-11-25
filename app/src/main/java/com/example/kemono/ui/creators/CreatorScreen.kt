@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -51,7 +52,8 @@ fun CreatorScreen(
         viewModel: CreatorViewModel = hiltViewModel(),
         onCreatorClick: (Creator) -> Unit,
         onFavoritesClick: () -> Unit,
-        onSettingsClick: () -> Unit
+        onSettingsClick: () -> Unit,
+        onGalleryClick: () -> Unit
 ) {
     val creators by viewModel.creators.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -66,6 +68,9 @@ fun CreatorScreen(
                         actions = {
                             IconButton(onClick = { viewModel.fetchCreators() }) {
                                 Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                            }
+                            IconButton(onClick = onGalleryClick) {
+                                Icon(Icons.Default.Image, contentDescription = "Gallery")
                             }
                             IconButton(onClick = onFavoritesClick) {
                                 Icon(Icons.Default.Favorite, contentDescription = "Favorites")

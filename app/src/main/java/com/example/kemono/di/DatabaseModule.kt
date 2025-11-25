@@ -33,4 +33,9 @@ object DatabaseModule {
     fun provideCacheDao(database: AppDatabase): CacheDao {
         return database.cacheDao()
     }
+
+    @Provides
+    fun provideDownloadDao(database: AppDatabase): com.example.kemono.data.local.DownloadDao {
+        return database.downloadDao()
+    }
 }
