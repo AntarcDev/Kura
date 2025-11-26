@@ -1,6 +1,7 @@
 package com.example.kemono.ui.creators;
 
 import com.example.kemono.data.repository.KemonoRepository;
+import com.example.kemono.data.repository.SettingsRepository;
 import com.example.kemono.util.NetworkMonitor;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
@@ -27,24 +28,29 @@ public final class CreatorViewModel_Factory implements Factory<CreatorViewModel>
 
   private final Provider<NetworkMonitor> networkMonitorProvider;
 
+  private final Provider<SettingsRepository> settingsRepositoryProvider;
+
   public CreatorViewModel_Factory(Provider<KemonoRepository> repositoryProvider,
-      Provider<NetworkMonitor> networkMonitorProvider) {
+      Provider<NetworkMonitor> networkMonitorProvider,
+      Provider<SettingsRepository> settingsRepositoryProvider) {
     this.repositoryProvider = repositoryProvider;
     this.networkMonitorProvider = networkMonitorProvider;
+    this.settingsRepositoryProvider = settingsRepositoryProvider;
   }
 
   @Override
   public CreatorViewModel get() {
-    return newInstance(repositoryProvider.get(), networkMonitorProvider.get());
+    return newInstance(repositoryProvider.get(), networkMonitorProvider.get(), settingsRepositoryProvider.get());
   }
 
   public static CreatorViewModel_Factory create(Provider<KemonoRepository> repositoryProvider,
-      Provider<NetworkMonitor> networkMonitorProvider) {
-    return new CreatorViewModel_Factory(repositoryProvider, networkMonitorProvider);
+      Provider<NetworkMonitor> networkMonitorProvider,
+      Provider<SettingsRepository> settingsRepositoryProvider) {
+    return new CreatorViewModel_Factory(repositoryProvider, networkMonitorProvider, settingsRepositoryProvider);
   }
 
   public static CreatorViewModel newInstance(KemonoRepository repository,
-      NetworkMonitor networkMonitor) {
-    return new CreatorViewModel(repository, networkMonitor);
+      NetworkMonitor networkMonitor, SettingsRepository settingsRepository) {
+    return new CreatorViewModel(repository, networkMonitor, settingsRepository);
   }
 }

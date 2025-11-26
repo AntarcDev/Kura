@@ -339,7 +339,7 @@
     <item quantity="other">Rewind <ns1:g example="30" id="rewind_amount">%d</ns1:g> seconds</item>
   </plurals>
     <string name="androidx_startup" translatable="false">androidx.startup</string>
-    <string name="app_name">Kemono</string>
+    <string name="app_name">Kura</string>
     <string name="call_notification_answer_action">Answer</string>
     <string name="call_notification_answer_video_action">Video</string>
     <string name="call_notification_decline_action">Decline</string>

@@ -43,7 +43,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
-        onNavigateToCreator: (com.example.kemono.data.model.Creator) -> Unit,
+        onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit,
         onNavigateToGalleryItem: (Int) -> Unit
 ) {
     val items =
@@ -103,7 +103,7 @@ fun MainScreen(
     ) { paddingValues ->
         HorizontalPager(state = pagerState, modifier = Modifier.padding(paddingValues)) { page ->
             when (items[page]) {
-                BottomNavItem.Creators -> CreatorScreen(onCreatorClick = onNavigateToCreator)
+                BottomNavItem.Creators -> CreatorScreen(onCreatorClick = onCreatorClick)
                 BottomNavItem.Downloads ->
                         DownloadManagerScreen(
                                 onOpenClick = {
@@ -114,7 +114,7 @@ fun MainScreen(
                         )
                 BottomNavItem.Gallery ->
                         GalleryScreen(onItemClick = { _, index -> onNavigateToGalleryItem(index) })
-                BottomNavItem.Favorites -> FavoritesScreen(onCreatorClick = onNavigateToCreator)
+                BottomNavItem.Favorites -> FavoritesScreen(onCreatorClick = onCreatorClick)
                 BottomNavItem.Settings -> SettingsScreen()
             }
         }

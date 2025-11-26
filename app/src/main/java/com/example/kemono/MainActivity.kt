@@ -6,23 +6,40 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.kemono.data.repository.SettingsRepository
+import com.example.kemono.ui.main.MainScreen
 import com.example.kemono.ui.posts.CreatorPostListScreen
 import com.example.kemono.ui.posts.PostScreen
 import com.example.kemono.ui.theme.KemonoTheme
+import com.example.kemono.ui.viewer.ImageViewerScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var settingsRepository: SettingsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            KemonoTheme {
+            val themeMode by settingsRepository.themeMode.collectAsState(initial = "System")
+            val darkTheme =
+                    when (themeMode) {
+                        "Light" -> false
+                        "Dark" -> true
+                        else -> androidx.compose.foundation.isSystemInDarkTheme()
+                    }
+
+            KemonoTheme(darkTheme = darkTheme) {
                 Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
@@ -30,8 +47,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "main") {
                         composable("main") {
-                            com.example.kemono.ui.main.MainScreen(
-                                    onNavigateToCreator = { creator ->
+                            MainScreen(
+                                    onCreatorClick = { creator ->
                                         navController.navigate(
                                                 "creator/${creator.service}/${creator.id}"
                                         )
@@ -97,9 +114,7 @@ class MainActivity : ComponentActivity() {
                                                 }
                                         )
                         ) {
-                            com.example.kemono.ui.viewer.ImageViewerScreen(
-                                    onBackClick = { navController.popBackStack() }
-                            )
+                            ImageViewerScreen(onBackClick = { navController.popBackStack() })
                         }
                     }
                 }

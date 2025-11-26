@@ -92,8 +92,10 @@ MERGED from [androidx.compose.ui:ui-test-manifest:1.7.0] C:\Users\antarc\.gradle
 MERGED from [androidx.activity:activity:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\4966e382c7e68c875a1412ad6e6c8df2\transformed\activity-1.8.2\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.activity:activity-ktx:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\8f72cc6756b01b277a45dbe59269a101\transformed\activity-ktx-1.8.2\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity-compose:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\f62d03a66ea912bfed3b61939f3d2b5e\transformed\activity-compose-1.8.2\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\4d85188bd130c3fe2fd22657d52bfa98\transformed\datastore-preferences-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.room:room-runtime:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\dcfabced6cb0c8e97f1bd2d9df44df27\transformed\room-runtime-2.6.1\AndroidManifest.xml:17:1-31:12
 MERGED from [androidx.room:room-ktx:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\6bd32513eb56ac176828c2f8efdcbbe7\transformed\room-ktx-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.datastore:datastore:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\7a5304f79f11fe01b12f43c1af0e0dec\transformed\datastore-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.sqlite:sqlite-framework:2.4.0] C:\Users\antarc\.gradle\caches\8.13\transforms\3955d11ae7afa4d5afb97d3fcc8e01c3\transformed\sqlite-framework-2.4.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.sqlite:sqlite:2.4.0] C:\Users\antarc\.gradle\caches\8.13\transforms\44b9a28261715dacdccfbe210ae66adf\transformed\sqlite-2.4.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.runtime:runtime-android:1.7.0] C:\Users\antarc\.gradle\caches\8.13\transforms\05cdde7dbf65751706de8e269add9e85\transformed\runtime-release\AndroidManifest.xml:2:1-7:12
@@ -374,10 +376,14 @@ MERGED from [androidx.activity:activity-ktx:1.8.2] C:\Users\antarc\.gradle\cache
 MERGED from [androidx.activity:activity-ktx:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\8f72cc6756b01b277a45dbe59269a101\transformed\activity-ktx-1.8.2\AndroidManifest.xml:5:5-44
 MERGED from [androidx.activity:activity-compose:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\f62d03a66ea912bfed3b61939f3d2b5e\transformed\activity-compose-1.8.2\AndroidManifest.xml:5:5-44
 MERGED from [androidx.activity:activity-compose:1.8.2] C:\Users\antarc\.gradle\caches\8.13\transforms\f62d03a66ea912bfed3b61939f3d2b5e\transformed\activity-compose-1.8.2\AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\4d85188bd130c3fe2fd22657d52bfa98\transformed\datastore-preferences-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\4d85188bd130c3fe2fd22657d52bfa98\transformed\datastore-preferences-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.room:room-runtime:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\dcfabced6cb0c8e97f1bd2d9df44df27\transformed\room-runtime-2.6.1\AndroidManifest.xml:21:5-44
 MERGED from [androidx.room:room-runtime:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\dcfabced6cb0c8e97f1bd2d9df44df27\transformed\room-runtime-2.6.1\AndroidManifest.xml:21:5-44
 MERGED from [androidx.room:room-ktx:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\6bd32513eb56ac176828c2f8efdcbbe7\transformed\room-ktx-2.6.1\AndroidManifest.xml:20:5-44
 MERGED from [androidx.room:room-ktx:2.6.1] C:\Users\antarc\.gradle\caches\8.13\transforms\6bd32513eb56ac176828c2f8efdcbbe7\transformed\room-ktx-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\7a5304f79f11fe01b12f43c1af0e0dec\transformed\datastore-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore:1.0.0] C:\Users\antarc\.gradle\caches\8.13\transforms\7a5304f79f11fe01b12f43c1af0e0dec\transformed\datastore-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.sqlite:sqlite-framework:2.4.0] C:\Users\antarc\.gradle\caches\8.13\transforms\3955d11ae7afa4d5afb97d3fcc8e01c3\transformed\sqlite-framework-2.4.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.sqlite:sqlite-framework:2.4.0] C:\Users\antarc\.gradle\caches\8.13\transforms\3955d11ae7afa4d5afb97d3fcc8e01c3\transformed\sqlite-framework-2.4.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.sqlite:sqlite:2.4.0] C:\Users\antarc\.gradle\caches\8.13\transforms\44b9a28261715dacdccfbe210ae66adf\transformed\sqlite-2.4.0\AndroidManifest.xml:20:5-44

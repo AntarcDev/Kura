@@ -38,8 +38,8 @@ constructor(
 
     suspend fun getPopularCreators(): List<Creator> {
         // Fetch popular posts to find popular creators
-        val popularPosts = api.getPopularPosts()
-        val popularCreatorIds = popularPosts.map { it.user }.distinct()
+        val response = api.getPopularPosts()
+        val popularCreatorIds = response.posts.map { it.user }.distinct()
 
         // We need full creator details. We can filter the cached creators or fetch them.
         // For efficiency, let's try to get them from our full list if available,

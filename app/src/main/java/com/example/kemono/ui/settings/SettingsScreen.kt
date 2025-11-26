@@ -7,6 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
@@ -16,17 +19,97 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val isInitializing by viewModel.isInitializing.collectAsState()
     var cookieInput by remember { mutableStateOf(sessionCookie) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Settings") }) }) { paddingValues ->
+    Scaffold(topBar = { TopAppBar(title = { Text("Kura Settings") }) }) { paddingValues ->
         Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // App Settings
+            Text(text = "App Settings", style = MaterialTheme.typography.titleLarge)
+
+            // Theme Setting
+            var expandedTheme by remember { mutableStateOf(false) }
+            val themeMode by viewModel.themeMode.collectAsState()
+            ExposedDropdownMenuBox(
+                expanded = expandedTheme,
+                onExpandedChange = { expandedTheme = !expandedTheme }
+            ) {
+                OutlinedTextField(
+                    value = themeMode,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("Theme") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedTheme,
+                    onDismissRequest = { expandedTheme = false }
+                ) {
+                    listOf("System", "Light", "Dark").forEach { mode ->
+                        DropdownMenuItem(
+                            text = { Text(mode) },
+                            onClick = {
+                                viewModel.setThemeMode(mode)
+                                expandedTheme = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Grid Size Setting
+            var expandedGrid by remember { mutableStateOf(false) }
+            val gridSize by viewModel.gridSize.collectAsState()
+            ExposedDropdownMenuBox(
+                expanded = expandedGrid,
+                onExpandedChange = { expandedGrid = !expandedGrid }
+            ) {
+                OutlinedTextField(
+                    value = gridSize,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("Grid Size") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrid) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedGrid,
+                    onDismissRequest = { expandedGrid = false }
+                ) {
+                    listOf("Compact", "Comfortable").forEach { size ->
+                        DropdownMenuItem(
+                            text = { Text(size) },
+                            onClick = {
+                                viewModel.setGridSize(size)
+                                expandedGrid = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Clear Cache
+            Button(
+                onClick = { viewModel.clearCache() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Clear Cache")
+            }
+
+            HorizontalDivider()
+
             // DDoS-Guard Section
             Text(text = "DDoS-Guard Protection", style = MaterialTheme.typography.titleLarge)
-
+            
+            // ... (rest of DDoS section remains similar, just condensed for brevity in this replacement block if needed, but I'll keep the structure)
             Text(
-                    text =
-                            "kemono.cr uses DDoS-Guard protection. Initialize cookies before using the app.",
+                    text = "kemono.cr uses DDoS-Guard protection. Initialize cookies before using the app.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -49,76 +132,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
             if (initStatus.isNotEmpty()) {
                 Card(
-                        colors =
-                                CardDefaults.cardColors(
-                                        containerColor =
-                                                when {
-                                                    initStatus.startsWith("✓") ->
-                                                            MaterialTheme.colorScheme
-                                                                    .primaryContainer
-                                                    initStatus.startsWith("⚠") ->
-                                                            MaterialTheme.colorScheme
-                                                                    .tertiaryContainer
-                                                    else -> MaterialTheme.colorScheme.errorContainer
-                                                }
-                                )
+                        colors = CardDefaults.cardColors(
+                                containerColor = when {
+                                    initStatus.startsWith("✓") -> MaterialTheme.colorScheme.primaryContainer
+                                    initStatus.startsWith("⚠") -> MaterialTheme.colorScheme.tertiaryContainer
+                                    else -> MaterialTheme.colorScheme.errorContainer
+                                }
+                        )
                 ) { Text(text = initStatus, modifier = Modifier.padding(16.dp)) }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
 
+            // Session Cookie Section
             Text(text = "Session Cookie (Optional)", style = MaterialTheme.typography.titleLarge)
-
-            Text(
-                    text =
-                            "To access the API, you need to provide your session cookie from kemono.cr",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Card {
-                Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                            text = "How to get your session cookie:",
-                            style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                            "1. Open kemono.cr in your browser",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text("2. Log in to your account", style = MaterialTheme.typography.bodySmall)
-                    Text(
-                            "3. Open Developer Tools (F12)",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                            "4. Go to Network tab and refresh the page",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                            "5. Click any request to kemono.cr",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                            "6. In Headers, find 'Cookie:' under Request Headers",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                            "7. Copy the entire cookie value",
-                            style = MaterialTheme.typography.bodySmall
-                    )
-                    Text("", style = MaterialTheme.typography.bodySmall)
-                    Text(
-                            "Format: session=xxx; __ddg1_=xxx",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
+            
             OutlinedTextField(
                     value = cookieInput,
                     onValueChange = { cookieInput = it },
@@ -147,21 +175,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     ) { Text("Clear Session") }
                 }
             }
-
-            if (hasSession) {
-                Card(
-                        colors =
-                                CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
-                ) {
-                    Text(
-                            text = "✓ Session cookie is set",
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // About Section
+            AboutSection()
         }
     }
 }

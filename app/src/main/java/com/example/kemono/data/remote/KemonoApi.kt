@@ -1,6 +1,7 @@
 package com.example.kemono.data.remote
 
 import com.example.kemono.data.model.Creator
+import com.example.kemono.data.model.PopularPostsResponse
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.model.PostResponse
 import retrofit2.http.GET
@@ -21,7 +22,7 @@ interface KemonoApi {
     suspend fun getPopularPosts(
             @Query("o") offset: Int = 0,
             @Query("q") query: String? = null
-    ): List<Post>
+    ): PopularPostsResponse
 
     @GET("{service}/user/{creatorId}/profile")
     suspend fun getCreatorProfile(

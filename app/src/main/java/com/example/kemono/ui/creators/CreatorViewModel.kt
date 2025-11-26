@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.FavoriteCreator
 import com.example.kemono.data.repository.KemonoRepository
+import com.example.kemono.data.repository.SettingsRepository
 import com.example.kemono.util.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -20,8 +21,11 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class CreatorViewModel
 @Inject
-constructor(private val repository: KemonoRepository, networkMonitor: NetworkMonitor) :
-        ViewModel() {
+constructor(
+        private val repository: KemonoRepository,
+        networkMonitor: NetworkMonitor,
+        private val settingsRepository: SettingsRepository
+) : ViewModel() {
 
     val isOnline =
             networkMonitor.isOnline.stateIn(
@@ -34,6 +38,13 @@ constructor(private val repository: KemonoRepository, networkMonitor: NetworkMon
             repository
                     .getAllFavorites()
                     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val gridSize =
+            settingsRepository.gridSize.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    "Comfortable"
+            )
 
     private val _allCreators = MutableStateFlow<List<Creator>>(emptyList())
     private val _popularCreators = MutableStateFlow<List<Creator>>(emptyList())

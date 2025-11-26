@@ -1,82 +1,82 @@
 [
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xhdpi_ic_launcher_foreground.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xhdpi/ic_launcher_foreground.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxxhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxhdpi_ic_launcher_foreground.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxhdpi/ic_launcher_foreground.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-hdpi_ic_launcher_foreground.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-hdpi/ic_launcher_foreground.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/xml_data_extraction_rules.xml.flat",
-        "source": "com.example.kemono.app-main-73:/xml/data_extraction_rules.xml"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-mdpi/ic_launcher.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxxhdpi/ic_launcher_foreground.png"
+        "merged": "com.example.kemono.app-debug-73:/xml_provider_paths.xml.flat",
+        "source": "com.example.kemono.app-main-75:/xml/provider_paths.xml"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-mdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-mdpi/ic_launcher.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "com.example.kemono.app-debug-73:/xml_data_extraction_rules.xml.flat",
+        "source": "com.example.kemono.app-main-75:/xml/data_extraction_rules.xml"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xhdpi/ic_launcher.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-hdpi/ic_launcher.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-hdpi/ic_launcher_round.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-hdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-mdpi_ic_launcher_foreground.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-mdpi/ic_launcher_foreground.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-xhdpi/ic_launcher_foreground.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/xml_provider_paths.xml.flat",
-        "source": "com.example.kemono.app-main-73:/xml/provider_paths.xml"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-mdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/xml_backup_rules.xml.flat",
-        "source": "com.example.kemono.app-main-73:/xml/backup_rules.xml"
+        "merged": "com.example.kemono.app-debug-73:/xml_backup_rules.xml.flat",
+        "source": "com.example.kemono.app-main-75:/xml/backup_rules.xml"
     },
     {
-        "merged": "com.example.kemono.app-debug-71:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "com.example.kemono.app-main-73:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "com.example.kemono.app-debug-73:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.example.kemono.app-main-75:/mipmap-anydpi-v26/ic_launcher.xml"
     }
 ]

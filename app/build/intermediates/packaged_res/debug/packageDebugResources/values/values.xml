@@ -3,6 +3,6 @@
     <color name="black">#FF000000</color>
     <color name="ic_launcher_background">#FFE8B4</color>
     <color name="white">#FFFFFFFF</color>
-    <string name="app_name">Kemono</string>
+    <string name="app_name">Kura</string>
     <style name="Theme.Kemono" parent="android:Theme.Material.Light.NoActionBar"/>
 </resources>

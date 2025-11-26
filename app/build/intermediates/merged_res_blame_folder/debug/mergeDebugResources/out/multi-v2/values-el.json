@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.kemono.app-mergeDebugResources-69:/values-el/values-el.xml",
+            "outputFile": "com.example.kemono.app-mergeDebugResources-71:/values-el/values-el.xml",
             "map": [
                 {
                     "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\2c0e9483d5bc39975050075ddebe66de\\transformed\\foundation-release\\res\\values-el\\values-el.xml",

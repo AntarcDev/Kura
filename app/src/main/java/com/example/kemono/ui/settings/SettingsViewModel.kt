@@ -1,23 +1,35 @@
 package com.example.kemono.ui.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.imageLoader
 import com.example.kemono.data.local.SessionManager
+import com.example.kemono.data.repository.KemonoRepository
+import com.example.kemono.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val sessionManager: SessionManager,
-    private val okHttpClient: OkHttpClient
+class SettingsViewModel
+@Inject
+constructor(
+        private val sessionManager: SessionManager,
+        private val okHttpClient: OkHttpClient,
+        private val repository: KemonoRepository,
+        private val settingsRepository: SettingsRepository,
+        @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _sessionCookie = MutableStateFlow(sessionManager.getSessionCookie() ?: "")
@@ -31,6 +43,45 @@ class SettingsViewModel @Inject constructor(
 
     private val _isInitializing = MutableStateFlow(false)
     val isInitializing: StateFlow<Boolean> = _isInitializing.asStateFlow()
+
+    val themeMode =
+            settingsRepository.themeMode.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    "System"
+            )
+    val gridSize =
+            settingsRepository.gridSize.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    "Comfortable"
+            )
+    val downloadLocation =
+            settingsRepository.downloadLocation.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    null
+            )
+
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch { settingsRepository.setThemeMode(mode) }
+    }
+
+    fun setGridSize(size: String) {
+        viewModelScope.launch { settingsRepository.setGridSize(size) }
+    }
+
+    fun setDownloadLocation(uri: String) {
+        viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
+    }
+
+    fun clearCache() {
+        viewModelScope.launch {
+            context.imageLoader.memoryCache?.clear()
+            context.imageLoader.diskCache?.clear()
+            repository.cleanExpiredCache()
+        }
+    }
 
     fun updateSessionCookie(cookie: String) {
         _sessionCookie.value = cookie
@@ -49,23 +100,24 @@ class SettingsViewModel @Inject constructor(
             try {
                 _isInitializing.value = true
                 _initStatus.value = "Initializing DDoS-Guard cookies..."
-                
+
                 withContext(Dispatchers.IO) {
                     // Make a request to the main site to get DDoS-Guard cookies
-                    val request = Request.Builder()
-                        .url("https://kemono.cr/")
-                        .build()
-                    
+                    val request = Request.Builder().url("https://kemono.cr/").build()
+
                     val response = okHttpClient.newCall(request).execute()
                     val responseCode = response.code
                     response.close()
-                    
+
                     withContext(Dispatchers.Main) {
-                        _initStatus.value = when {
-                            responseCode in 200..299 -> "✓ DDoS-Guard cookies initialized successfully"
-                            responseCode == 403 -> "✓ DDoS-Guard cookies received (403 is normal)"
-                            else -> "⚠ Got response code: $responseCode"
-                        }
+                        _initStatus.value =
+                                when {
+                                    responseCode in 200..299 ->
+                                            "✓ DDoS-Guard cookies initialized successfully"
+                                    responseCode == 403 ->
+                                            "✓ DDoS-Guard cookies received (403 is normal)"
+                                    else -> "⚠ Got response code: $responseCode"
+                                }
                     }
                 }
             } catch (e: Exception) {
