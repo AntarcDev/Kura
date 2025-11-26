@@ -678,7 +678,7 @@ ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transf
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
-permission#com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
@@ -688,7 +688,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
-uses-permission#com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:22-94

@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-3    package="com.example.kemono"
+3    package="com.antarc.kura"
 4    android:versionCode="1"
-5    android:versionName="1.0" >
+5    android:versionName="0.2AlphaRelease" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
@@ -35,12 +35,12 @@
 19
 20    <permission
 20-->[androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
-21        android:name="com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+21        android:name="com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
 21-->[androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
 22        android:protectionLevel="signature" />
 22-->[androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
 23
-24    <uses-permission android:name="com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+24    <uses-permission android:name="com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 24-->[androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
 24-->[androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
 25
@@ -104,7 +104,7 @@
 57        <provider
 58            android:name="androidx.core.content.FileProvider"
 58-->C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:39:13-62
-59            android:authorities="com.example.kemono.provider"
+59            android:authorities="com.antarc.kura.provider"
 59-->C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:40:13-60
 60            android:exported="false"
 60-->C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:41:13-37
@@ -129,7 +129,7 @@
 71-->[androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\8.9\transforms\ade8e3a63f3e9b5faa47b2caff55518b\transformed\work-runtime-2.9.0\AndroidManifest.xml:29:9-37:20
 72            android:name="androidx.startup.InitializationProvider"
 72-->[androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\8.9\transforms\ade8e3a63f3e9b5faa47b2caff55518b\transformed\work-runtime-2.9.0\AndroidManifest.xml:30:13-67
-73            android:authorities="com.example.kemono.androidx-startup"
+73            android:authorities="com.antarc.kura.androidx-startup"
 73-->[androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\8.9\transforms\ade8e3a63f3e9b5faa47b2caff55518b\transformed\work-runtime-2.9.0\AndroidManifest.xml:31:13-68
 74            android:exported="false" >
 74-->[androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\8.9\transforms\ade8e3a63f3e9b5faa47b2caff55518b\transformed\work-runtime-2.9.0\AndroidManifest.xml:32:13-37

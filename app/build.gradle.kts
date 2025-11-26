@@ -10,16 +10,17 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.kemono"
+        applicationId = "com.antarc.kura"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        versionNameSuffix = "AlphaRelease"
     }
 
     buildTypes {

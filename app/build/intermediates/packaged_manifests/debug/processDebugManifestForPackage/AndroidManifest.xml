@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.kemono"
+    package="com.antarc.kura"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="0.2AlphaRelease" >
 
     <uses-sdk
         android:minSdkVersion="24"
@@ -18,10 +18,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <permission
-        android:name="com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.example.kemono.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+    <uses-permission android:name="com.antarc.kura.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
     <application
         android:name="com.example.kemono.KemonoApp"
@@ -56,7 +56,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.kemono.provider"
+            android:authorities="com.antarc.kura.provider"
             android:exported="false"
             android:grantUriPermissions="true" >
             <meta-data
@@ -70,7 +70,7 @@
 
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="com.example.kemono.androidx-startup"
+            android:authorities="com.antarc.kura.androidx-startup"
             android:exported="false" >
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
