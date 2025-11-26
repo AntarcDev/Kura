@@ -75,6 +75,7 @@ constructor(
         viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
     }
 
+    @OptIn(coil.annotation.ExperimentalCoilApi::class)
     fun clearCache() {
         viewModelScope.launch {
             context.imageLoader.memoryCache?.clear()

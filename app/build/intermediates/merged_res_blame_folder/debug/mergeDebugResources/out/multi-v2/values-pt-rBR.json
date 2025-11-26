@@ -4,24 +4,7 @@
             "outputFile": "com.example.kemono.app-mergeDebugResources-71:/values-pt-rBR/values-pt-rBR.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\2c0e9483d5bc39975050075ddebe66de\\transformed\\foundation-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,138",
-                        "endColumns": "82,84",
-                        "endOffsets": "133,218"
-                    },
-                    "to": {
-                        "startLines": "85,86",
-                        "startColumns": "4,4",
-                        "startOffsets": "8755,8838",
-                        "endColumns": "82,84",
-                        "endOffsets": "8833,8918"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\8ac3ecdc625d73f3a3f3a4eb3e246a63\\transformed\\core-1.13.1\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\487d1c62278498830c61f1749f5bc0a2\\transformed\\core-1.13.1\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -38,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\a514ed858e4989e7978558f8ec35e401\\transformed\\material3-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\b0d4472613fd5115208e4e27e2ca0823\\transformed\\material3-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +38,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\85af35c3e4af4819cc7792031e9a04df\\transformed\\ui-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\96681ea3a1a6bb43e124f083bc5b5d4a\\transformed\\foundation-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,138",
+                        "endColumns": "82,84",
+                        "endOffsets": "133,218"
+                    },
+                    "to": {
+                        "startLines": "85,86",
+                        "startColumns": "4,4",
+                        "startOffsets": "8755,8838",
+                        "endColumns": "82,84",
+                        "endOffsets": "8833,8918"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\d33d957193f606a352823876143998dd\\transformed\\ui-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

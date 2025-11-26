@@ -45,8 +45,11 @@ constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _creatorName = MutableStateFlow<String?>(null)
+
     init {
         fetchPost()
+        fetchCreatorProfile()
     }
 
     fun fetchPost() {
@@ -63,14 +66,40 @@ constructor(
         }
     }
 
+    private fun fetchCreatorProfile() {
+        viewModelScope.launch {
+            try {
+                val creator = repository.getCreatorProfile(service, creatorId)
+                _creatorName.value = creator.name
+            } catch (e: Exception) {
+                // Ignore error, fallback to creatorId if name fetch fails
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun downloadMedia() {
         val currentPost = _post.value ?: return
+        
         viewModelScope.launch {
+            // Ensure we have the creator name
+            var creatorName = _creatorName.value
+            if (creatorName == null) {
+                try {
+                    val creator = repository.getCreatorProfile(service, creatorId)
+                    _creatorName.value = creator.name
+                    creatorName = creator.name
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    creatorName = currentPost.user // Fallback to ID
+                }
+            }
+
             // Download main file
             currentPost.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
                     val url = "https://kemono.cr${file.path}"
-                    val fileName = file.name ?: "file_${currentPost.id}"
+                    val fileName = file.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(file.path) ==
                                             com.example.kemono.util.MediaType.VIDEO
@@ -81,7 +110,9 @@ constructor(
                             url,
                             fileName,
                             currentPost.id,
+                            currentPost.title,
                             currentPost.user,
+                            creatorName!!,
                             mediaType
                     )
                 }
@@ -91,7 +122,7 @@ constructor(
             currentPost.attachments.forEach { attachment ->
                 if (!attachment.path.isNullOrEmpty()) {
                     val url = "https://kemono.cr${attachment.path}"
-                    val fileName = attachment.name ?: "attachment_${currentPost.id}"
+                    val fileName = attachment.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(attachment.path) ==
                                             com.example.kemono.util.MediaType.VIDEO
@@ -102,7 +133,9 @@ constructor(
                             url,
                             fileName,
                             currentPost.id,
+                            currentPost.title,
                             currentPost.user,
+                            creatorName!!,
                             mediaType
                     )
                 }

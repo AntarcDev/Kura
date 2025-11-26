@@ -4,24 +4,7 @@
             "outputFile": "com.example.kemono.app-mergeDebugResources-71:/values-ka/values-ka.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\2c0e9483d5bc39975050075ddebe66de\\transformed\\foundation-release\\res\\values-ka\\values-ka.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,143",
-                        "endColumns": "87,90",
-                        "endOffsets": "138,229"
-                    },
-                    "to": {
-                        "startLines": "153,154",
-                        "startColumns": "4,4",
-                        "startOffsets": "13316,13404",
-                        "endColumns": "87,90",
-                        "endOffsets": "13399,13490"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\ffcaf91c6de059c8fa85edf13057f5c8\\transformed\\media3-ui-1.2.0\\res\\values-ka\\values-ka.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\566fd89a9c6e657c2bbed383527e2a96\\transformed\\media3-ui-1.2.0\\res\\values-ka\\values-ka.xml",
                     "from": {
                         "startLines": "2,11,15,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -40,7 +23,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\a514ed858e4989e7978558f8ec35e401\\transformed\\material3-release\\res\\values-ka\\values-ka.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\d33d957193f606a352823876143998dd\\transformed\\ui-release\\res\\values-ka\\values-ka.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,201,287,386,489,579,659,755,845,932,1021,1112,1184,1262,1340,1415,1494,1564",
+                        "endColumns": "95,85,98,102,89,79,95,89,86,88,90,71,77,77,74,78,69,120",
+                        "endOffsets": "196,282,381,484,574,654,750,840,927,1016,1107,1179,1257,1335,1410,1489,1559,1680"
+                    },
+                    "to": {
+                        "startLines": "26,27,28,29,30,82,83,141,142,143,144,145,146,147,148,150,151,152",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "1447,1543,1629,1728,1831,5845,5925,12285,12375,12462,12551,12642,12714,12792,12870,13046,13125,13195",
+                        "endColumns": "95,85,98,102,89,79,95,89,86,88,90,71,77,77,74,78,69,120",
+                        "endOffsets": "1538,1624,1723,1826,1916,5920,6016,12370,12457,12546,12637,12709,12787,12865,12940,13120,13190,13311"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\b0d4472613fd5115208e4e27e2ca0823\\transformed\\material3-release\\res\\values-ka\\values-ka.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -57,24 +57,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\fdbf30e7f7d51bf1c8980b2d3717e3c0\\transformed\\media3-exoplayer-1.2.0\\res\\values-ka\\values-ka.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10",
-                        "startColumns": "4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,127,192,270,343,424,499,587,674",
-                        "endColumns": "71,64,77,72,80,74,87,86,84",
-                        "endOffsets": "122,187,265,338,419,494,582,669,754"
-                    },
-                    "to": {
-                        "startLines": "55,56,57,58,59,60,61,62,63",
-                        "startColumns": "4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "3999,4071,4136,4214,4287,4368,4443,4531,4618",
-                        "endColumns": "71,64,77,72,80,74,87,86,84",
-                        "endOffsets": "4066,4131,4209,4282,4363,4438,4526,4613,4698"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\8ac3ecdc625d73f3a3f3a4eb3e246a63\\transformed\\core-1.13.1\\res\\values-ka\\values-ka.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\487d1c62278498830c61f1749f5bc0a2\\transformed\\core-1.13.1\\res\\values-ka\\values-ka.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -91,20 +74,37 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\85af35c3e4af4819cc7792031e9a04df\\transformed\\ui-release\\res\\values-ka\\values-ka.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\66ca4c4cefddd85bf274412af0349f78\\transformed\\media3-exoplayer-1.2.0\\res\\values-ka\\values-ka.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,201,287,386,489,579,659,755,845,932,1021,1112,1184,1262,1340,1415,1494,1564",
-                        "endColumns": "95,85,98,102,89,79,95,89,86,88,90,71,77,77,74,78,69,120",
-                        "endOffsets": "196,282,381,484,574,654,750,840,927,1016,1107,1179,1257,1335,1410,1489,1559,1680"
+                        "startLines": "2,3,4,5,6,7,8,9,10",
+                        "startColumns": "4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,127,192,270,343,424,499,587,674",
+                        "endColumns": "71,64,77,72,80,74,87,86,84",
+                        "endOffsets": "122,187,265,338,419,494,582,669,754"
                     },
                     "to": {
-                        "startLines": "26,27,28,29,30,82,83,141,142,143,144,145,146,147,148,150,151,152",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "1447,1543,1629,1728,1831,5845,5925,12285,12375,12462,12551,12642,12714,12792,12870,13046,13125,13195",
-                        "endColumns": "95,85,98,102,89,79,95,89,86,88,90,71,77,77,74,78,69,120",
-                        "endOffsets": "1538,1624,1723,1826,1916,5920,6016,12370,12457,12546,12637,12709,12787,12865,12940,13120,13190,13311"
+                        "startLines": "55,56,57,58,59,60,61,62,63",
+                        "startColumns": "4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "3999,4071,4136,4214,4287,4368,4443,4531,4618",
+                        "endColumns": "71,64,77,72,80,74,87,86,84",
+                        "endOffsets": "4066,4131,4209,4282,4363,4438,4526,4613,4698"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\96681ea3a1a6bb43e124f083bc5b5d4a\\transformed\\foundation-release\\res\\values-ka\\values-ka.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,143",
+                        "endColumns": "87,90",
+                        "endOffsets": "138,229"
+                    },
+                    "to": {
+                        "startLines": "153,154",
+                        "startColumns": "4,4",
+                        "startOffsets": "13316,13404",
+                        "endColumns": "87,90",
+                        "endOffsets": "13399,13490"
                     }
                 }
             ]

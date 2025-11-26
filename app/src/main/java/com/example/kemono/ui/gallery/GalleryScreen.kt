@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import kotlinx.coroutines.flow.map
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +39,7 @@ fun GalleryScreen(
         viewModel: GalleryViewModel = hiltViewModel(),
         onItemClick: (DownloadedItem, Int) -> Unit
 ) {
-    val items by viewModel.downloadedItems.collectAsState()
+    val items by viewModel.galleryItems.collectAsState()
 
     Scaffold(topBar = { TopAppBar(title = { Text("Gallery") }) }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
@@ -54,8 +56,30 @@ fun GalleryScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    itemsIndexed(items) { index, item ->
-                        GalleryItem(item = item, onClick = { onItemClick(item, index) })
+                    items.forEachIndexed { index, item ->
+                        when (item) {
+                            is GalleryUiItem.Header -> {
+                                item(span = { GridItemSpan(3) }) {
+                                    Text(
+                                            text = item.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            modifier =
+                                                    Modifier.padding(
+                                                            horizontal = 8.dp,
+                                                            vertical = 8.dp
+                                                    )
+                                    )
+                                }
+                            }
+                            is GalleryUiItem.Image -> {
+                                item(span = { GridItemSpan(1) }) {
+                                    GalleryItem(
+                                            item = item.item,
+                                            onClick = { onItemClick(item.item, index) }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

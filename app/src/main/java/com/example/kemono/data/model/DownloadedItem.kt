@@ -8,6 +8,7 @@ data class DownloadedItem(
         @PrimaryKey(autoGenerate = true) val id: Int = 0,
         val postId: String,
         val creatorId: String,
+        val creatorName: String,
         val fileName: String,
         val filePath: String,
         val mediaType: String, // "IMAGE" or "VIDEO"

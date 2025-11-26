@@ -24,19 +24,26 @@ constructor(
                 url: String,
                 fileName: String,
                 postId: String,
+                postTitle: String,
                 creatorId: String,
+                creatorName: String,
                 mediaType: String
         ) {
+                val sanitizedCreator = sanitizeFileName(creatorName)
+                val sanitizedPost = sanitizeFileName(postTitle)
+                val sanitizedFile = sanitizeFileName(fileName)
+                val subPath = "Kemono/$sanitizedCreator/$sanitizedPost/$sanitizedFile"
+
                 val request =
                         DownloadManager.Request(Uri.parse(url))
                                 .setTitle(fileName)
-                                .setDescription("Downloading media from Kemono")
+                                .setDescription("Downloading media from $creatorName")
                                 .setNotificationVisibility(
                                         DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
                                 )
                                 .setDestinationInExternalPublicDir(
                                         Environment.DIRECTORY_DOWNLOADS,
-                                        "Kemono/$fileName"
+                                        subPath
                                 )
                                 .setAllowedOverMetered(true)
                                 .setAllowedOverRoaming(true)
@@ -47,13 +54,18 @@ constructor(
                         DownloadedItem(
                                 postId = postId,
                                 creatorId = creatorId,
+                                creatorName = creatorName,
                                 fileName = fileName,
                                 filePath =
-                                        "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath}/Kemono/$fileName",
+                                        "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath}/$subPath",
                                 mediaType = mediaType,
                                 downloadId = downloadId
                         )
                 downloadDao.insert(item)
+        }
+
+        private fun sanitizeFileName(name: String): String {
+            return name.replace(Regex("[^a-zA-Z0-9._-]"), "_")
         }
 
         fun getAllDownloadedItems() = downloadDao.getAllDownloadedItems()

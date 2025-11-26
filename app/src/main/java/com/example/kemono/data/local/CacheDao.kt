@@ -13,6 +13,9 @@ interface CacheDao {
     // Creators
     @Query("SELECT * FROM cached_creators") fun getAllCachedCreators(): Flow<List<CachedCreator>>
 
+    @Query("SELECT * FROM cached_creators WHERE id = :id")
+    suspend fun getCachedCreator(id: String): CachedCreator?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun cacheCreators(creators: List<CachedCreator>)
 

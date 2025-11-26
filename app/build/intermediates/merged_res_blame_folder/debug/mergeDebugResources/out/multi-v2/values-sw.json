@@ -4,7 +4,7 @@
             "outputFile": "com.example.kemono.app-mergeDebugResources-71:/values-sw/values-sw.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\ffcaf91c6de059c8fa85edf13057f5c8\\transformed\\media3-ui-1.2.0\\res\\values-sw\\values-sw.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\566fd89a9c6e657c2bbed383527e2a96\\transformed\\media3-ui-1.2.0\\res\\values-sw\\values-sw.xml",
                     "from": {
                         "startLines": "2,11,15,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -23,24 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\2c0e9483d5bc39975050075ddebe66de\\transformed\\foundation-release\\res\\values-sw\\values-sw.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,156",
-                        "endColumns": "100,102",
-                        "endOffsets": "151,254"
-                    },
-                    "to": {
-                        "startLines": "153,154",
-                        "startColumns": "4,4",
-                        "startOffsets": "13184,13285",
-                        "endColumns": "100,102",
-                        "endOffsets": "13280,13383"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\85af35c3e4af4819cc7792031e9a04df\\transformed\\ui-release\\res\\values-sw\\values-sw.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\d33d957193f606a352823876143998dd\\transformed\\ui-release\\res\\values-sw\\values-sw.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -57,7 +40,41 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\fdbf30e7f7d51bf1c8980b2d3717e3c0\\transformed\\media3-exoplayer-1.2.0\\res\\values-sw\\values-sw.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\96681ea3a1a6bb43e124f083bc5b5d4a\\transformed\\foundation-release\\res\\values-sw\\values-sw.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,156",
+                        "endColumns": "100,102",
+                        "endOffsets": "151,254"
+                    },
+                    "to": {
+                        "startLines": "153,154",
+                        "startColumns": "4,4",
+                        "startOffsets": "13184,13285",
+                        "endColumns": "100,102",
+                        "endOffsets": "13280,13383"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\487d1c62278498830c61f1749f5bc0a2\\transformed\\core-1.13.1\\res\\values-sw\\values-sw.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,149,251,348,449,556,663,778",
+                        "endColumns": "93,101,96,100,106,106,114,100",
+                        "endOffsets": "144,246,343,444,551,658,773,874"
+                    },
+                    "to": {
+                        "startLines": "19,20,21,22,23,24,25,149",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "756,850,952,1049,1150,1257,1364,12815",
+                        "endColumns": "93,101,96,100,106,106,114,100",
+                        "endOffsets": "845,947,1044,1145,1252,1359,1474,12911"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\66ca4c4cefddd85bf274412af0349f78\\transformed\\media3-exoplayer-1.2.0\\res\\values-sw\\values-sw.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
                         "startColumns": "4,4,4,4,4,4,4,4,4",
@@ -74,7 +91,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\a514ed858e4989e7978558f8ec35e401\\transformed\\material3-release\\res\\values-sw\\values-sw.xml",
+                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.9\\transforms\\b0d4472613fd5115208e4e27e2ca0823\\transformed\\material3-release\\res\\values-sw\\values-sw.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -88,23 +105,6 @@
                         "startOffsets": "5907,6023,6138,6254,6368,6468,6567,6683,6824,6940,7091,7177,7277,7370,7472,7590,7717,7822,7952,8081,8217,8382,8511,8635,8764,8873,8967,9063,9186,9314,9411,9523,9633,9765,9906,10018,10118,10197,10293,10390,10505,10592,10677,10791,10871,10954,11053,11153,11248,11347,11435,11540,11640,11743,11859,11939,12057",
                         "endColumns": "115,114,115,113,99,98,115,140,115,150,85,99,92,101,117,126,104,129,128,135,164,128,123,128,108,93,95,122,127,96,111,109,131,140,111,99,78,95,96,114,86,84,113,79,82,98,99,94,98,87,104,99,102,115,79,117,109",
                         "endOffsets": "6018,6133,6249,6363,6463,6562,6678,6819,6935,7086,7172,7272,7365,7467,7585,7712,7817,7947,8076,8212,8377,8506,8630,8759,8868,8962,9058,9181,9309,9406,9518,9628,9760,9901,10013,10113,10192,10288,10385,10500,10587,10672,10786,10866,10949,11048,11148,11243,11342,11430,11535,11635,11738,11854,11934,12052,12162"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\antarc\\.gradle\\caches\\8.13\\transforms\\8ac3ecdc625d73f3a3f3a4eb3e246a63\\transformed\\core-1.13.1\\res\\values-sw\\values-sw.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,149,251,348,449,556,663,778",
-                        "endColumns": "93,101,96,100,106,106,114,100",
-                        "endOffsets": "144,246,343,444,551,658,773,874"
-                    },
-                    "to": {
-                        "startLines": "19,20,21,22,23,24,25,149",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "756,850,952,1049,1150,1257,1364,12815",
-                        "endColumns": "93,101,96,100,106,106,114,100",
-                        "endOffsets": "845,947,1044,1145,1252,1359,1474,12911"
                     }
                 }
             ]

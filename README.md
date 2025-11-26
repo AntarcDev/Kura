@@ -1,88 +1,54 @@
-# Kemono Android App
+# 蔵 Kura
 
-A native Android application for browsing content from kemono.cr, built with Kotlin and Jetpack Compose.
+**The Premium Native Client for Kemono**
 
-## Features
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white) ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=android&logoColor=white) ![Material 3](https://img.shields.io/badge/Material%203-7C4DFF?style=for-the-badge&logo=materialdesign&logoColor=white)
 
-- **Creator Browser**: Browse and search through creators
-- **Post Viewer**: View posts with images and attachments
-- **Favorites**: Save favorite creators locally with Room database
-- **Downloads**: Background downloads using WorkManager
-- **Search**: Real-time search functionality
-- **DDoS-Guard Bypass**: Automatic handling of DDoS-Guard protection
+Unlock a seamless browsing experience with **Kura** (蔵 - "Storehouse"). Built for speed, aesthetics, and organization, Kura transforms how you discover and archive content.
 
-## Tech Stack
+---
 
-- **Language**: Kotlin
-- **UI**: Jetpack Compose with Material 3
-- **Architecture**: MVVM with Repository pattern
-- **Dependency Injection**: Hilt
-- **Networking**: Retrofit + OkHttp
-- **Image Loading**: Coil
-- **Local Storage**: Room Database
-- **Background Tasks**: WorkManager
-- **Navigation**: Jetpack Navigation Compose
+## ✨ Features
 
-## Setup
+### 🎨 Immersive Discovery
+*   **Smart Search**: Instantly find creators with real-time filtering.
+*   **Dynamic Layouts**: Switch between "Compact" grids for speed or "Comfortable" lists for detail.
+*   **Advanced Sorting**: Sort by Name, Updated Date, or Popularity to find exactly what you want.
 
-1. Clone the repository
-2. Open in Android Studio (Hedgehog or later)
-3. Sync Gradle files
-4. Run on device or emulator (API 24+)
+### 📥 Intelligent Archiving
+*   **Organized Downloads**: Forget messy folders. Kura automatically sorts every file into `Downloads/Kemono/<Artist>/<PostTitle>/`.
+*   **Background Manager**: Queue up downloads and let Kura handle the rest with robust background processing.
+*   **Media Support**: Download images, videos, and attachments with ease.
 
-## API Authentication
+### 🖼️ Beautiful Gallery
+*   **Artist-Centric View**: Your offline collection is automatically grouped by Artist, making it easy to browse your favorite creators.
+*   **Zoomable Viewer**: Inspect every detail with a high-performance, gesture-supported image viewer.
 
-The app uses a special `Accept: text/css` header to bypass DDoS-Guard protection. On first launch:
+### 🛠️ Power User Tools
+*   **Favorites System**: Keep your top creators just a tap away.
+*   **DDoS-Guard Bypass**: Built-in handling for protection cookies—no browser gymnastics required.
+*   **Theming**: Full support for Light, Dark, and System themes.
 
-1. Go to Settings (⚙️ icon)
-2. Tap "Initialize DDoS-Guard Cookies"
-3. Wait for success message
-4. (Optional) Add your session cookie for authenticated access
+---
 
-## Project Structure
+## 🚀 Tech Stack
 
-```
-app/src/main/java/com/example/kemono/
-├── data/
-│   ├── local/          # Room database and DAOs
-│   ├── model/          # Data models
-│   ├── remote/         # Retrofit API interface
-│   └── repository/     # Repository layer
-├── di/                 # Hilt dependency injection modules
-├── ui/                 # Compose UI screens and ViewModels
-│   ├── creators/       # Creator list screen
-│   ├── favorites/      # Favorites screen
-│   ├── posts/          # Post list and detail screens
-│   ├── settings/       # Settings screen
-│   └── theme/          # Material 3 theme
-└── worker/             # WorkManager background tasks
-```
+Built with modern Android engineering standards:
+*   **Architecture**: MVVM + Clean Architecture
+*   **UI**: 100% Jetpack Compose (Material 3)
+*   **Network**: Retrofit + OkHttp + Coil
+*   **Persistence**: Room Database + DataStore
+*   **Concurrency**: Kotlin Coroutines + Flow + WorkManager
+*   **DI**: Hilt
 
-## Building
+---
 
-### Debug Build
-```bash
-./gradlew assembleDebug
-```
+## 📦 Getting Started
 
-### Release Build
-```bash
-./gradlew assembleRelease
-```
+1.  **Clone & Sync**: Open in Android Studio (Hedgehog+).
+2.  **Build**: Run on any device with Android 7.0+ (API 24+).
+3.  **Initialize**: Go to **Settings** -> **Initialize DDoS-Guard** to set up your session.
 
-## Requirements
+---
 
-- Android Studio Hedgehog (2023.1.1) or later
-- JDK 17 or later
-- Android SDK API 34
-- Minimum SDK: API 24 (Android 7.0)
-
-## License
-
-Private project - All rights reserved
-
-## Notes
-
-- This app is for personal use only
-- Respects kemono.cr's API rate limits and caching headers
-- Uses proper DDoS-Guard cookie handling for legitimate access
+*Made with ❤️ by Antarc*

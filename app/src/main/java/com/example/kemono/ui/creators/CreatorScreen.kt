@@ -40,7 +40,6 @@ fun CreatorScreen(
     val creators by viewModel.creators.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val isRefreshing by viewModel.isLoading.collectAsState()
     val sortOption by viewModel.sortOption.collectAsState()

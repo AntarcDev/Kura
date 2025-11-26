@@ -44,7 +44,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     readOnly = true,
                     label = { Text("Theme") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedTheme,
@@ -75,7 +75,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     readOnly = true,
                     label = { Text("Grid Size") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrid) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedGrid,

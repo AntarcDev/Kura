@@ -54,7 +54,18 @@ constructor(
     }
 
     suspend fun getCreatorProfile(service: String, creatorId: String): Creator {
-        return api.getCreatorProfile(service, creatorId)
+        return try {
+            val cached = cacheDao.getCachedCreator(creatorId)
+            if (cached != null) {
+                cached.toCreator()
+            } else {
+                val creator = api.getCreatorProfile(service, creatorId)
+                cacheDao.cacheCreators(listOf(creator.toCached()))
+                creator
+            }
+        } catch (e: Exception) {
+            api.getCreatorProfile(service, creatorId)
+        }
     }
 
     suspend fun getCreatorPosts(
