@@ -51,4 +51,4 @@ Built with modern Android engineering standards:
 
 ---
 
-*Made with ❤️ by Antarc*
+*Made with 🖕 by Antarc*
