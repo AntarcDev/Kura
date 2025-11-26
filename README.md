@@ -45,6 +45,8 @@ Built with modern Android engineering standards:
 
 ## 📦 Getting Started
 
+[![Download Latest Release](https://img.shields.io/badge/Download-Latest_Release-2ea44f?style=for-the-badge&logo=github)](https://github.com/AntarcDev/Kura/releases)
+
 1.  **Clone & Sync**: Open in Android Studio (Hedgehog+).
 2.  **Build**: Run on any device with Android 7.0+ (API 24+).
 3.  **Initialize**: Go to **Settings** -> **Initialize DDoS-Guard** to set up your session.
