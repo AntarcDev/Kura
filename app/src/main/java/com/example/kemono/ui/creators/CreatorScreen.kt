@@ -34,6 +34,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.Post
+import com.example.kemono.ui.components.CreatorItemSkeleton
+import com.example.kemono.ui.components.PostItemSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,7 +125,30 @@ fun CreatorScreen(
                 } else {
                     if (searchMode == SearchMode.Artists) {
                         val isCompact = gridSize == "Compact"
-                        if (isCompact) {
+                        
+                        if (isRefreshing && creators.isEmpty()) {
+                            if (isCompact) {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = 150.dp),
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(12) {
+                                        CreatorItemSkeleton(compact = true)
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(10) {
+                                        CreatorItemSkeleton(compact = false)
+                                    }
+                                }
+                            }
+                        } else if (isCompact) {
                             LazyVerticalGrid(
                                 columns = GridCells.Adaptive(minSize = 150.dp),
                                 contentPadding = PaddingValues(16.dp),
@@ -158,52 +183,63 @@ fun CreatorScreen(
                         }
                     } else {
                         // Posts List
-                        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-                        
-                        // Infinite scroll handler
-                        val reachedBottom by remember {
-                            derivedStateOf {
-                                val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-                                lastVisibleItem?.index != 0 && lastVisibleItem?.index == listState.layoutInfo.totalItemsCount - 1
+                        if (isRefreshing && posts.isEmpty()) {
+                            LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(10) {
+                                    PostItemSkeleton()
+                                }
                             }
-                        }
-
-                        LaunchedEffect(reachedBottom) {
-                            if (reachedBottom) {
-                                viewModel.loadMorePosts()
-                            }
-                        }
-
-                        LazyColumn(
-                            state = listState,
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(posts) { post ->
-                                com.example.kemono.ui.components.PostItem(
-                                    post = post,
-                                    onClick = { onPostClick(post) },
-                                    onCreatorClick = {
-                                        // Create a minimal creator object for navigation
-                                        val creator = Creator(
-                                            id = post.user,
-                                            service = post.service,
-                                            name = "Unknown", // Name will be fetched in profile
-                                            updated = 0,
-                                            indexed = 0
-                                        )
-                                        onCreatorClick(creator)
-                                    }
-                                )
-                            }
+                        } else {
+                            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
                             
-                            if (isRefreshing && posts.isNotEmpty()) {
-                                item {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator()
+                            // Infinite scroll handler
+                            val reachedBottom by remember {
+                                derivedStateOf {
+                                    val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+                                    lastVisibleItem?.index != 0 && lastVisibleItem?.index == listState.layoutInfo.totalItemsCount - 1
+                                }
+                            }
+    
+                            LaunchedEffect(reachedBottom) {
+                                if (reachedBottom) {
+                                    viewModel.loadMorePosts()
+                                }
+                            }
+    
+                            LazyColumn(
+                                state = listState,
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(posts) { post ->
+                                    com.example.kemono.ui.components.PostItem(
+                                        post = post,
+                                        onClick = { onPostClick(post) },
+                                        onCreatorClick = {
+                                            // Create a minimal creator object for navigation
+                                            val creator = Creator(
+                                                id = post.user,
+                                                service = post.service,
+                                                name = "Unknown", // Name will be fetched in profile
+                                                updated = 0,
+                                                indexed = 0
+                                            )
+                                            onCreatorClick(creator)
+                                        }
+                                    )
+                                }
+                                
+                                if (isRefreshing && posts.isNotEmpty()) {
+                                    item {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator()
+                                        }
                                     }
                                 }
                             }
