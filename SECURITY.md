@@ -15,7 +15,7 @@ Use this section to tell people about which versions of your project are current
 We take the security of Kura seriously. If you discover a security vulnerability, please follow these steps:
 
 1.  **Do not open a public issue.** This gives potential attackers a chance to exploit the vulnerability before we can fix it.
-2.  **Email the maintainer** directly at [your-email@example.com] (replace with actual email or "via GitHub Security Advisories").
+2.  **Email the maintainer** directly at [kxantarc@tuta.io](mailto:kxantarc@tuta.io).
 3.  **Provide details**: Include as much information as possible to help us reproduce the issue.
 
 We will acknowledge your report within 48 hours and provide an estimated timeline for a fix.
