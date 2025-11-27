@@ -53,6 +53,11 @@ class MainActivity : ComponentActivity() {
                                                 "creator/${creator.service}/${creator.id}"
                                         )
                                     },
+                                    onPostClick = { post ->
+                                        navController.navigate(
+                                                "post/${post.service}/${post.user}/${post.id}"
+                                        )
+                                    },
                                     onNavigateToGalleryItem = { index ->
                                         navController.navigate("viewer/gallery/all/$index")
                                     }

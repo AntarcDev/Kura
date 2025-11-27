@@ -31,7 +31,7 @@ object NetworkModule {
             sessionManager: SessionManager
     ): CookieJar {
         return object : CookieJar {
-            private val cookieStore = mutableMapOf<String, MutableList<Cookie>>()
+            private val cookieStore = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.CopyOnWriteArrayList<Cookie>>()
             private val prefs = context.getSharedPreferences("cookie_prefs", Context.MODE_PRIVATE)
 
             init {
@@ -50,7 +50,7 @@ object NetworkModule {
                             val value = parts[2]
                             val cookie =
                                     Cookie.Builder().name(name).value(value).domain(domain).build()
-                            cookieStore.getOrPut(domain) { mutableListOf() }.add(cookie)
+                            cookieStore.getOrPut(domain) { java.util.concurrent.CopyOnWriteArrayList() }.add(cookie)
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -70,11 +70,11 @@ object NetworkModule {
 
             override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
                 val host = url.host
-                val existingCookies = cookieStore.getOrPut(host) { mutableListOf() }
+                val existingCookies = cookieStore.getOrPut(host) { java.util.concurrent.CopyOnWriteArrayList() }
 
                 cookies.forEach { newCookie ->
                     // Remove old cookie with same name
-                    existingCookies.removeAll { it.name == newCookie.name }
+                    existingCookies.removeIf { it.name == newCookie.name }
                     // Add new cookie
                     existingCookies.add(newCookie)
                 }
@@ -115,8 +115,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(cookieJar: CookieJar): OkHttpClient {
+    fun provideOkHttpClient(@ApplicationContext context: Context, cookieJar: CookieJar): OkHttpClient {
+        val cacheSize = 50L * 1024L * 1024L // 50 MB
+        val cache = okhttp3.Cache(context.cacheDir.resolve("http_cache"), cacheSize)
+
         return OkHttpClient.Builder()
+                .cache(cache)
                 .cookieJar(cookieJar)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
@@ -175,8 +179,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideImageLoader(@ApplicationContext context: Context): coil.ImageLoader {
+    fun provideImageLoader(@ApplicationContext context: Context, okHttpClient: OkHttpClient): coil.ImageLoader {
         return coil.ImageLoader.Builder(context)
+                .okHttpClient(okHttpClient)
                 .components {
                     if (android.os.Build.VERSION.SDK_INT >= 28) {
                         add(coil.decode.ImageDecoderDecoder.Factory())
@@ -185,12 +190,18 @@ object NetworkModule {
                     }
                     add(coil.decode.VideoFrameDecoder.Factory())
                 }
+                .memoryCache {
+                    coil.memory.MemoryCache.Builder(context)
+                        .maxSizePercent(0.25)
+                        .build()
+                }
                 .diskCache {
                     coil.disk.DiskCache.Builder()
                             .directory(context.cacheDir.resolve("image_cache"))
-                            .maxSizeBytes(100 * 1024 * 1024) // 100 MB
+                            .maxSizeBytes(500L * 1024L * 1024L) // 500 MB
                             .build()
                 }
+                .crossfade(true)
                 .build()
     }
 }

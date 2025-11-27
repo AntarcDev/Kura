@@ -114,12 +114,111 @@ constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _searchMode = MutableStateFlow(SearchMode.Artists)
+    val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
+
+    private val _tags = MutableStateFlow<List<String>>(emptyList())
+    val tags: StateFlow<List<String>> = _tags.asStateFlow()
+
+    private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
+    val selectedTags: StateFlow<Set<String>> = _selectedTags.asStateFlow()
+
+    private val _posts = MutableStateFlow<List<com.example.kemono.data.model.Post>>(emptyList())
+    val posts: StateFlow<List<com.example.kemono.data.model.Post>> = _posts.asStateFlow()
+    
+    private var currentOffset = 0
+
     init {
         fetchCreators()
+        fetchTags()
     }
+
+    fun setSearchMode(mode: SearchMode) {
+        _searchMode.value = mode
+        // Clear search query when switching modes to avoid confusion?
+        // _searchQuery.value = ""
+        if (mode == SearchMode.Posts && _posts.value.isEmpty()) {
+            fetchPosts()
+        }
+    }
+
+    fun toggleTag(tag: String) {
+        val current = _selectedTags.value
+        if (current.contains(tag)) {
+            _selectedTags.value = current - tag
+        } else {
+            _selectedTags.value = current + tag
+        }
+        if (_searchMode.value == SearchMode.Posts) {
+            fetchPosts()
+        }
+    }
+
+    private var searchJob: kotlinx.coroutines.Job? = null
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+        if (_searchMode.value == SearchMode.Posts) {
+            searchJob?.cancel()
+            searchJob = viewModelScope.launch {
+                kotlinx.coroutines.delay(1000) // Debounce 1000ms
+                fetchPosts()
+            }
+        }
+    }
+
+    fun loadMorePosts() {
+        if (!_isLoading.value) {
+            fetchPosts(reset = false)
+        }
+    }
+
+    fun fetchPosts(reset: Boolean = true) {
+        viewModelScope.launch {
+            if (reset) {
+                _isLoading.value = true
+                currentOffset = 0
+            }
+            try {
+                // Note: The API for filtering by tags might be different or require client-side filtering
+                // For now, we fetch recent posts and filter client-side if needed, or pass query
+                val query = _searchQuery.value
+                val tags = _selectedTags.value.toList()
+                val result = repository.getRecentPosts(
+                    offset = currentOffset,
+                    query = if (query.isBlank()) null else query,
+                    tags = if (tags.isEmpty()) null else tags
+                )
+                if (reset) {
+                    _posts.value = result
+                } else {
+                    _posts.value = _posts.value + result
+                }
+                
+                if (result.isNotEmpty()) {
+                    currentOffset += 50 // Assuming 50 is the limit
+                }
+            } catch (e: Exception) {
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    _error.value = "Too many requests. Please wait a moment."
+                } else {
+                    _error.value = e.message ?: "Failed to fetch posts"
+                }
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun fetchTags() {
+        viewModelScope.launch {
+            try {
+                val result = repository.getTags()
+                _tags.value = result.sorted()
+            } catch (e: Exception) {
+                _error.value = "Tags error: ${e.message}"
+            }
+        }
     }
 
     fun setSortOption(option: SortOption) {
@@ -140,6 +239,7 @@ constructor(
 
     fun clearFilters() {
         _selectedServices.value = emptySet()
+        _selectedTags.value = emptySet()
         _sortOption.value = SortOption.Updated
     }
 
@@ -156,7 +256,11 @@ constructor(
                     fetchPopularCreators()
                 }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    _error.value = "Too many requests. Please wait a moment."
+                } else {
+                    _error.value = e.message ?: "Unknown error occurred"
+                }
             } finally {
                 _isLoading.value = false
             }
@@ -170,7 +274,11 @@ constructor(
                 val result = repository.getPopularCreators()
                 _popularCreators.value = result
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to fetch popular creators"
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    _error.value = "Too many requests. Please wait a moment."
+                } else {
+                    _error.value = e.message ?: "Failed to fetch popular creators"
+                }
                 // Fallback to updated if failed?
                 if (_popularCreators.value.isEmpty()) {
                     _sortOption.value = SortOption.Updated
@@ -205,4 +313,9 @@ enum class SortOption {
     Updated,
     Favorites,
     Popular
+}
+
+enum class SearchMode {
+    Artists,
+    Posts
 }

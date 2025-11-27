@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -29,13 +30,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.example.kemono.data.model.Creator
+import com.example.kemono.data.model.Post
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatorScreen(
     viewModel: CreatorViewModel = hiltViewModel(),
-    onCreatorClick: (Creator) -> Unit
+    onCreatorClick: (Creator) -> Unit,
+    onPostClick: (Post) -> Unit
 ) {
     val creators by viewModel.creators.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -49,6 +54,11 @@ fun CreatorScreen(
 
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    val searchMode by viewModel.searchMode.collectAsState()
+    val posts by viewModel.posts.collectAsState()
+    val tags by viewModel.tags.collectAsState()
+    val selectedTags by viewModel.selectedTags.collectAsState()
 
     Scaffold(
         topBar = {
@@ -64,7 +74,10 @@ fun CreatorScreen(
     ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = { viewModel.fetchCreators() },
+            onRefresh = { 
+                if (searchMode == SearchMode.Artists) viewModel.fetchCreators() 
+                else viewModel.fetchPosts() 
+            },
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -76,7 +89,7 @@ fun CreatorScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .clip(RoundedCornerShape(24.dp)),
-                    placeholder = { Text("Search creators...") },
+                    placeholder = { Text(if (searchMode == SearchMode.Artists) "Search creators..." else "Search posts...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -85,42 +98,114 @@ fun CreatorScreen(
                     singleLine = true
                 )
 
+                // Search Mode Toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    FilterChip(
+                        selected = searchMode == SearchMode.Artists,
+                        onClick = { viewModel.setSearchMode(SearchMode.Artists) },
+                        label = { Text("Artists") },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    FilterChip(
+                        selected = searchMode == SearchMode.Posts,
+                        onClick = { viewModel.setSearchMode(SearchMode.Posts) },
+                        label = { Text("Posts") }
+                    )
+                }
+
                 if (error != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = error ?: "Unknown error", color = MaterialTheme.colorScheme.error)
                     }
                 } else {
-                    val isCompact = gridSize == "Compact"
-                    if (isCompact) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(minSize = 150.dp),
-                            contentPadding = PaddingValues(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(creators) { creator ->
-                                CreatorItem(
-                                    creator = creator,
-                                    isFavorite = favorites.any { it.id == creator.id },
-                                    onClick = { onCreatorClick(creator) },
-                                    onFavoriteClick = { viewModel.toggleFavorite(creator) },
-                                    compact = true
-                                )
+                    if (searchMode == SearchMode.Artists) {
+                        val isCompact = gridSize == "Compact"
+                        if (isCompact) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 150.dp),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(creators) { creator ->
+                                    CreatorItem(
+                                        creator = creator,
+                                        isFavorite = favorites.any { it.id == creator.id },
+                                        onClick = { onCreatorClick(creator) },
+                                        onFavoriteClick = { viewModel.toggleFavorite(creator) },
+                                        compact = true
+                                    )
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(creators) { creator ->
+                                    CreatorItem(
+                                        creator = creator,
+                                        isFavorite = favorites.any { it.id == creator.id },
+                                        onClick = { onCreatorClick(creator) },
+                                        onFavoriteClick = { viewModel.toggleFavorite(creator) },
+                                        compact = false
+                                    )
+                                }
                             }
                         }
                     } else {
+                        // Posts List
+                        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                        
+                        // Infinite scroll handler
+                        val reachedBottom by remember {
+                            derivedStateOf {
+                                val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+                                lastVisibleItem?.index != 0 && lastVisibleItem?.index == listState.layoutInfo.totalItemsCount - 1
+                            }
+                        }
+
+                        LaunchedEffect(reachedBottom) {
+                            if (reachedBottom) {
+                                viewModel.loadMorePosts()
+                            }
+                        }
+
                         LazyColumn(
+                            state = listState,
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(creators) { creator ->
-                                CreatorItem(
-                                    creator = creator,
-                                    isFavorite = favorites.any { it.id == creator.id },
-                                    onClick = { onCreatorClick(creator) },
-                                    onFavoriteClick = { viewModel.toggleFavorite(creator) },
-                                    compact = false
+                            items(posts) { post ->
+                                com.example.kemono.ui.components.PostItem(
+                                    post = post,
+                                    onClick = { onPostClick(post) },
+                                    onCreatorClick = {
+                                        // Create a minimal creator object for navigation
+                                        val creator = Creator(
+                                            id = post.user,
+                                            service = post.service,
+                                            name = "Unknown", // Name will be fetched in profile
+                                            updated = 0,
+                                            indexed = 0
+                                        )
+                                        onCreatorClick(creator)
+                                    }
                                 )
+                            }
+                            
+                            if (isRefreshing && posts.isNotEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
                             }
                         }
                     }
@@ -139,6 +224,9 @@ fun CreatorScreen(
                     availableServices = availableServices,
                     selectedServices = selectedServices,
                     onServiceToggle = viewModel::toggleServiceFilter,
+                    tags = tags,
+                    selectedTags = selectedTags,
+                    onTagToggle = viewModel::toggleTag,
                     onReset = viewModel::clearFilters
                 )
             }
@@ -154,13 +242,22 @@ fun FilterSortBottomSheet(
     availableServices: List<String>,
     selectedServices: Set<String>,
     onServiceToggle: (String) -> Unit,
+    tags: List<String>,
+    selectedTags: Set<String>,
+    onTagToggle: (String) -> Unit,
     onReset: () -> Unit
 ) {
+    var tagSearchQuery by remember { mutableStateOf("") }
+    val filteredTags = remember(tags, tagSearchQuery) {
+        if (tagSearchQuery.isBlank()) tags else tags.filter { it.contains(tagSearchQuery, ignoreCase = true) }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .padding(bottom = 32.dp),
+            .padding(bottom = 32.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Sort By", style = MaterialTheme.typography.titleMedium)
@@ -196,6 +293,47 @@ fun FilterSortBottomSheet(
             }
         }
 
+        HorizontalDivider()
+
+        Text("Filter by Tags", style = MaterialTheme.typography.titleMedium)
+        
+        // Selected Tags
+        if (selectedTags.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                selectedTags.forEach { tag ->
+                    FilterChip(
+                        selected = true,
+                        onClick = { onTagToggle(tag) },
+                        label = { Text(tag) },
+                        leadingIcon = { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                    )
+                }
+            }
+        }
+
+        OutlinedTextField(
+            value = tagSearchQuery,
+            onValueChange = { tagSearchQuery = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search tags...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            filteredTags.take(20).forEach { tag ->
+                if (!selectedTags.contains(tag)) { // Don't show already selected tags in the list
+                    FilterChip(
+                        selected = false,
+                        onClick = { onTagToggle(tag) },
+                        label = { Text(tag) }
+                    )
+                }
+            }
+            if (filteredTags.size > 20) {
+                Text("...and ${filteredTags.size - 20} more", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
         Button(onClick = onReset, modifier = Modifier.fillMaxWidth()) { Text("Reset Filters") }
     }
 }
@@ -214,6 +352,7 @@ fun CreatorItem(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+            Box(contentAlignment = Alignment.TopEnd) {
                 AsyncImage(
                     model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
                     contentDescription = null,
@@ -224,22 +363,26 @@ fun CreatorItem(
                     contentScale = ContentScale.Crop,
                     error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = creator.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-                if (isFavorite) {
+                IconButton(
+                    onClick = onFavoriteClick,
+                    modifier = Modifier.size(24.dp).offset(x = 4.dp, y = (-4).dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(16.dp)
                     )
                 }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = creator.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
             }
         } else {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {

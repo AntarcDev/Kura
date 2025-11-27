@@ -1,0 +1,59 @@
+package com.example.kemono.ui.components
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.example.kemono.data.model.Post
+
+@Composable
+fun PostItem(post: Post, onClick: () -> Unit, onCreatorClick: () -> Unit = {}) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            post.file?.let { file ->
+                if (!file.path.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = "https://kemono.cr/thumbnail${file.path}",
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .padding(end = 8.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+            Column {
+                Text(
+                    text = post.title ?: "Untitled",
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2
+                )
+                Text(
+                    text = post.published ?: "Unknown date",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "View Creator",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onCreatorClick() }.padding(top = 4.dp)
+                )
+            }
+        }
+    }
+}

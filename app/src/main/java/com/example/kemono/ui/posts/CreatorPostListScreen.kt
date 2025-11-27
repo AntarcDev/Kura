@@ -35,6 +35,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 
+import com.example.kemono.ui.components.PostItem
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatorPostListScreen(
@@ -77,45 +79,13 @@ fun CreatorPostListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(posts) { post ->
-                        PostItem(post = post, onClick = { onPostClick(post) })
+                        PostItem(
+                            post = post,
+                            onClick = { onPostClick(post) },
+                            onCreatorClick = {}
+                        )
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun PostItem(post: Post, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        Row(modifier = Modifier.padding(8.dp)) {
-            post.file?.let { file ->
-                if (!file.path.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = "https://kemono.cr${file.path}",
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(80.dp)
-                            .padding(end = 8.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-            Column {
-                Text(
-                    text = post.title ?: "Untitled",
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2
-                )
-                Text(
-                    text = post.published ?: "Unknown date",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }

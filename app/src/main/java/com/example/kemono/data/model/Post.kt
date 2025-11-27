@@ -7,7 +7,8 @@ data class Post(
     val user: String,
     val service: String,
     val title: String,
-    val content: String,
+    val content: String? = null,
+    val substring: String? = null,
     val published: String,
     val file: KemonoFile?,
     val attachments: List<KemonoFile> = emptyList()

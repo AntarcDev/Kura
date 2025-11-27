@@ -44,6 +44,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 @Composable
 fun MainScreen(
         onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit,
+        onPostClick: (com.example.kemono.data.model.Post) -> Unit,
         onNavigateToGalleryItem: (Int) -> Unit
 ) {
     val items =
@@ -103,7 +104,10 @@ fun MainScreen(
     ) { paddingValues ->
         HorizontalPager(state = pagerState, modifier = Modifier.padding(paddingValues)) { page ->
             when (items[page]) {
-                BottomNavItem.Creators -> CreatorScreen(onCreatorClick = onCreatorClick)
+                BottomNavItem.Creators -> CreatorScreen(
+                    onCreatorClick = onCreatorClick,
+                    onPostClick = onPostClick
+                )
                 BottomNavItem.Downloads ->
                         DownloadManagerScreen(
                                 onOpenClick = {

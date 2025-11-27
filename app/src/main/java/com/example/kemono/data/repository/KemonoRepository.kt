@@ -24,8 +24,30 @@ constructor(
 ) {
     suspend fun getCreators(): List<Creator> {
         return try {
-            val creators = api.getCreators()
-            cacheDao.cacheCreators(creators.map { it.toCached() })
+            val jsonElement = api.getCreators()
+            val creators = if (jsonElement.isJsonArray) {
+                val jsonArray = jsonElement.asJsonArray
+                val gson = com.google.gson.Gson()
+                jsonArray.map { gson.fromJson(it, Creator::class.java) }
+            } else if (jsonElement.isJsonObject) {
+                val jsonObject = jsonElement.asJsonObject
+                val gson = com.google.gson.Gson()
+                // Try known keys
+                val list = when {
+                    jsonObject.has("creators") -> jsonObject.getAsJsonArray("creators")
+                    jsonObject.has("results") -> jsonObject.getAsJsonArray("results")
+                    jsonObject.has("users") -> jsonObject.getAsJsonArray("users")
+                    jsonObject.has("data") -> jsonObject.getAsJsonArray("data")
+                    else -> com.google.gson.JsonArray()
+                }
+                list.map { gson.fromJson(it, Creator::class.java) }
+            } else {
+                emptyList()
+            }
+            
+            if (creators.isNotEmpty()) {
+                cacheDao.cacheCreators(creators.map { it.toCached() })
+            }
             creators
         } catch (e: Exception) {
             try {
@@ -49,8 +71,9 @@ constructor(
         return allCreators.filter { it.id in popularCreatorIds }
     }
 
-    suspend fun getRecentPosts(offset: Int = 0, query: String? = null): List<Post> {
-        return api.getRecentPosts(offset, query)
+    suspend fun getRecentPosts(offset: Int = 0, query: String? = null, tags: List<String>? = null): List<Post> {
+        val response = api.getRecentPosts(offset, query, tags)
+        return if (response.posts.isNotEmpty()) response.posts else response.results
     }
 
     suspend fun getCreatorProfile(service: String, creatorId: String): Creator {
@@ -122,5 +145,9 @@ constructor(
 
     fun isFavorite(id: String): Flow<Boolean> {
         return favoriteDao.isFavorite(id)
+    }
+
+    suspend fun getTags(): List<String> {
+        return api.getTags().map { it.tag }
     }
 }
