@@ -33,6 +33,7 @@ Unlock a seamless browsing experience with **Kura** (蔵 - "Storehouse"). Built 
 *   **DDoS-Guard Bypass**: Built-in handling for protection cookies—no browser gymnastics required.
 *   **Theming**: Full support for Light, Dark, and System themes with dynamic color support.
 *   **Cache Management**: Built-in tools to manage storage usage and clear cache.
+*   **In-App Updates**: Automatically checks for updates on GitHub and installs them directly from the app.
 
 ---
 

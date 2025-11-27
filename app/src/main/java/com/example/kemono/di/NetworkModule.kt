@@ -3,12 +3,14 @@ package com.example.kemono.di
 import android.content.Context
 import com.example.kemono.data.local.SessionManager
 import com.example.kemono.data.remote.KemonoApi
+import com.example.kemono.data.remote.GithubApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 import okhttp3.Cookie
 import okhttp3.CookieJar
@@ -23,6 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object NetworkModule {
 
     private const val BASE_URL = "https://kemono.cr/api/v1/"
+    private const val GITHUB_API_URL = "https://api.github.com/"
 
     @Provides
     @Singleton
@@ -179,15 +182,53 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideImageLoader(@ApplicationContext context: Context, okHttpClient: OkHttpClient): coil.ImageLoader {
+    @Named("GithubClient")
+    fun provideGithubOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+        val cacheSize = 10L * 1024L * 1024L // 10 MB
+        val cache = okhttp3.Cache(context.cacheDir.resolve("github_cache"), cacheSize)
+
+        return OkHttpClient.Builder()
+            .cache(cache)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(
+                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("GithubRetrofit")
+    fun provideGithubRetrofit(@Named("GithubClient") okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(GITHUB_API_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGithubApi(@Named("GithubRetrofit") retrofit: Retrofit): GithubApi {
+        return retrofit.create(GithubApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageLoader(
+        @ApplicationContext context: Context,
+        okHttpClient: OkHttpClient
+    ): coil.ImageLoader {
         return coil.ImageLoader.Builder(context)
-                .okHttpClient(okHttpClient)
-                .components {
-                    if (android.os.Build.VERSION.SDK_INT >= 28) {
-                        add(coil.decode.ImageDecoderDecoder.Factory())
-                    } else {
-                        add(coil.decode.GifDecoder.Factory())
-                    }
+            .okHttpClient(okHttpClient)
+            .components {
+                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                    add(coil.decode.ImageDecoderDecoder.Factory())
+                } else {
+                    add(coil.decode.GifDecoder.Factory())
+                }
                     add(coil.decode.VideoFrameDecoder.Factory())
                 }
                 .memoryCache {

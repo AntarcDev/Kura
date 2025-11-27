@@ -1,3 +1,4 @@
+com.antarc.kura:xml/file_paths = 0x7f120002
 com.antarc.kura:styleable/StateListDrawableItem = 0x7f11001a
 com.antarc.kura:styleable/RecyclerView = 0x7f110018
 com.antarc.kura:styleable/NavGraphNavigator = 0x7f110012
@@ -114,7 +115,7 @@ com.antarc.kura:string/range_end = 0x7f0f0080
 com.antarc.kura:layout/notification_template_part_chronometer = 0x7f0c001a
 com.antarc.kura:layout/notification_template_media_custom = 0x7f0c0019
 com.antarc.kura:layout/notification_template_media = 0x7f0c0018
-com.antarc.kura:xml/provider_paths = 0x7f120002
+com.antarc.kura:xml/provider_paths = 0x7f120003
 com.antarc.kura:layout/notification_template_icon_group = 0x7f0c0016
 com.antarc.kura:layout/notification_template_big_media_narrow = 0x7f0c0013
 com.antarc.kura:layout/notification_media_action = 0x7f0c000f

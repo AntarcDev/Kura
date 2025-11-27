@@ -105,4 +105,9 @@ Thumbs.db
 *~
 .*.swp
 
-FEATURE_IDEAS.md
+# Error logs and temporary files
+*error*.txt
+*_log.txt
+
+
+

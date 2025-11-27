@@ -6,7 +6,15 @@ import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import com.example.kemono.data.local.SessionManager
 import com.example.kemono.data.repository.KemonoRepository
+
 import com.example.kemono.data.repository.SettingsRepository
+import com.example.kemono.data.repository.UpdateRepository
+import com.example.kemono.data.model.GithubRelease
+import com.example.kemono.BuildConfig
+import androidx.core.content.FileProvider
+import android.content.Intent
+import android.net.Uri
+import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -29,6 +37,7 @@ constructor(
         private val okHttpClient: OkHttpClient,
         private val repository: KemonoRepository,
         private val settingsRepository: SettingsRepository,
+        private val updateRepository: UpdateRepository,
         @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -43,6 +52,18 @@ constructor(
 
     private val _isInitializing = MutableStateFlow(false)
     val isInitializing: StateFlow<Boolean> = _isInitializing.asStateFlow()
+
+    private val _updateAvailable = MutableStateFlow<GithubRelease?>(null)
+    val updateAvailable: StateFlow<GithubRelease?> = _updateAvailable.asStateFlow()
+
+    private val _downloadProgress = MutableStateFlow<Float?>(null)
+    val downloadProgress: StateFlow<Float?> = _downloadProgress.asStateFlow()
+
+    private val _updateError = MutableStateFlow<String?>(null)
+    val updateError: StateFlow<String?> = _updateError.asStateFlow()
+
+    private val _readyToInstall = MutableStateFlow<File?>(null)
+    val readyToInstall: StateFlow<File?> = _readyToInstall.asStateFlow()
 
     val themeMode =
             settingsRepository.themeMode.stateIn(
@@ -127,6 +148,71 @@ constructor(
             } finally {
                 _isInitializing.value = false
             }
+        }
+        }
+
+
+    fun checkForUpdate() {
+        viewModelScope.launch {
+            _updateError.value = null
+            try {
+                val result = updateRepository.checkForUpdate(BuildConfig.VERSION_NAME)
+                result.fold(
+                    onSuccess = { release ->
+                        if (release != null) {
+                            _updateAvailable.value = release
+                        } else {
+                            _updateError.value = "App is up to date"
+                        }
+                    },
+                    onFailure = { e ->
+                        _updateError.value = "Check failed: ${e.message}"
+                    }
+                )
+            } catch (e: Exception) {
+                _updateError.value = "Failed to check for updates: ${e.message}"
+            }
+        }
+    }
+
+    fun downloadUpdate() {
+        val release = _updateAvailable.value ?: return
+        val asset = release.assets.firstOrNull { it.name.endsWith(".apk") }
+        if (asset == null) {
+            _updateError.value = "No APK found in release"
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _downloadProgress.value = 0f
+                updateRepository.downloadApk(asset.downloadUrl).collect { progress ->
+                    _downloadProgress.value = progress
+                }
+                _downloadProgress.value = null
+                _readyToInstall.value = updateRepository.getApkFile()
+            } catch (e: Exception) {
+                _downloadProgress.value = null
+                _updateError.value = "Download failed: ${e.message}"
+            }
+        }
+    }
+
+    fun dismissUpdateDialog() {
+        _updateAvailable.value = null
+        _updateError.value = null
+        _readyToInstall.value = null
+    }
+
+    fun getInstallIntent(file: File): Intent {
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            file
+        )
+        return Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
         }
     }
 }

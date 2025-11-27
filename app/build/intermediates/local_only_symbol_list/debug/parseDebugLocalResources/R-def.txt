@@ -10,4 +10,5 @@ string app_name
 style Theme.Kemono
 xml backup_rules
 xml data_extraction_rules
+xml file_paths
 xml provider_paths

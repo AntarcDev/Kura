@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 
 import com.example.kemono.ui.components.PostItem
+import com.example.kemono.ui.components.CreatorProfileHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,16 +46,18 @@ fun CreatorPostListScreen(
     onBackClick: () -> Unit
 ) {
     val posts by viewModel.posts.collectAsState()
+    val creator by viewModel.creator.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Posts") },
+                title = { Text(text = creator?.name ?: "Posts") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -75,9 +78,18 @@ fun CreatorPostListScreen(
                 )
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    creator?.let {
+                        item {
+                            CreatorProfileHeader(
+                                creator = it,
+                                isFavorite = isFavorite,
+                                onFavoriteClick = { viewModel.toggleFavorite() }
+                            )
+                        }
+                    }
                     items(posts) { post ->
                         PostItem(
                             post = post,

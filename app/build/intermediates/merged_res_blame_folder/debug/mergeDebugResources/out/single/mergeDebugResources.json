@@ -60,6 +60,10 @@
         "source": "com.example.kemono.app-main-75:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
+        "merged": "com.example.kemono.app-debug-73:/xml_file_paths.xml.flat",
+        "source": "com.example.kemono.app-main-75:/xml/file_paths.xml"
+    },
+    {
         "merged": "com.example.kemono.app-debug-73:/mipmap-hdpi_ic_launcher_foreground.png.flat",
         "source": "com.example.kemono.app-main-75:/mipmap-hdpi/ic_launcher_foreground.png"
     },

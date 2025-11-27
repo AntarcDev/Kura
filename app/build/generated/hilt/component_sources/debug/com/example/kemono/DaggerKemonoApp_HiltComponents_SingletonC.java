@@ -13,15 +13,20 @@ import com.example.kemono.data.local.CacheDao;
 import com.example.kemono.data.local.DownloadDao;
 import com.example.kemono.data.local.FavoriteDao;
 import com.example.kemono.data.local.SessionManager;
+import com.example.kemono.data.remote.GithubApi;
 import com.example.kemono.data.remote.KemonoApi;
 import com.example.kemono.data.repository.DownloadRepository;
 import com.example.kemono.data.repository.KemonoRepository;
 import com.example.kemono.data.repository.SettingsRepository;
+import com.example.kemono.data.repository.UpdateRepository;
 import com.example.kemono.di.DatabaseModule_ProvideAppDatabaseFactory;
 import com.example.kemono.di.DatabaseModule_ProvideCacheDaoFactory;
 import com.example.kemono.di.DatabaseModule_ProvideDownloadDaoFactory;
 import com.example.kemono.di.DatabaseModule_ProvideFavoriteDaoFactory;
 import com.example.kemono.di.NetworkModule_ProvideCookieJarFactory;
+import com.example.kemono.di.NetworkModule_ProvideGithubApiFactory;
+import com.example.kemono.di.NetworkModule_ProvideGithubOkHttpClientFactory;
+import com.example.kemono.di.NetworkModule_ProvideGithubRetrofitFactory;
 import com.example.kemono.di.NetworkModule_ProvideImageLoaderFactory;
 import com.example.kemono.di.NetworkModule_ProvideKemonoApiFactory;
 import com.example.kemono.di.NetworkModule_ProvideOkHttpClientFactory;
@@ -523,7 +528,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.downloadRepositoryProvider.get(), viewModelCImpl.savedStateHandle, singletonCImpl.networkMonitorProvider.get());
 
           case 7: // com.example.kemono.ui.settings.SettingsViewModel 
-          return (T) new SettingsViewModel(singletonCImpl.sessionManagerProvider.get(), singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.settingsRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+          return (T) new SettingsViewModel(singletonCImpl.sessionManagerProvider.get(), singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.updateRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }
@@ -627,6 +632,14 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<DownloadRepository> downloadRepositoryProvider;
 
+    private Provider<OkHttpClient> provideGithubOkHttpClientProvider;
+
+    private Provider<Retrofit> provideGithubRetrofitProvider;
+
+    private Provider<GithubApi> provideGithubApiProvider;
+
+    private Provider<UpdateRepository> updateRepositoryProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
@@ -658,6 +671,10 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 5));
       this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 9));
       this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 10));
+      this.provideGithubOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 14));
+      this.provideGithubRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 13));
+      this.provideGithubApiProvider = DoubleCheck.provider(new SwitchingProvider<GithubApi>(singletonCImpl, 12));
+      this.updateRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UpdateRepository>(singletonCImpl, 11));
     }
 
     @Override
@@ -731,6 +748,18 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
           case 10: // com.example.kemono.data.repository.DownloadRepository 
           return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
+
+          case 11: // com.example.kemono.data.repository.UpdateRepository 
+          return (T) new UpdateRepository(singletonCImpl.provideGithubApiProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 12: // com.example.kemono.data.remote.GithubApi 
+          return (T) NetworkModule_ProvideGithubApiFactory.provideGithubApi(singletonCImpl.provideGithubRetrofitProvider.get());
+
+          case 13: // @javax.inject.Named("GithubRetrofit") retrofit2.Retrofit 
+          return (T) NetworkModule_ProvideGithubRetrofitFactory.provideGithubRetrofit(singletonCImpl.provideGithubOkHttpClientProvider.get());
+
+          case 14: // @javax.inject.Named("GithubClient") okhttp3.OkHttpClient 
+          return (T) NetworkModule_ProvideGithubOkHttpClientFactory.provideGithubOkHttpClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }

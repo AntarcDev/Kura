@@ -1,20 +1,20 @@
 -- Merging decision tree log ---
 provider#androidx.core.content.FileProvider
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:38:9-46:20
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:40:9-48:20
 	android:grantUriPermissions
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:42:13-47
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:44:13-47
 	android:authorities
 		INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:40:13-60
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:42:13-60
 	android:exported
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:41:13-37
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:43:13-37
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:39:13-62
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:41:13-62
 manifest
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-49:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-49:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-49:12
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-49:12
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-51:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-51:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-51:12
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:2:1-51:12
 MERGED from [io.coil-kt:coil-gif:2.5.0] C:\Users\antarc\.gradle\caches\8.9\transforms\19c57abb01c4ac4e9e751802c24877e3\transformed\coil-gif-2.5.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-video:2.5.0] C:\Users\antarc\.gradle\caches\8.9\transforms\d2d7a5bd974368434665867f6ec38ee1\transformed\coil-video-2.5.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-compose:2.6.0] C:\Users\antarc\.gradle\caches\8.9\transforms\f7c09fb5debc22c0c2a73578d2771ab3\transformed\coil-compose-2.6.0\AndroidManifest.xml:2:1-7:12
@@ -123,21 +123,25 @@ uses-permission#android.permission.INTERNET
 ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:5:5-67
 	android:name
 		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:5:22-64
+uses-permission#android.permission.REQUEST_INSTALL_PACKAGES
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:6:5-83
+	android:name
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:6:22-80
 uses-permission#android.permission.READ_EXTERNAL_STORAGE
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:6:5-80
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-80
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:6:22-77
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:22-77
 uses-permission#android.permission.READ_MEDIA_IMAGES
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:5-76
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:8:5-76
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:7:22-73
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:8:22-73
 uses-permission#android.permission.READ_MEDIA_VIDEO
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:8:5-75
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:9:5-75
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:8:22-72
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:9:22-72
 application
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:10:5-47:19
-INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:10:5-47:19
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:11:5-49:19
+INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:11:5-49:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.0] C:\Users\antarc\.gradle\caches\8.9\transforms\f004c646126a5fb2f19fa369f11aeef8\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.0] C:\Users\antarc\.gradle\caches\8.9\transforms\f004c646126a5fb2f19fa369f11aeef8\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\antarc\.gradle\caches\8.9\transforms\ade8e3a63f3e9b5faa47b2caff55518b\transformed\work-runtime-2.9.0\AndroidManifest.xml:28:5-143:19
@@ -163,61 +167,61 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\antarc\.gradle\cac
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] C:\Users\antarc\.gradle\caches\8.9\transforms\487d1c62278498830c61f1749f5bc0a2\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:18:9-35
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:19:9-35
 	android:label
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:16:9-41
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:17:9-41
 	android:fullBackupContent
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:14:9-54
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:15:9-54
 	android:roundIcon
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:17:9-54
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:18:9-54
 	tools:targetApi
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:20:9-29
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:21:9-29
 	android:icon
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:15:9-43
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:16:9-43
 	android:allowBackup
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:12:9-35
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:13:9-35
 	android:theme
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:19:9-44
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:20:9-44
 	android:dataExtractionRules
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:13:9-65
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:14:9-65
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:11:9-34
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:12:9-34
 activity#com.example.kemono.MainActivity
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:21:9-31:20
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:23:9-32:20
 	android:label
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:24:13-45
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:26:13-45
 	android:exported
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:23:13-36
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:25:13-36
 	android:theme
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:25:13-48
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:27:13-48
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:22:13-41
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:24:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:26:13-30:29
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:28:13-31:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:27:17-69
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:29:17-69
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:27:25-66
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:29:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:29:17-77
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:30:17-77
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:29:27-74
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:30:27-74
 activity#com.example.kemono.ui.components.FullscreenVideoActivity
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:32:9-36:40
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:34:9-38:40
 	android:exported
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:36:13-37
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:38:13-37
 	android:configChanges
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:34:13-74
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:36:13-74
 	android:theme
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:35:13-48
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:37:13-48
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:33:13-66
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:35:13-66
 meta-data#android.support.FILE_PROVIDER_PATHS
-ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:43:13-45:58
+ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:45:13-47:54
 	android:resource
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:45:17-55
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:47:17-51
 	android:name
-		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:44:17-67
+		ADDED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml:46:17-67
 uses-sdk
 INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\antarc\Desktop\projects\A1\app\src\main\AndroidManifest.xml
