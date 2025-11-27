@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.antarc.kura"
-4    android:versionCode="1"
-5    android:versionName="0.2AlphaRelease" >
+4    android:versionCode="3"
+5    android:versionName="0.3-Pre-Release" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
