@@ -229,8 +229,8 @@ object NetworkModule {
                 } else {
                     add(coil.decode.GifDecoder.Factory())
                 }
-                    add(coil.decode.VideoFrameDecoder.Factory())
-                }
+                add(coil.decode.VideoFrameDecoder.Factory())
+            }
                 .memoryCache {
                     coil.memory.MemoryCache.Builder(context)
                         .maxSizePercent(0.25)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
@@ -36,9 +37,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import com.example.kemono.util.MediaType
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -93,140 +101,120 @@ fun DownloadManagerScreen(
 
 @Composable
 fun DownloadItemCard(uiState: DownloadItemUiState, onDelete: () -> Unit, onOpen: () -> Unit) {
-        val item = uiState.item
-        val status = uiState.status
+    val item = uiState.item
+    val status = uiState.status
 
-        Card(
-                colors =
-                        CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
-        ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                        ) {
-                                Icon(
-                                        imageVector =
-                                                if (item.mediaType == MediaType.VIDEO.name)
-                                                        Icons.Default.Movie
-                                                else Icons.Default.Image,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(40.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                                text = item.fileName,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                        )
-                                        Text(
-                                                text =
-                                                        SimpleDateFormat(
-                                                                        "MMM dd, HH:mm",
-                                                                        Locale.getDefault()
-                                                                )
-                                                                .format(Date(item.downloadedAt)),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                }
-                                IconButton(onClick = onDelete) {
-                                        Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Delete",
-                                                tint = MaterialTheme.colorScheme.error
-                                        )
-                                }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        if (status != null) {
-                                when (status.status) {
-                                        DownloadManager.STATUS_RUNNING -> {
-                                                LinearProgressIndicator(
-                                                        progress = status.progress,
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                )
-                                                Text(
-                                                        text =
-                                                                "Downloading... ${(status.progress * 100).toInt()}%",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        modifier = Modifier.padding(top = 4.dp)
-                                                )
-                                        }
-                                        DownloadManager.STATUS_PENDING -> {
-                                                LinearProgressIndicator(
-                                                        modifier = Modifier.fillMaxWidth()
-                                                )
-                                                Text(
-                                                        "Pending...",
-                                                        style = MaterialTheme.typography.bodySmall
-                                                )
-                                        }
-                                        DownloadManager.STATUS_PAUSED -> {
-                                                LinearProgressIndicator(
-                                                        progress = status.progress,
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                )
-                                                Text(
-                                                        "Paused",
-                                                        style = MaterialTheme.typography.bodySmall
-                                                )
-                                        }
-                                        DownloadManager.STATUS_FAILED -> {
-                                                Text(
-                                                        "Failed",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.error
-                                                )
-                                        }
-                                        DownloadManager.STATUS_SUCCESSFUL -> {
-                                                Button(
-                                                        onClick = onOpen,
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        colors =
-                                                                ButtonDefaults.buttonColors(
-                                                                        containerColor =
-                                                                                MaterialTheme
-                                                                                        .colorScheme
-                                                                                        .primaryContainer,
-                                                                        contentColor =
-                                                                                MaterialTheme
-                                                                                        .colorScheme
-                                                                                        .onPrimaryContainer
-                                                                )
-                                                ) { Text("Open in Gallery") }
-                                        }
-                                }
-                        } else {
-                                // Assuming successful if no status found (or old download)
-                                // But wait, if downloadId is -1, it's an old download.
-                                // If downloadId is set but status is null, maybe it's finished and
-                                // cleared from
-                                // system?
-                                // Let's assume if status is null, we check if file exists?
-                                // For now, let's show "Open" if status is null or successful.
-                                Button(
-                                        onClick = onOpen,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors =
-                                                ButtonDefaults.buttonColors(
-                                                        containerColor =
-                                                                MaterialTheme.colorScheme
-                                                                        .primaryContainer,
-                                                        contentColor =
-                                                                MaterialTheme.colorScheme
-                                                                        .onPrimaryContainer
-                                                )
-                                ) { Text("Open in Gallery") }
-                        }
+            ) {
+                Box(
+                    modifier = Modifier.size(50.dp).clip(RoundedCornerShape(8.dp))
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(java.io.File(item.filePath))
+                            .videoFrameMillis(1000)
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+                    if (item.mediaType == MediaType.VIDEO.name) {
+                        Icon(
+                            imageVector = Icons.Default.Movie,
+                            contentDescription = null,
+                            modifier = Modifier.align(Alignment.Center).size(24.dp),
+                            tint = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f)
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.fileName,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+                            .format(Date(item.downloadedAt)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (status != null) {
+                when (status.status) {
+                    DownloadManager.STATUS_RUNNING -> {
+                        LinearProgressIndicator(
+                            progress = status.progress,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Text(
+                            text = "Downloading... ${(status.progress * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                    DownloadManager.STATUS_PENDING -> {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text("Pending...", style = MaterialTheme.typography.bodySmall)
+                    }
+                    DownloadManager.STATUS_PAUSED -> {
+                        LinearProgressIndicator(
+                            progress = status.progress,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Text("Paused", style = MaterialTheme.typography.bodySmall)
+                    }
+                    DownloadManager.STATUS_FAILED -> {
+                        Text(
+                            "Failed",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    DownloadManager.STATUS_SUCCESSFUL -> {
+                        Button(
+                            onClick = onOpen,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) { Text("Open in Gallery") }
+                    }
+                }
+            } else {
+                Button(
+                    onClick = onOpen,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) { Text("Open in Gallery") }
+            }
         }
+    }
 }

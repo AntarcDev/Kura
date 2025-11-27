@@ -51,16 +51,27 @@ fun CreatorPostListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = creator?.name ?: "Posts") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            if (isSelectionMode) {
+                com.example.kemono.ui.components.SelectionTopAppBar(
+                    selectedCount = selectedPostIds.size,
+                    onClearSelection = viewModel::clearSelection,
+                    onDownloadSelected = viewModel::downloadSelectedPosts
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(text = creator?.name ?: "Posts") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -93,7 +104,17 @@ fun CreatorPostListScreen(
                     items(posts) { post ->
                         PostItem(
                             post = post,
-                            onClick = { onPostClick(post) },
+                            selected = selectedPostIds.contains(post.id),
+                            onClick = { 
+                                if (isSelectionMode) {
+                                    viewModel.toggleSelection(post)
+                                } else {
+                                    onPostClick(post)
+                                }
+                            },
+                            onLongClick = {
+                                viewModel.toggleSelection(post)
+                            },
                             onCreatorClick = {}
                         )
                     }

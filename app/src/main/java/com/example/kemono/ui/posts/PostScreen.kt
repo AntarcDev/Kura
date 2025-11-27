@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -139,26 +140,45 @@ fun PostScreen(
                                     val mediaType = com.example.kemono.util.getMediaType(file.path)
                                     val currentIndex = imageIndex++
 
-                                    when (mediaType) {
-                                        com.example.kemono.util.MediaType.VIDEO -> {
-                                            com.example.kemono.ui.components.VideoPlayer(
-                                                    url = url,
-                                                    modifier =
-                                                            Modifier.fillMaxWidth().height(300.dp)
-                                            )
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        when (mediaType) {
+                                            com.example.kemono.util.MediaType.VIDEO -> {
+                                                com.example.kemono.ui.components.VideoPlayer(
+                                                        url = url,
+                                                        modifier =
+                                                                Modifier.fillMaxWidth().height(300.dp)
+                                                )
+                                            }
+                                            else -> {
+                                                AsyncImage(
+                                                        model = url,
+                                                        contentDescription = null,
+                                                        modifier =
+                                                                Modifier.fillMaxWidth()
+                                                                        .height(300.dp)
+                                                                        .clickable {
+                                                                            onImageClick(currentIndex)
+                                                                        },
+                                                        contentScale = ContentScale.Fit
+                                                )
+                                            }
                                         }
-                                        else -> {
-                                            AsyncImage(
-                                                    model = url,
-                                                    contentDescription = null,
-                                                    modifier =
-                                                            Modifier.fillMaxWidth()
-                                                                    .height(300.dp)
-                                                                    .clickable {
-                                                                        onImageClick(currentIndex)
-                                                                    },
-                                                    contentScale = ContentScale.Fit
-                                            )
+                                        
+                                        // Download button overlay
+                                        IconButton(
+                                            onClick = { 
+                                                viewModel.downloadFile(
+                                                    url = url,
+                                                    fileName = file.name ?: "file",
+                                                    mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                                )
+                                            },
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(8.dp)
+                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), CircleShape)
+                                        ) {
+                                            Icon(Icons.Default.Download, contentDescription = "Download file")
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -219,6 +239,17 @@ fun PostScreen(
                                                     style = MaterialTheme.typography.bodySmall,
                                                     modifier = Modifier.weight(1f)
                                             )
+                                            IconButton(
+                                                onClick = {
+                                                    viewModel.downloadFile(
+                                                        url = url,
+                                                        fileName = attachment.name ?: "attachment",
+                                                        mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                                    )
+                                                }
+                                            ) {
+                                                Icon(Icons.Default.Download, contentDescription = "Download attachment")
+                                            }
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                     }

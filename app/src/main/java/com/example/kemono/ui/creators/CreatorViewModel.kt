@@ -128,6 +128,16 @@ constructor(
     
     private var currentOffset = 0
 
+    // Selection State
+    private val _selectedPostIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedPostIds: StateFlow<Set<String>> = _selectedPostIds.asStateFlow()
+
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
+
+    @Inject
+    lateinit var downloadRepository: com.example.kemono.data.repository.DownloadRepository
+
     init {
         fetchCreators()
         fetchTags()
@@ -304,6 +314,70 @@ constructor(
             } else {
                 repository.addFavorite(favCreator)
             }
+        }
+    }
+    fun toggleSelection(post: com.example.kemono.data.model.Post) {
+        val current = _selectedPostIds.value
+        if (current.contains(post.id)) {
+            _selectedPostIds.value = current - post.id
+            if (_selectedPostIds.value.isEmpty()) {
+                _isSelectionMode.value = false
+            }
+        } else {
+            _selectedPostIds.value = current + post.id
+            _isSelectionMode.value = true
+        }
+    }
+
+    fun clearSelection() {
+        _selectedPostIds.value = emptySet()
+        _isSelectionMode.value = false
+    }
+
+    fun downloadSelectedPosts() {
+        val selectedIds = _selectedPostIds.value
+        val postsToDownload = _posts.value.filter { it.id in selectedIds }
+        
+        viewModelScope.launch {
+            postsToDownload.forEach { post ->
+                // Ensure we have creator name, or fallback
+                val creatorName = post.user // Ideally fetch name if needed, but ID is safe for now
+                
+                // Download main file
+                post.file?.let { file ->
+                    if (!file.path.isNullOrEmpty()) {
+                        val url = "https://kemono.cr${file.path}"
+                        val mediaType = if (com.example.kemono.util.getMediaType(file.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                        downloadRepository.downloadFile(
+                            url,
+                            file.name ?: "file",
+                            post.id,
+                            post.title,
+                            post.user,
+                            creatorName,
+                            mediaType
+                        )
+                    }
+                }
+
+                // Download attachments
+                post.attachments.forEach { attachment ->
+                    if (!attachment.path.isNullOrEmpty()) {
+                        val url = "https://kemono.cr${attachment.path}"
+                        val mediaType = if (com.example.kemono.util.getMediaType(attachment.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                        downloadRepository.downloadFile(
+                            url,
+                            attachment.name ?: "attachment",
+                            post.id,
+                            post.title,
+                            post.user,
+                            creatorName,
+                            mediaType
+                        )
+                    }
+                }
+            }
+            clearSelection()
         }
     }
 }

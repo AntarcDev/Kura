@@ -15,6 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -36,6 +38,7 @@ import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.Post
 import com.example.kemono.ui.components.CreatorItemSkeleton
 import com.example.kemono.ui.components.PostItemSkeleton
+import com.example.kemono.ui.components.SelectionTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,16 +65,27 @@ fun CreatorScreen(
     val tags by viewModel.tags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
 
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Kura") },
-                actions = {
-                    IconButton(onClick = { showBottomSheet = true }) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Filter & Sort")
+            if (isSelectionMode) {
+                SelectionTopAppBar(
+                    selectedCount = selectedPostIds.size,
+                    onClearSelection = viewModel::clearSelection,
+                    onDownloadSelected = viewModel::downloadSelectedPosts
+                )
+            } else {
+                TopAppBar(
+                    title = { Text("Kura") },
+                    actions = {
+                        IconButton(onClick = { showBottomSheet = true }) {
+                            Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Filter & Sort")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -217,7 +231,17 @@ fun CreatorScreen(
                                 items(posts) { post ->
                                     com.example.kemono.ui.components.PostItem(
                                         post = post,
-                                        onClick = { onPostClick(post) },
+                                        selected = selectedPostIds.contains(post.id),
+                                        onClick = { 
+                                            if (isSelectionMode) {
+                                                viewModel.toggleSelection(post)
+                                            } else {
+                                                onPostClick(post)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.toggleSelection(post)
+                                        },
                                         onCreatorClick = {
                                             // Create a minimal creator object for navigation
                                             val creator = Creator(
@@ -481,3 +505,5 @@ fun CreatorItem(
         }
     }
 }
+
+

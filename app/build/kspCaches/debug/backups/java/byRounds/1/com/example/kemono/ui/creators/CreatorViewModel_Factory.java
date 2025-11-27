@@ -1,5 +1,6 @@
 package com.example.kemono.ui.creators;
 
+import com.example.kemono.data.repository.DownloadRepository;
 import com.example.kemono.data.repository.KemonoRepository;
 import com.example.kemono.data.repository.SettingsRepository;
 import com.example.kemono.util.NetworkMonitor;
@@ -30,23 +31,30 @@ public final class CreatorViewModel_Factory implements Factory<CreatorViewModel>
 
   private final Provider<SettingsRepository> settingsRepositoryProvider;
 
+  private final Provider<DownloadRepository> downloadRepositoryProvider;
+
   public CreatorViewModel_Factory(Provider<KemonoRepository> repositoryProvider,
       Provider<NetworkMonitor> networkMonitorProvider,
-      Provider<SettingsRepository> settingsRepositoryProvider) {
+      Provider<SettingsRepository> settingsRepositoryProvider,
+      Provider<DownloadRepository> downloadRepositoryProvider) {
     this.repositoryProvider = repositoryProvider;
     this.networkMonitorProvider = networkMonitorProvider;
     this.settingsRepositoryProvider = settingsRepositoryProvider;
+    this.downloadRepositoryProvider = downloadRepositoryProvider;
   }
 
   @Override
   public CreatorViewModel get() {
-    return newInstance(repositoryProvider.get(), networkMonitorProvider.get(), settingsRepositoryProvider.get());
+    CreatorViewModel instance = newInstance(repositoryProvider.get(), networkMonitorProvider.get(), settingsRepositoryProvider.get());
+    CreatorViewModel_MembersInjector.injectDownloadRepository(instance, downloadRepositoryProvider.get());
+    return instance;
   }
 
   public static CreatorViewModel_Factory create(Provider<KemonoRepository> repositoryProvider,
       Provider<NetworkMonitor> networkMonitorProvider,
-      Provider<SettingsRepository> settingsRepositoryProvider) {
-    return new CreatorViewModel_Factory(repositoryProvider, networkMonitorProvider, settingsRepositoryProvider);
+      Provider<SettingsRepository> settingsRepositoryProvider,
+      Provider<DownloadRepository> downloadRepositoryProvider) {
+    return new CreatorViewModel_Factory(repositoryProvider, networkMonitorProvider, settingsRepositoryProvider, downloadRepositoryProvider);
   }
 
   public static CreatorViewModel newInstance(KemonoRepository repository,

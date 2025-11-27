@@ -32,7 +32,9 @@ import com.example.kemono.di.NetworkModule_ProvideKemonoApiFactory;
 import com.example.kemono.di.NetworkModule_ProvideOkHttpClientFactory;
 import com.example.kemono.di.NetworkModule_ProvideRetrofitFactory;
 import com.example.kemono.ui.creators.CreatorViewModel;
+import com.example.kemono.ui.creators.CreatorViewModel_Factory;
 import com.example.kemono.ui.creators.CreatorViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.kemono.ui.creators.CreatorViewModel_MembersInjector;
 import com.example.kemono.ui.downloads.DownloadManagerViewModel;
 import com.example.kemono.ui.downloads.DownloadManagerViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.favorites.FavoritesViewModel;
@@ -485,6 +487,11 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       return ImmutableMap.<String, Object>of();
     }
 
+    private CreatorViewModel injectCreatorViewModel(CreatorViewModel instance) {
+      CreatorViewModel_MembersInjector.injectDownloadRepository(instance, singletonCImpl.downloadRepositoryProvider.get());
+      return instance;
+    }
+
     private static final class SwitchingProvider<T> implements Provider<T> {
       private final SingletonCImpl singletonCImpl;
 
@@ -507,10 +514,10 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.example.kemono.ui.posts.CreatorPostListViewModel 
-          return (T) new CreatorPostListViewModel(singletonCImpl.kemonoRepositoryProvider.get(), viewModelCImpl.savedStateHandle);
+          return (T) new CreatorPostListViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.downloadRepositoryProvider.get(), viewModelCImpl.savedStateHandle);
 
           case 1: // com.example.kemono.ui.creators.CreatorViewModel 
-          return (T) new CreatorViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.networkMonitorProvider.get(), singletonCImpl.settingsRepositoryProvider.get());
+          return (T) viewModelCImpl.injectCreatorViewModel(CreatorViewModel_Factory.newInstance(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.networkMonitorProvider.get(), singletonCImpl.settingsRepositoryProvider.get()));
 
           case 2: // com.example.kemono.ui.downloads.DownloadManagerViewModel 
           return (T) new DownloadManagerViewModel(singletonCImpl.downloadRepositoryProvider.get());
@@ -628,9 +635,9 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<KemonoRepository> kemonoRepositoryProvider;
 
-    private Provider<NetworkMonitor> networkMonitorProvider;
-
     private Provider<DownloadRepository> downloadRepositoryProvider;
+
+    private Provider<NetworkMonitor> networkMonitorProvider;
 
     private Provider<OkHttpClient> provideGithubOkHttpClientProvider;
 
@@ -669,8 +676,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.provideKemonoApiProvider = DoubleCheck.provider(new SwitchingProvider<KemonoApi>(singletonCImpl, 6));
       this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 8));
       this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 5));
-      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 9));
-      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 10));
+      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 9));
+      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 10));
       this.provideGithubOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 14));
       this.provideGithubRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 13));
       this.provideGithubApiProvider = DoubleCheck.provider(new SwitchingProvider<GithubApi>(singletonCImpl, 12));
@@ -743,11 +750,11 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           case 8: // com.example.kemono.data.local.AppDatabase 
           return (T) DatabaseModule_ProvideAppDatabaseFactory.provideAppDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 9: // com.example.kemono.util.NetworkMonitor 
-          return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
-
-          case 10: // com.example.kemono.data.repository.DownloadRepository 
+          case 9: // com.example.kemono.data.repository.DownloadRepository 
           return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
+
+          case 10: // com.example.kemono.util.NetworkMonitor 
+          return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 11: // com.example.kemono.data.repository.UpdateRepository 
           return (T) new UpdateRepository(singletonCImpl.provideGithubApiProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));

@@ -142,4 +142,32 @@ constructor(
             }
         }
     }
+    fun downloadFile(url: String, fileName: String, mediaType: String) {
+        val currentPost = _post.value ?: return
+        
+        viewModelScope.launch {
+            // Ensure we have the creator name
+            var creatorName = _creatorName.value
+            if (creatorName == null) {
+                try {
+                    val creator = repository.getCreatorProfile(service, creatorId)
+                    _creatorName.value = creator.name
+                    creatorName = creator.name
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    creatorName = currentPost.user // Fallback to ID
+                }
+            }
+
+            downloadRepository.downloadFile(
+                    url,
+                    fileName,
+                    currentPost.id,
+                    currentPost.title,
+                    currentPost.user,
+                    creatorName!!,
+                    mediaType
+            )
+        }
+    }
 }

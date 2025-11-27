@@ -16,12 +16,27 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PostItem(post: Post, onClick: () -> Unit, onCreatorClick: () -> Unit = {}) {
+fun PostItem(
+    post: Post, 
+    onClick: () -> Unit, 
+    onCreatorClick: () -> Unit = {},
+    selected: Boolean = false,
+    onLongClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
+        border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
             post.file?.let { file ->

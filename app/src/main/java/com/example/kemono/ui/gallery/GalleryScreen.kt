@@ -30,8 +30,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.example.kemono.data.model.DownloadedItem
 import java.io.File
+
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +81,14 @@ fun GalleryScreen(
                                 item(span = { GridItemSpan(1) }) {
                                     GalleryItem(
                                             item = item.item,
-                                            onClick = { onItemClick(item.item, index) }
+                                            onClick = { 
+                                                // Calculate index relative to images only
+                                                val images = items.filterIsInstance<GalleryUiItem.Image>().map { it.item }
+                                                val realIndex = images.indexOf(item.item)
+                                                if (realIndex != -1) {
+                                                    onItemClick(item.item, realIndex) 
+                                                }
+                                            }
                                     )
                                 }
                             }
@@ -92,32 +105,31 @@ fun GalleryItem(item: DownloadedItem, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick)) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                    model = File(item.filePath),
-                    contentDescription = item.fileName,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(File(item.filePath))
+                    .videoFrameMillis(1000)
+                    .build(),
+                contentDescription = item.fileName,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
             )
             if (item.mediaType == "VIDEO") {
                 // Overlay for video indicator
                 Box(
-                        modifier =
-                                Modifier.align(Alignment.BottomEnd).padding(4.dp).clickable(
-                                                enabled = false
-                                        ) {} // Consume clicks
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .background(
+                            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.6f),
+                            RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
                     Text(
-                            text = "VIDEO",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = androidx.compose.ui.graphics.Color.White,
-                            modifier =
-                                    Modifier.background(
-                                                    androidx.compose.ui.graphics.Color.Black.copy(
-                                                            alpha = 0.6f
-                                                    ),
-                                                    androidx.compose.foundation.shape
-                                                            .RoundedCornerShape(4.dp)
-                                            )
-                                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                        text = "VIDEO",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = androidx.compose.ui.graphics.Color.White
                     )
                 }
             }
