@@ -11,29 +11,30 @@ Unlock a seamless browsing experience with **Kura** (蔵 - "Storehouse"). Built 
 ## ✨ Features
 
 ### 🎨 Immersive Discovery
-*   **Smart Search**: Instantly find creators with real-time filtering by name and service.
+*   **Unified Search**: Search for creators by name or ID with a debounced, lag-free interface.
+*   **Rich Creator Profiles**: View detailed stats, banners, announcements, tags, and linked accounts.
 *   **Dynamic Layouts**: Switch between "Compact" grids for speed or "Comfortable" lists for detail.
-*   **Advanced Sorting**: Sort by Name, Updated Date, or Popularity to find exactly what you want.
+*   **Advanced Sorting**: Sort by Name, Updated Date, or Popularity.
 *   **Tag Filtering**: Filter posts by tags to find specific content within a creator's feed.
-*   **Infinite Scrolling**: Seamlessly browse through thousands of posts without interruption.
 
 ### 📥 Intelligent Archiving
-*   **Organized Downloads**: Forget messy folders. Kura automatically sorts every file into `Downloads/Kemono/<Artist>/<PostTitle>/`.
-*   **Background Manager**: Queue up downloads and let Kura handle the rest with robust background processing via WorkManager.
-*   **Media Support**: Download images, videos, and attachments with ease.
-*   **Resumable Downloads**: Downloads automatically retry on failure and persist across app restarts.
+*   **Inline Downloads**: Automatically detects and downloads images/GIFs embedded within post text.
+*   **Bulk Actions**: Select multiple posts to download in batch.
+*   **Organized Downloads**: Files are automatically sorted into `Downloads/Kemono/<Artist>/<PostTitle>/`.
+*   **Background Manager**: Robust background processing via WorkManager with persistent retry logic.
+*   **Media Support**: Handles images, videos, and attachments seamlessly.
 
 ### 🖼️ Beautiful Gallery
-*   **Artist-Centric View**: Your offline collection is automatically grouped by Artist, making it easy to browse your favorite creators.
-*   **Zoomable Viewer**: Inspect every detail with a high-performance, gesture-supported image viewer (zoom, pan, swipe).
-*   **Deep Integration**: Navigate directly from a downloaded image to the original post or creator profile.
+*   **Artist-Centric View**: Offline collection grouped by Artist for easy browsing.
+*   **Zoomable Viewer**: High-performance image viewer with zoom, pan, and swipe gestures.
+*   **Deep Integration**: Navigate directly from a downloaded image to the original post.
 
 ### 🛠️ Power User Tools
-*   **Favorites System**: Keep your top creators just a tap away.
-*   **DDoS-Guard Bypass**: Built-in handling for protection cookies—no browser gymnastics required.
-*   **Theming**: Full support for Light, Dark, and System themes with dynamic color support.
-*   **Cache Management**: Built-in tools to manage storage usage and clear cache.
-*   **In-App Updates**: Automatically checks for updates on GitHub and installs them directly from the app.
+*   **Favorites System**: Track your top creators.
+*   **DDoS-Guard Bypass**: Built-in session handling—no external browser needed.
+*   **Theming**: Full support for Light, Dark, and System themes.
+*   **Cache Management**: Built-in tools to monitor and clear storage.
+*   **In-App Updates**: Auto-update mechanism via GitHub Releases. (might be broken?)
 
 ---
 
