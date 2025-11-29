@@ -9,26 +9,41 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(repository: DownloadRepository) : ViewModel() {
 
+    private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     val galleryItems: StateFlow<List<GalleryUiItem>> =
-            repository
-                    .getAllDownloadedItems()
-                    .map { items ->
-                        items.groupBy { it.creatorName }
-                                .flatMap { (creatorName, creatorItems) ->
-                                    listOf(GalleryUiItem.Header(creatorName)) +
-                                            creatorItems.map { GalleryUiItem.Image(it) }
-                                }
+            kotlinx.coroutines.flow.combine(repository.getAllDownloadedItems(), _searchQuery) { items, query ->
+                val filteredItems = if (query.isBlank()) {
+                    items
+                } else {
+                    items.filter { 
+                        it.fileName.contains(query, ignoreCase = true) || 
+                        it.creatorName.contains(query, ignoreCase = true)
                     }
-                    .stateIn(
-                            scope = viewModelScope,
-                            started = SharingStarted.WhileSubscribed(5000),
-                            initialValue = emptyList()
-                    )
+                }
+                
+                filteredItems.groupBy { it.creatorName }
+                        .flatMap { (creatorName, creatorItems) ->
+                            listOf(GalleryUiItem.Header(creatorName)) +
+                                    creatorItems.map { GalleryUiItem.Image(it) }
+                        }
+            }
+            .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = emptyList()
+            )
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
 }
 
 sealed interface GalleryUiItem {

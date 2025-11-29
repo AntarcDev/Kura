@@ -1,16 +1,16 @@
-# Kemono App - Feature Ideas & Roadmap
+# Kura - Feature Ideas & Roadmap
 
-This document contains potential features and improvements for the Kemono Android app.
+This document contains potential features and improvements for the Kura app.
 
 ## High Priority Features
 
-### 1. Pull-to-Refresh
+### 1. Pull-to-Refresh [DONE]
 - **Description**: Add swipe-down to refresh on creator and post lists
 - **Benefits**: Quick way to get latest content without restarting
 - **Effort**: Low
 - **Impact**: High
 
-### 2. Offline Mode
+### 2. Offline Mode [DONE]
 - **Description**: Cache posts and images for offline viewing
 - **Features**:
   - Show cached content when network is unavailable
@@ -19,7 +19,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: High
 
-### 3. Image Gallery Viewer
+### 3. Image Gallery Viewer [DONE]
 - **Description**: Full-screen image viewer with gestures
 - **Features**:
   - Zoom/pinch gestures
@@ -28,7 +28,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: High
 
-### 4. Download Manager UI
+### 4. Download Manager UI [DONE]
 - **Description**: Visual interface for download management
 - **Features**:
   - Show active downloads with progress bars
@@ -38,7 +38,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: Medium
 
-### 5. Filter & Sort
+### 5. Filter & Sort [DONE]
 - **Description**: Enhanced content organization
 - **Features**:
   - Sort creators by name, recent updates, favorites
@@ -51,7 +51,7 @@ This document contains potential features and improvements for the Kemono Androi
 
 ## Medium Priority Features
 
-### 6. Dark/Light Theme Toggle
+### 6. Dark/Light Theme Toggle [DONE]
 - **Description**: Manual theme selection
 - **Features**:
   - Manual theme selection in settings
@@ -69,7 +69,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: Medium
 
-### 8. Search Enhancements
+### 8. Search Enhancements [DONE]
 - **Description**: Improved search capabilities
 - **Features**:
   - Search within post content
@@ -89,7 +89,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: High
 - **Impact**: High
 
-### 10. Grid/List View Toggle
+### 10. Grid/List View Toggle [DONE]
 - **Description**: Multiple layout options
 - **Features**:
   - Switch between grid and list layouts for posts
@@ -102,7 +102,7 @@ This document contains potential features and improvements for the Kemono Androi
 
 ## Polish & UX Improvements
 
-### 11. Loading Skeletons
+### 11. Loading Skeletons [DONE]
 - **Description**: Better loading states
 - **Features**:
   - Shimmer loading placeholders instead of spinners
@@ -111,7 +111,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Low
 - **Impact**: Medium
 
-### 12. Error Handling
+### 12. Error Handling [DONE]
 - **Description**: Improved error experience
 - **Features**:
   - Retry buttons on error screens
@@ -121,7 +121,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Low
 - **Impact**: Medium
 
-### 13. Post Sharing
+### 13. Post Sharing [PARTIAL]
 - **Description**: Share content with others
 - **Features**:
   - Share post links
@@ -131,7 +131,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Low
 - **Impact**: Low
 
-### 14. Creator Profiles
+### 14. Creator Profiles [DONE]
 - **Description**: Enhanced creator information
 - **Features**:
   - Show creator bio/description
@@ -141,12 +141,12 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: Medium
 
-### 15. Video Support
+### 15. Video Support [PARTIAL]
 - **Description**: Handle video content
 - **Features**:
   - Play embedded videos
-  - Download video files
-  - Video thumbnail previews
+  - Download video files [DONE]
+  - Video thumbnail previews [DONE]
   - Picture-in-picture mode
 - **Effort**: High
 - **Impact**: High
@@ -174,7 +174,7 @@ This document contains potential features and improvements for the Kemono Androi
 - **Effort**: Medium
 - **Impact**: Low
 
-### 18. Advanced Filters
+### 18. Advanced Filters [PARTIAL]
 - **Description**: Granular content filtering
 - **Features**:
   - Filter by NSFW/SFW
@@ -207,29 +207,29 @@ This document contains potential features and improvements for the Kemono Androi
 
 ## Recommended Implementation Order
 
-### Phase 1 - Quick Wins (1-2 weeks)
-1. Pull-to-Refresh
-2. Grid/List View Toggle
-3. Loading Skeletons
-4. Error Handling Improvements
+### Phase 1 - Quick Wins (Completed)
+1. Pull-to-Refresh [DONE]
+2. Grid/List View Toggle [DONE]
+3. Loading Skeletons [DONE]
+4. Error Handling Improvements [DONE]
 
-### Phase 2 - Core Features (2-4 weeks)
-5. Image Gallery Viewer
-6. Download Manager UI
-7. Filter & Sort
-8. Dark/Light Theme Toggle
+### Phase 2 - Core Features (Completed)
+5. Image Gallery Viewer [DONE]
+6. Download Manager UI [DONE]
+7. Filter & Sort [DONE]
+8. Dark/Light Theme Toggle [DONE]
 
-### Phase 3 - Advanced Features (4-6 weeks)
-9. Offline Mode
+### Phase 3 - Advanced Features (In Progress)
+9. Offline Mode [DONE]
 10. Post Bookmarks
-11. Search Enhancements
+11. Search Enhancements [DONE]
 12. Notifications
 
 ### Phase 4 - Polish & Extras (ongoing)
-13. Video Support
-14. Creator Profiles
-15. Post Sharing
-16. Advanced Filters
+13. Video Support [PARTIAL]
+14. Creator Profiles [DONE]
+15. Post Sharing [PARTIAL]
+16. Advanced Filters [PARTIAL]
 
 ---
 

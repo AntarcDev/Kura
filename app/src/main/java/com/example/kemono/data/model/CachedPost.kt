@@ -31,9 +31,9 @@ fun CachedPost.toPost(): Post {
             id = id,
             user = user,
             service = service,
-            title = title ?: "",
-            content = content ?: "",
-            published = published ?: "",
+            title = title,
+            content = content,
+            published = published,
             file = file,
             attachments = attachments
     )
@@ -42,9 +42,9 @@ fun CachedPost.toPost(): Post {
 fun Post.toCached(): CachedPost {
     val gson = Gson()
     return CachedPost(
-            id = id,
-            user = user,
-            service = service,
+            id = id ?: throw IllegalArgumentException("Post ID cannot be null for caching"),
+            user = user ?: "",
+            service = service ?: "",
             title = title,
             content = content,
             published = published,

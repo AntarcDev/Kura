@@ -39,10 +39,35 @@ class CreatorPostListViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _announcements = MutableStateFlow<List<com.example.kemono.data.model.Announcement>>(emptyList())
+    val announcements: StateFlow<List<com.example.kemono.data.model.Announcement>> = _announcements.asStateFlow()
+
+    private val _tags = MutableStateFlow<List<String>>(emptyList())
+    val tags: StateFlow<List<String>> = _tags.asStateFlow()
+
+    private val _links = MutableStateFlow<List<com.example.kemono.data.model.CreatorLink>>(emptyList())
+    val links: StateFlow<List<com.example.kemono.data.model.CreatorLink>> = _links.asStateFlow()
+
+    private val _fancards = MutableStateFlow<List<com.example.kemono.data.model.Fancard>>(emptyList())
+    val fancards: StateFlow<List<com.example.kemono.data.model.Fancard>> = _fancards.asStateFlow()
+
     init {
         fetchCreatorProfile()
         fetchPosts()
         checkIfFavorite()
+        fetchProfileDetails()
+    }
+
+    private fun fetchProfileDetails() {
+        viewModelScope.launch {
+            // Fetch in parallel
+            launch { _announcements.value = repository.getCreatorAnnouncements(service, creatorId) }
+            launch { _tags.value = repository.getCreatorTags(service, creatorId) }
+            launch { _links.value = repository.getCreatorLinks(service, creatorId) }
+            if (service == "fanbox") {
+                launch { _fancards.value = repository.getCreatorFancards(service, creatorId) }
+            }
+        }
     }
 
     private fun checkIfFavorite() {
@@ -104,13 +129,14 @@ class CreatorPostListViewModel @Inject constructor(
 
     fun toggleSelection(post: Post) {
         val current = _selectedPostIds.value
-        if (current.contains(post.id)) {
-            _selectedPostIds.value = current - post.id
+        val postId = post.id ?: return
+        if (current.contains(postId)) {
+            _selectedPostIds.value = current - postId
             if (_selectedPostIds.value.isEmpty()) {
                 _isSelectionMode.value = false
             }
         } else {
-            _selectedPostIds.value = current + post.id
+            _selectedPostIds.value = current + postId
             _isSelectionMode.value = true
         }
     }
@@ -132,15 +158,15 @@ class CreatorPostListViewModel @Inject constructor(
                 // Download main file
                 post.file?.let { file ->
                     if (!file.path.isNullOrEmpty()) {
-                        val url = "https://kemono.cr${file.path}"
+                        val url = "https://kemono.su${file.path}"
                         val mediaType = if (com.example.kemono.util.getMediaType(file.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
                             file.name ?: "file",
-                            post.id,
-                            post.title,
-                            post.user,
-                            creatorName,
+                            post.id ?: "",
+                            post.title ?: "",
+                            post.user ?: "",
+                            creatorName ?: "",
                             mediaType
                         )
                     }
@@ -149,15 +175,15 @@ class CreatorPostListViewModel @Inject constructor(
                 // Download attachments
                 post.attachments.forEach { attachment ->
                     if (!attachment.path.isNullOrEmpty()) {
-                        val url = "https://kemono.cr${attachment.path}"
+                        val url = "https://kemono.su${attachment.path}"
                         val mediaType = if (com.example.kemono.util.getMediaType(attachment.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
                             attachment.name ?: "attachment",
-                            post.id,
-                            post.title,
-                            post.user,
-                            creatorName,
+                            post.id ?: "",
+                            post.title ?: "",
+                            post.user ?: "",
+                            creatorName ?: "",
                             mediaType
                         )
                     }

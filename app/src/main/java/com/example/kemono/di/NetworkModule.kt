@@ -24,7 +24,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://kemono.cr/api/v1/"
+    private const val BASE_URL = "https://kemono.su/api/v1/"
     private const val GITHUB_API_URL = "https://api.github.com/"
 
     @Provides
@@ -89,8 +89,12 @@ object NetworkModule {
                 val cookies = mutableListOf<Cookie>()
                 val host = url.host
 
-                // Add stored cookies for this domain
-                cookieStore[host]?.let { cookies.addAll(it) }
+                // Add stored cookies that match the domain
+                cookieStore.forEach { (domain, storedCookies) ->
+                    if (host == domain || host.endsWith(".$domain")) {
+                        cookies.addAll(storedCookies)
+                    }
+                }
 
                 // Add session cookie from user input
                 sessionManager.getSessionCookie()?.let { cookieString ->
@@ -141,8 +145,8 @@ object NetworkModule {
                                             "text/css"
                                     ) // Required by kemono.cr to bypass DDoS-Guard
                                     .addHeader("Accept-Language", "en-US,en;q=0.9")
-                                    .addHeader("Referer", "https://kemono.cr/")
-                                    .addHeader("Origin", "https://kemono.cr")
+                                    .addHeader("Referer", "https://kemono.su/")
+                                    .addHeader("Origin", "https://kemono.su")
                                     .addHeader("DNT", "1")
                                     .addHeader("Connection", "keep-alive")
                                     .addHeader("Sec-Fetch-Dest", "empty")
@@ -151,12 +155,22 @@ object NetworkModule {
 
                     val response = chain.proceed(requestBuilder.build())
 
+                    // Force cache for 7 days
+                    val cacheControl = okhttp3.CacheControl.Builder()
+                        .maxAge(7, TimeUnit.DAYS)
+                        .build()
+
                     // Fix Content-Type: server returns text/css but it's actually JSON
+                    // Also rewrite Cache-Control to force caching
+                    val responseBuilder = response.newBuilder()
+                        .header("Cache-Control", cacheControl.toString())
+                        .removeHeader("Pragma") // Pragma: no-cache can also prevent caching
+
                     if (response.header("Content-Type")?.contains("text/css") == true) {
-                        response.newBuilder().header("Content-Type", "application/json").build()
-                    } else {
-                        response
+                        responseBuilder.header("Content-Type", "application/json")
                     }
+                    
+                    responseBuilder.build()
                 }
                 .addInterceptor(
                         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
@@ -239,7 +253,7 @@ object NetworkModule {
                 .diskCache {
                     coil.disk.DiskCache.Builder()
                             .directory(context.cacheDir.resolve("image_cache"))
-                            .maxSizeBytes(500L * 1024L * 1024L) // 500 MB
+                            .maxSizeBytes(2L * 1024L * 1024L * 1024L) // 2 GB
                             .build()
                 }
                 .crossfade(true)

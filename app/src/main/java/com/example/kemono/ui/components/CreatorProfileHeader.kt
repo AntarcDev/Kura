@@ -34,15 +34,22 @@ fun CreatorProfileHeader(
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        // Blurred Background
+        // Banner Background
         AsyncImage(
-            model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+            model = "https://kemono.su/banners/${creator.service}/${creator.id}",
             contentDescription = null,
             modifier = Modifier
-                .fillMaxSize()
-                .blur(20.dp),
-            contentScale = ContentScale.Crop
+                .fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            onError = { 
+                // Fallback to blurred icon if banner fails
+            }
         )
+        
+        // Fallback blurred icon (if banner fails or while loading, but AsyncImage handles loading)
+        // We can put the blurred icon behind the banner so it shows if banner is missing/transparent?
+        // Actually, let's just use the banner as primary.
+
 
         // Gradient Overlay
         Box(

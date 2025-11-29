@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.antarc.kura"
     android:versionCode="4"
-    android:versionName="0.5-Pre-Release" >
+    android:versionName="0.6-Pre-Release" >
 
     <uses-sdk
         android:minSdkVersion="24"

@@ -485,8 +485,10 @@ int layout notification_template_media_custom 0x7f0c0019
 int layout notification_template_part_chronometer 0x7f0c001a
 int layout notification_template_part_time 0x7f0c001b
 int mipmap ic_launcher 0x7f0d0000
-int mipmap ic_launcher_foreground 0x7f0d0001
-int mipmap ic_launcher_round 0x7f0d0002
+int mipmap ic_launcher_background 0x7f0d0001
+int mipmap ic_launcher_foreground 0x7f0d0002
+int mipmap ic_launcher_monochrome 0x7f0d0003
+int mipmap ic_launcher_round 0x7f0d0004
 int plurals exo_controls_fastforward_by_amount_description 0x7f0e0000
 int plurals exo_controls_rewind_by_amount_description 0x7f0e0001
 int string androidx_startup 0x7f0f0000

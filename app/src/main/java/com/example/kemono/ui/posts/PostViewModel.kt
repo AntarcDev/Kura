@@ -98,7 +98,7 @@ constructor(
             // Download main file
             currentPost.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
-                    val url = "https://kemono.cr${file.path}"
+                    val url = "https://kemono.su${file.path}"
                     val fileName = file.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(file.path) ==
@@ -109,10 +109,10 @@ constructor(
                     downloadRepository.downloadFile(
                             url,
                             fileName,
-                            currentPost.id,
-                            currentPost.title,
-                            currentPost.user,
-                            creatorName!!,
+                            currentPost.id ?: "",
+                            currentPost.title ?: "",
+                            currentPost.user ?: "",
+                            creatorName ?: "",
                             mediaType
                     )
                 }
@@ -121,7 +121,7 @@ constructor(
             // Download attachments
             currentPost.attachments.forEach { attachment ->
                 if (!attachment.path.isNullOrEmpty()) {
-                    val url = "https://kemono.cr${attachment.path}"
+                    val url = "https://kemono.su${attachment.path}"
                     val fileName = attachment.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(attachment.path) ==
@@ -132,12 +132,32 @@ constructor(
                     downloadRepository.downloadFile(
                             url,
                             fileName,
-                            currentPost.id,
-                            currentPost.title,
-                            currentPost.user,
-                            creatorName!!,
+                            currentPost.id ?: "",
+                            currentPost.title ?: "",
+                            currentPost.user ?: "",
+                            creatorName ?: "",
                             mediaType
                     )
+                }
+            }
+
+            // Download inline images
+            currentPost.content?.let { htmlContent ->
+                val contentNodes = com.example.kemono.util.HtmlConverter.parseHtmlContent(htmlContent)
+                contentNodes.forEach { node ->
+                    if (node is com.example.kemono.util.ContentNode.Image) {
+                        val url = node.url
+                        val fileName = url.substringAfterLast('/')
+                        downloadRepository.downloadFile(
+                            url,
+                            fileName,
+                            currentPost.id ?: "",
+                            currentPost.title ?: "",
+                            currentPost.user ?: "",
+                            creatorName ?: "",
+                            "IMAGE"
+                        )
+                    }
                 }
             }
         }
@@ -162,10 +182,10 @@ constructor(
             downloadRepository.downloadFile(
                     url,
                     fileName,
-                    currentPost.id,
-                    currentPost.title,
-                    currentPost.user,
-                    creatorName!!,
+                    currentPost.id ?: "",
+                    currentPost.title ?: "",
+                    currentPost.user ?: "",
+                    creatorName ?: "",
                     mediaType
             )
         }

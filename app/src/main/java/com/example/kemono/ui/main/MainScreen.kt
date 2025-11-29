@@ -31,6 +31,10 @@ import com.example.kemono.ui.favorites.FavoritesScreen
 import com.example.kemono.ui.gallery.GalleryScreen
 import com.example.kemono.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     data object Creators : BottomNavItem("creators", Icons.Default.Home, "Creators")
@@ -43,6 +47,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
+        viewModel: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
         onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit,
         onPostClick: (com.example.kemono.data.model.Post) -> Unit,
         onNavigateToGalleryItem: (Int) -> Unit
@@ -59,6 +64,7 @@ fun MainScreen(
     val pagerState = rememberPagerState(pageCount = { items.size })
     val scope = rememberCoroutineScope()
     var selectedItem by remember { mutableIntStateOf(0) }
+    val isOnline by viewModel.isOnline.collectAsState()
 
     // Permission Request
     val permissionLauncher =
@@ -87,17 +93,34 @@ fun MainScreen(
 
     Scaffold(
             bottomBar = {
-                NavigationBar {
-                    items.forEachIndexed { index, item ->
-                        NavigationBarItem(
-                                icon = { Icon(item.icon, contentDescription = item.label) },
-                                label = { Text(item.label) },
-                                selected = selectedItem == index,
-                                onClick = {
-                                    selectedItem = index
-                                    scope.launch { pagerState.animateScrollToPage(index) }
-                                }
-                        )
+                androidx.compose.foundation.layout.Column {
+                    if (!isOnline) {
+                        androidx.compose.foundation.layout.Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.errorContainer)
+                                .padding(4.dp),
+                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        ) {
+                            Text(
+                                text = "Offline Mode",
+                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                    NavigationBar {
+                        items.forEachIndexed { index, item ->
+                            NavigationBarItem(
+                                    icon = { Icon(item.icon, contentDescription = item.label) },
+                                    label = { Text(item.label) },
+                                    selected = selectedItem == index,
+                                    onClick = {
+                                        selectedItem = index
+                                        scope.launch { pagerState.animateScrollToPage(index) }
+                                    }
+                            )
+                        }
                     }
                 }
             }

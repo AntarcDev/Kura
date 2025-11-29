@@ -486,7 +486,9 @@ layout notification_template_media_custom
 layout notification_template_part_chronometer
 layout notification_template_part_time
 mipmap ic_launcher
+mipmap ic_launcher_background
 mipmap ic_launcher_foreground
+mipmap ic_launcher_monochrome
 mipmap ic_launcher_round
 plurals exo_controls_fastforward_by_amount_description
 plurals exo_controls_rewind_by_amount_description

@@ -26,11 +26,15 @@ fun FavoritesScreen(
         onCreatorClick: (Creator) -> Unit
 ) {
     val favorites by viewModel.favorites.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
             topBar = {
-                @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-                androidx.compose.material3.TopAppBar(title = { Text("Favorites") })
+                com.example.kemono.ui.components.UnifiedTopBar(
+                    query = searchQuery,
+                    onQueryChange = viewModel::onSearchQueryChange,
+                    onClearSearch = { viewModel.onSearchQueryChange("") }
+                )
             }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {

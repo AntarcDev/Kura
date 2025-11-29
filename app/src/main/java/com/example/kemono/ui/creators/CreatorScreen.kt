@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import androidx.compose.foundation.rememberScrollState
@@ -57,13 +58,15 @@ fun CreatorScreen(
     val availableServices by viewModel.availableServices.collectAsState()
     val gridSize by viewModel.gridSize.collectAsState()
 
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+
+
+    var showTagsDialog by remember { mutableStateOf(false) }
 
     val searchMode by viewModel.searchMode.collectAsState()
     val posts by viewModel.posts.collectAsState()
     val tags by viewModel.tags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
+
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
@@ -77,13 +80,50 @@ fun CreatorScreen(
                     onDownloadSelected = viewModel::downloadSelectedPosts
                 )
             } else {
-                TopAppBar(
-                    title = { Text("Kura") },
-                    actions = {
-                        IconButton(onClick = { showBottomSheet = true }) {
-                            Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Filter & Sort")
+                val sortOptions = if (searchMode == SearchMode.Artists) {
+                    listOf("Name", "Updated", "Favorites", "Popular")
+                } else {
+                    listOf("Recent", "Popular (Day)", "Popular (Week)", "Popular (Month)", "Random")
+                }
+                
+                com.example.kemono.ui.components.UnifiedTopBar(
+                    query = searchQuery,
+                    onQueryChange = viewModel::onSearchQueryChange,
+                    onSearch = { 
+                        if (searchMode == SearchMode.Posts) viewModel.fetchPosts()
+                        // Artists search is live, so no explicit search needed usually, but can trigger refresh
+                    },
+                    onClearSearch = { viewModel.onSearchQueryChange("") },
+                    sortOptions = sortOptions,
+                    selectedSort = when (sortOption) {
+                        SortOption.Name -> "Name"
+                        SortOption.Updated -> if (searchMode == SearchMode.Artists) "Updated" else "Recent"
+                        SortOption.Favorites -> "Favorites"
+                        SortOption.Popular -> "Popular"
+                        SortOption.PopularDay -> "Popular (Day)"
+                        SortOption.PopularWeek -> "Popular (Week)"
+                        SortOption.PopularMonth -> "Popular (Month)"
+                        SortOption.Random -> "Random"
+                    },
+                    onSortSelected = { option ->
+                        val newSort = when (option) {
+                            "Name" -> SortOption.Name
+                            "Updated", "Recent" -> SortOption.Updated
+                            "Favorites" -> SortOption.Favorites
+                            "Popular" -> SortOption.Popular
+                            "Popular (Day)" -> SortOption.PopularDay
+                            "Popular (Week)" -> SortOption.PopularWeek
+                            "Popular (Month)" -> SortOption.PopularMonth
+                            "Random" -> SortOption.Random
+                            else -> SortOption.Updated
                         }
-                    }
+                        viewModel.setSortOption(newSort)
+                    },
+                    filterOptions = availableServices,
+                    selectedFilters = selectedServices.toList(),
+                    onFilterSelected = viewModel::toggleServiceFilter,
+                    onTagsClick = { showTagsDialog = true },
+                    placeholderText = if (searchMode == SearchMode.Artists) "Search artists or IDs..." else "Search posts..."
                 )
             }
         }
@@ -97,26 +137,9 @@ fun CreatorScreen(
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Search Bar
-                TextField(
-                    value = searchQuery,
-                    onValueChange = viewModel::onSearchQueryChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(24.dp)),
-                    placeholder = { Text(if (searchMode == SearchMode.Artists) "Search creators..." else "Search posts...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    singleLine = true
-                )
-
                 // Search Mode Toggle
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     FilterChip(
@@ -131,6 +154,8 @@ fun CreatorScreen(
                         label = { Text("Posts") }
                     )
                 }
+
+
 
                 if (error != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -245,8 +270,8 @@ fun CreatorScreen(
                                         onCreatorClick = {
                                             // Create a minimal creator object for navigation
                                             val creator = Creator(
-                                                id = post.user,
-                                                service = post.service,
+                                                id = post.user ?: "",
+                                                service = post.service ?: "",
                                                 name = "Unknown", // Name will be fetched in profile
                                                 updated = 0,
                                                 indexed = 0
@@ -272,129 +297,88 @@ fun CreatorScreen(
                 }
             }
         }
-
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState
-            ) {
-                FilterSortBottomSheet(
-                    sortOption = sortOption,
-                    onSortOptionSelected = viewModel::setSortOption,
-                    availableServices = availableServices,
-                    selectedServices = selectedServices,
-                    onServiceToggle = viewModel::toggleServiceFilter,
-                    tags = tags,
-                    selectedTags = selectedTags,
-                    onTagToggle = viewModel::toggleTag,
-                    onReset = viewModel::clearFilters
-                )
-            }
+        
+        if (showTagsDialog) {
+            TagsDialog(
+                tags = tags,
+                selectedTags = selectedTags,
+                onTagToggle = viewModel::toggleTag,
+                onDismiss = { showTagsDialog = false }
+            )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun FilterSortBottomSheet(
-    sortOption: SortOption,
-    onSortOptionSelected: (SortOption) -> Unit,
-    availableServices: List<String>,
-    selectedServices: Set<String>,
-    onServiceToggle: (String) -> Unit,
+fun TagsDialog(
     tags: List<String>,
     selectedTags: Set<String>,
     onTagToggle: (String) -> Unit,
-    onReset: () -> Unit
+    onDismiss: () -> Unit
 ) {
-    var tagSearchQuery by remember { mutableStateOf("") }
-    val filteredTags = remember(tags, tagSearchQuery) {
-        if (tagSearchQuery.isBlank()) tags else tags.filter { it.contains(tagSearchQuery, ignoreCase = true) }
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredTags = remember(tags, searchQuery) {
+        if (searchQuery.isBlank()) tags else tags.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
-    Column(
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Filter by Tags") },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Search tags...") },
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
+                )
+                
+                LazyColumn(
+                    modifier = Modifier.height(300.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Show selected tags first
+                    val (selected, unselected) = filteredTags.partition { selectedTags.contains(it) }
+                    
+                    items(selected) { tag ->
+                        TagItem(tag = tag, selected = true, onToggle = { onTagToggle(tag) })
+                    }
+                    
+                    if (selected.isNotEmpty() && unselected.isNotEmpty()) {
+                        item { HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp)) }
+                    }
+                    
+                    items(unselected) { tag ->
+                        TagItem(tag = tag, selected = false, onToggle = { onTagToggle(tag) })
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Done")
+            }
+        }
+    )
+}
+
+@Composable
+fun TagItem(tag: String, selected: Boolean, onToggle: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .padding(bottom = 32.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .clickable(onClick = onToggle)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Sort By", style = MaterialTheme.typography.titleMedium)
-        Column {
-            SortOption.values().forEach { option ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSortOptionSelected(option) }
-                        .padding(vertical = 4.dp)
-                ) {
-                    RadioButton(
-                        selected = sortOption == option,
-                        onClick = { onSortOptionSelected(option) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(option.name)
-                }
-            }
-        }
-
-        HorizontalDivider()
-
-        Text("Filter by Service", style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            availableServices.forEach { service ->
-                FilterChip(
-                    selected = selectedServices.contains(service),
-                    onClick = { onServiceToggle(service) },
-                    label = { Text(service) }
-                )
-            }
-        }
-
-        HorizontalDivider()
-
-        Text("Filter by Tags", style = MaterialTheme.typography.titleMedium)
-        
-        // Selected Tags
-        if (selectedTags.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                selectedTags.forEach { tag ->
-                    FilterChip(
-                        selected = true,
-                        onClick = { onTagToggle(tag) },
-                        label = { Text(tag) },
-                        leadingIcon = { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                    )
-                }
-            }
-        }
-
-        OutlinedTextField(
-            value = tagSearchQuery,
-            onValueChange = { tagSearchQuery = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search tags...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            singleLine = true
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            filteredTags.take(20).forEach { tag ->
-                if (!selectedTags.contains(tag)) { // Don't show already selected tags in the list
-                    FilterChip(
-                        selected = false,
-                        onClick = { onTagToggle(tag) },
-                        label = { Text(tag) }
-                    )
-                }
-            }
-            if (filteredTags.size > 20) {
-                Text("...and ${filteredTags.size - 20} more", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        Button(onClick = onReset, modifier = Modifier.fillMaxWidth()) { Text("Reset Filters") }
+        Checkbox(checked = selected, onCheckedChange = { onToggle() })
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = tag, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -408,11 +392,27 @@ fun CreatorItem(
 ) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         if (compact) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().height(180.dp)) {
+                // Banner Background
+                AsyncImage(
+                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                )
+                
+                // Scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.4f))
+                )
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -420,7 +420,7 @@ fun CreatorItem(
                         model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
                         contentDescription = null,
                         modifier = Modifier
-                            .size(80.dp)
+                            .size(60.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentScale = ContentScale.Crop,
@@ -429,10 +429,12 @@ fun CreatorItem(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = creator.name,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 
@@ -446,59 +448,79 @@ fun CreatorItem(
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
         } else {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.fillMaxWidth().height(100.dp)) {
+                // Banner Background
                 AsyncImage(
-                    model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
                 )
 
-                Spacer(modifier = Modifier.width(16.dp))
+                // Scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f))
+                )
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = creator.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = onFavoriteClick) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentScale = ContentScale.Crop,
+                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = creator.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            IconButton(onClick = onFavoriteClick) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = creator.service,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = "ID: ${creator.id}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f)
                             )
                         }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = creator.service,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "ID: ${creator.id}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }

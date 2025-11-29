@@ -13,6 +13,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 @Singleton
 class KemonoRepository
@@ -20,9 +25,19 @@ class KemonoRepository
 constructor(
         private val api: KemonoApi,
         private val favoriteDao: FavoriteDao,
-        private val cacheDao: CacheDao
+        private val cacheDao: CacheDao,
+        private val networkMonitor: com.example.kemono.util.NetworkMonitor
 ) {
     suspend fun getCreators(): List<Creator> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) {
+            return try {
+                cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+
         return try {
             val jsonElement = api.getCreators()
             val creators = if (jsonElement.isJsonArray) {
@@ -46,9 +61,12 @@ constructor(
             }
             
             if (creators.isNotEmpty()) {
-                cacheDao.cacheCreators(creators.map { it.toCached() })
+                val validCreators = creators.filter { it.id != null }
+                cacheDao.cacheCreators(validCreators.map { it.toCached() })
+                validCreators
+            } else {
+                emptyList()
             }
-            creators
         } catch (e: Exception) {
             try {
                 cacheDao.getAllCachedCreators().first().map { it.toCreator() }
@@ -59,6 +77,14 @@ constructor(
     }
 
     suspend fun getPopularCreators(): List<Creator> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) {
+             // In offline mode, we can't fetch popular posts to determine popularity.
+             // Fallback: Return all cached creators (or maybe favorites?)
+             // For now, let's return cached creators to show *something*
+             return getCreators()
+        }
+
         // Fetch popular posts to find popular creators
         val response = api.getPopularPosts()
         val popularCreatorIds = response.posts.map { it.user }.distinct()
@@ -71,23 +97,58 @@ constructor(
         return allCreators.filter { it.id in popularCreatorIds }
     }
 
+    suspend fun getPopularPosts(date: String? = null, period: String? = null, offset: Int = 0): List<Post> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) return emptyList() // TODO: Implement caching for popular posts?
+
+        val response = api.getPopularPosts(date, period, offset)
+        return response.posts
+    }
+
+    suspend fun getRandomPosts(): List<Post> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) return emptyList()
+
+        // Fetch 5 random posts in parallel
+        return kotlinx.coroutines.coroutineScope {
+            (1..5).map {
+                async {
+                    try {
+                        val redirect = api.getRandomPostRedirect()
+                        val response = api.getPost(redirect.service, redirect.artistId, redirect.postId)
+                        response.post
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            }.awaitAll().filterNotNull().filter { it.id != null }
+        }
+    }
+
     suspend fun getRecentPosts(offset: Int = 0, query: String? = null, tags: List<String>? = null): List<Post> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) return emptyList()
+
         val response = api.getRecentPosts(offset, query, tags)
-        return if (response.posts.isNotEmpty()) response.posts else response.results
+        val posts = if (response.posts.isNotEmpty()) response.posts else response.results
+        return posts.filter { it.id != null }
     }
 
     suspend fun getCreatorProfile(service: String, creatorId: String): Creator {
+        val isOnline = networkMonitor.isOnline.first()
+        
+        if (!isOnline) {
+             val cached = cacheDao.getCachedCreator(creatorId)
+             return cached?.toCreator() ?: throw Exception("Creator not found in cache")
+        }
+
         return try {
-            val cached = cacheDao.getCachedCreator(creatorId)
-            if (cached != null) {
-                cached.toCreator()
-            } else {
-                val creator = api.getCreatorProfile(service, creatorId)
-                cacheDao.cacheCreators(listOf(creator.toCached()))
-                creator
-            }
+            val creator = api.getCreatorProfile(service, creatorId)
+            cacheDao.cacheCreators(listOf(creator.toCached()))
+            creator
         } catch (e: Exception) {
-            api.getCreatorProfile(service, creatorId)
+            val cached = cacheDao.getCachedCreator(creatorId)
+            cached?.toCreator() ?: throw e
         }
     }
 
@@ -97,10 +158,24 @@ constructor(
             offset: Int = 0,
             query: String? = null
     ): List<Post> {
+        val isOnline = networkMonitor.isOnline.first()
+
+        if (!isOnline) {
+             if (offset == 0 && query == null) {
+                 return try {
+                    cacheDao.getCachedPosts(service, creatorId).first().map { it.toPost() }
+                 } catch (e: Exception) {
+                     emptyList()
+                 }
+             } else {
+                 return emptyList()
+             }
+        }
+
         return try {
             val posts = api.getCreatorPosts(service, creatorId, offset, query)
             cacheDao.cachePosts(posts.map { it.toCached() })
-            posts
+            posts.filter { it.id != null }
         } catch (e: Exception) {
             if (offset == 0 && query == null) {
                 try {
@@ -114,10 +189,52 @@ constructor(
         }
     }
 
+
+
+    suspend fun getCreatorAnnouncements(service: String, creatorId: String): List<com.example.kemono.data.model.Announcement> {
+        return try {
+            api.getCreatorAnnouncements(service, creatorId)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getCreatorTags(service: String, creatorId: String): List<String> {
+        return try {
+            api.getCreatorTags(service, creatorId).map { it.tag }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getCreatorLinks(service: String, creatorId: String): List<com.example.kemono.data.model.CreatorLink> {
+        return try {
+            api.getCreatorLinks(service, creatorId)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getCreatorFancards(service: String, creatorId: String): List<com.example.kemono.data.model.Fancard> {
+        return try {
+            api.getCreatorFancards(service, creatorId)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     suspend fun getPost(service: String, creatorId: String, postId: String): Post {
+        val isOnline = networkMonitor.isOnline.first()
+        
+        if (!isOnline) {
+            return cacheDao.getCachedPost(postId)?.toPost() ?: throw Exception("Post not found in cache")
+        }
+
         return try {
             val post = api.getPost(service, creatorId, postId).post
-            cacheDao.cachePosts(listOf(post.toCached()))
+            if (post.id != null) {
+                cacheDao.cachePosts(listOf(post.toCached()))
+            }
             post
         } catch (e: Exception) {
             cacheDao.getCachedPost(postId)?.toPost() ?: throw e
@@ -125,7 +242,7 @@ constructor(
     }
 
     suspend fun cleanExpiredCache() {
-        val expiryTime = System.currentTimeMillis() - (24 * 60 * 60 * 1000) // 24 hours
+        val expiryTime = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000) // 7 days
         cacheDao.deleteExpiredCreators(expiryTime)
         cacheDao.deleteExpiredPosts(expiryTime)
     }

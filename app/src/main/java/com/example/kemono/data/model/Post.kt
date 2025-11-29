@@ -3,14 +3,14 @@ package com.example.kemono.data.model
 import com.google.gson.annotations.SerializedName
 
 data class Post(
-    val id: String,
-    val user: String,
-    val service: String,
-    val title: String,
+    val id: String? = null,
+    val user: String? = null,
+    val service: String? = null,
+    val title: String? = null,
     val content: String? = null,
     val substring: String? = null,
-    val published: String,
-    val file: KemonoFile?,
+    val published: String? = null,
+    val file: KemonoFile? = null,
     val attachments: List<KemonoFile> = emptyList()
 )
 

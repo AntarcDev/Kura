@@ -41,6 +41,8 @@ import com.example.kemono.ui.favorites.FavoritesViewModel;
 import com.example.kemono.ui.favorites.FavoritesViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.gallery.GalleryViewModel;
 import com.example.kemono.ui.gallery.GalleryViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.kemono.ui.main.MainViewModel;
+import com.example.kemono.ui.main.MainViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.posts.CreatorPostListViewModel;
 import com.example.kemono.ui.posts.CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.example.kemono.ui.posts.PostViewModel;
@@ -405,7 +407,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return ImmutableSet.<String>of(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide(), CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide(), DownloadManagerViewModel_HiltModules_KeyModule_ProvideFactory.provide(), FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide(), GalleryViewModel_HiltModules_KeyModule_ProvideFactory.provide(), ImageViewerViewModel_HiltModules_KeyModule_ProvideFactory.provide(), PostViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide());
+      return ImmutableSet.<String>of(CreatorPostListViewModel_HiltModules_KeyModule_ProvideFactory.provide(), CreatorViewModel_HiltModules_KeyModule_ProvideFactory.provide(), DownloadManagerViewModel_HiltModules_KeyModule_ProvideFactory.provide(), FavoritesViewModel_HiltModules_KeyModule_ProvideFactory.provide(), GalleryViewModel_HiltModules_KeyModule_ProvideFactory.provide(), ImageViewerViewModel_HiltModules_KeyModule_ProvideFactory.provide(), MainViewModel_HiltModules_KeyModule_ProvideFactory.provide(), PostViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -450,6 +452,8 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<ImageViewerViewModel> imageViewerViewModelProvider;
 
+    private Provider<MainViewModel> mainViewModelProvider;
+
     private Provider<PostViewModel> postViewModelProvider;
 
     private Provider<SettingsViewModel> settingsViewModelProvider;
@@ -473,13 +477,14 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.favoritesViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
       this.galleryViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
       this.imageViewerViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
-      this.postViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 6);
-      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 7);
+      this.mainViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 6);
+      this.postViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 7);
+      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 8);
     }
 
     @Override
     public Map<String, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return ImmutableMap.<String, javax.inject.Provider<ViewModel>>builderWithExpectedSize(8).put("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider)).put("com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider)).put("com.example.kemono.ui.downloads.DownloadManagerViewModel", ((Provider) downloadManagerViewModelProvider)).put("com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider)).put("com.example.kemono.ui.gallery.GalleryViewModel", ((Provider) galleryViewModelProvider)).put("com.example.kemono.ui.viewer.ImageViewerViewModel", ((Provider) imageViewerViewModelProvider)).put("com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider)).put("com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider)).build();
+      return ImmutableMap.<String, javax.inject.Provider<ViewModel>>builderWithExpectedSize(9).put("com.example.kemono.ui.posts.CreatorPostListViewModel", ((Provider) creatorPostListViewModelProvider)).put("com.example.kemono.ui.creators.CreatorViewModel", ((Provider) creatorViewModelProvider)).put("com.example.kemono.ui.downloads.DownloadManagerViewModel", ((Provider) downloadManagerViewModelProvider)).put("com.example.kemono.ui.favorites.FavoritesViewModel", ((Provider) favoritesViewModelProvider)).put("com.example.kemono.ui.gallery.GalleryViewModel", ((Provider) galleryViewModelProvider)).put("com.example.kemono.ui.viewer.ImageViewerViewModel", ((Provider) imageViewerViewModelProvider)).put("com.example.kemono.ui.main.MainViewModel", ((Provider) mainViewModelProvider)).put("com.example.kemono.ui.posts.PostViewModel", ((Provider) postViewModelProvider)).put("com.example.kemono.ui.settings.SettingsViewModel", ((Provider) settingsViewModelProvider)).build();
     }
 
     @Override
@@ -531,10 +536,13 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           case 5: // com.example.kemono.ui.viewer.ImageViewerViewModel 
           return (T) new ImageViewerViewModel(viewModelCImpl.savedStateHandle, singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.downloadRepositoryProvider.get());
 
-          case 6: // com.example.kemono.ui.posts.PostViewModel 
+          case 6: // com.example.kemono.ui.main.MainViewModel 
+          return (T) new MainViewModel(singletonCImpl.networkMonitorProvider.get());
+
+          case 7: // com.example.kemono.ui.posts.PostViewModel 
           return (T) new PostViewModel(singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.downloadRepositoryProvider.get(), viewModelCImpl.savedStateHandle, singletonCImpl.networkMonitorProvider.get());
 
-          case 7: // com.example.kemono.ui.settings.SettingsViewModel 
+          case 8: // com.example.kemono.ui.settings.SettingsViewModel 
           return (T) new SettingsViewModel(singletonCImpl.sessionManagerProvider.get(), singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.kemonoRepositoryProvider.get(), singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.updateRepositoryProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
@@ -633,11 +641,11 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<AppDatabase> provideAppDatabaseProvider;
 
+    private Provider<NetworkMonitor> networkMonitorProvider;
+
     private Provider<KemonoRepository> kemonoRepositoryProvider;
 
     private Provider<DownloadRepository> downloadRepositoryProvider;
-
-    private Provider<NetworkMonitor> networkMonitorProvider;
 
     private Provider<OkHttpClient> provideGithubOkHttpClientProvider;
 
@@ -675,9 +683,9 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 7));
       this.provideKemonoApiProvider = DoubleCheck.provider(new SwitchingProvider<KemonoApi>(singletonCImpl, 6));
       this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 8));
+      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 9));
       this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 5));
-      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 9));
-      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 10));
+      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 10));
       this.provideGithubOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 14));
       this.provideGithubRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 13));
       this.provideGithubApiProvider = DoubleCheck.provider(new SwitchingProvider<GithubApi>(singletonCImpl, 12));
@@ -739,7 +747,7 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           return (T) new SettingsRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 5: // com.example.kemono.data.repository.KemonoRepository 
-          return (T) new KemonoRepository(singletonCImpl.provideKemonoApiProvider.get(), singletonCImpl.favoriteDao(), singletonCImpl.cacheDao());
+          return (T) new KemonoRepository(singletonCImpl.provideKemonoApiProvider.get(), singletonCImpl.favoriteDao(), singletonCImpl.cacheDao(), singletonCImpl.networkMonitorProvider.get());
 
           case 6: // com.example.kemono.data.remote.KemonoApi 
           return (T) NetworkModule_ProvideKemonoApiFactory.provideKemonoApi(singletonCImpl.provideRetrofitProvider.get());
@@ -750,11 +758,11 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           case 8: // com.example.kemono.data.local.AppDatabase 
           return (T) DatabaseModule_ProvideAppDatabaseFactory.provideAppDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 9: // com.example.kemono.data.repository.DownloadRepository 
-          return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
-
-          case 10: // com.example.kemono.util.NetworkMonitor 
+          case 9: // com.example.kemono.util.NetworkMonitor 
           return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 10: // com.example.kemono.data.repository.DownloadRepository 
+          return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
 
           case 11: // com.example.kemono.data.repository.UpdateRepository 
           return (T) new UpdateRepository(singletonCImpl.provideGithubApiProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));

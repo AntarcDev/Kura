@@ -6,6 +6,7 @@ import com.example.kemono.ui.creators.CreatorViewModel_HiltModules;
 import com.example.kemono.ui.downloads.DownloadManagerViewModel_HiltModules;
 import com.example.kemono.ui.favorites.FavoritesViewModel_HiltModules;
 import com.example.kemono.ui.gallery.GalleryViewModel_HiltModules;
+import com.example.kemono.ui.main.MainViewModel_HiltModules;
 import com.example.kemono.ui.posts.CreatorPostListViewModel_HiltModules;
 import com.example.kemono.ui.posts.PostViewModel_HiltModules;
 import com.example.kemono.ui.settings.SettingsViewModel_HiltModules;
@@ -163,6 +164,7 @@ public final class KemonoApp_HiltComponents {
           ImageViewerViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
+          MainViewModel_HiltModules.KeyModule.class,
           PostViewModel_HiltModules.KeyModule.class,
           SettingsViewModel_HiltModules.KeyModule.class
       }
@@ -207,6 +209,7 @@ public final class KemonoApp_HiltComponents {
           GalleryViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           ImageViewerViewModel_HiltModules.BindsModule.class,
+          MainViewModel_HiltModules.BindsModule.class,
           PostViewModel_HiltModules.BindsModule.class,
           SettingsViewModel_HiltModules.BindsModule.class
       }

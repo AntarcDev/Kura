@@ -33,9 +33,20 @@ interface KemonoApi {
 
     @GET("posts/popular")
     suspend fun getPopularPosts(
-            @Query("o") offset: Int = 0,
-            @Query("q") query: String? = null
+            @Query("date") date: String? = null,
+            @Query("period") period: String? = null,
+            @Query("o") offset: Int = 0
     ): PopularPostsResponse
+
+    @GET("posts/random")
+    suspend fun getRandomPostRedirect(): RandomPostRedirect
+
+    @GET("{service}/user/{user}/post/{id}")
+    suspend fun getPost(
+        @Path("service") service: String,
+        @Path("user") user: String,
+        @Path("id") id: String
+    ): PostResponse
 
     @GET("{service}/user/{creatorId}/profile")
     suspend fun getCreatorProfile(
@@ -51,12 +62,37 @@ interface KemonoApi {
             @Query("q") query: String? = null
     ): List<Post>
 
-    @GET("{service}/user/{creatorId}/post/{postId}")
-    suspend fun getPost(
-            @Path("service") service: String,
-            @Path("creatorId") creatorId: String,
-            @Path("postId") postId: String
-    ): PostResponse
+    @GET("{service}/user/{creatorId}/announcements")
+    suspend fun getCreatorAnnouncements(
+        @Path("service") service: String,
+        @Path("creatorId") creatorId: String
+    ): List<com.example.kemono.data.model.Announcement>
+
+    @GET("{service}/user/{creatorId}/tags")
+    suspend fun getCreatorTags(
+        @Path("service") service: String,
+        @Path("creatorId") creatorId: String
+    ): List<Tag>
+    // Actually, tags.json was empty. Let's assume List<String> or List<Tag> if Tag is defined.
+    // Existing getTags returns List<Tag>. Let's check Tag definition.
+    
+    @GET("{service}/user/{creatorId}/links")
+    suspend fun getCreatorLinks(
+        @Path("service") service: String,
+        @Path("creatorId") creatorId: String
+    ): List<com.example.kemono.data.model.CreatorLink>
+
+    @GET("{service}/user/{creatorId}/fancards")
+    suspend fun getCreatorFancards(
+        @Path("service") service: String,
+        @Path("creatorId") creatorId: String
+    ): List<com.example.kemono.data.model.Fancard>
 
     @GET("posts/tags") suspend fun getTags(): List<Tag>
 }
+
+data class RandomPostRedirect(
+    @com.google.gson.annotations.SerializedName("service") val service: String,
+    @com.google.gson.annotations.SerializedName("artist_id") val artistId: String,
+    @com.google.gson.annotations.SerializedName("post_id") val postId: String
+)

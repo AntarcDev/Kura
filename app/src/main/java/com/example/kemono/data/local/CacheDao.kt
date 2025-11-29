@@ -23,7 +23,7 @@ interface CacheDao {
     suspend fun deleteExpiredCreators(expiryTime: Long)
 
     // Posts
-    @Query("SELECT * FROM cached_posts WHERE user = :userId AND service = :service")
+    @Query("SELECT * FROM cached_posts WHERE user = :userId AND service = :service ORDER BY published DESC")
     fun getCachedPosts(service: String, userId: String): Flow<List<CachedPost>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun cachePosts(posts: List<CachedPost>)

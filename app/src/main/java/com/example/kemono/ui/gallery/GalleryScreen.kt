@@ -47,7 +47,17 @@ fun GalleryScreen(
 ) {
     val items by viewModel.galleryItems.collectAsState()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Gallery") }) }) { paddingValues ->
+    val searchQuery by viewModel.searchQuery.collectAsState()
+
+    Scaffold(
+        topBar = { 
+            com.example.kemono.ui.components.UnifiedTopBar(
+                query = searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
+                onClearSearch = { viewModel.onSearchQueryChange("") }
+            ) 
+        }
+    ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (items.isEmpty()) {
                 Text(

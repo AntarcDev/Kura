@@ -37,37 +37,50 @@ class UpdateRepository @Inject constructor(
     }
 
     fun downloadApk(url: String): Flow<Float> = flow {
+        android.util.Log.d("UpdateRepository", "Starting download from: $url")
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
-        val response = client.newCall(request).execute()
-        
-        if (!response.isSuccessful) throw Exception("Failed to download APK")
-
-        val body = response.body ?: throw Exception("Empty response body")
-        val contentLength = body.contentLength()
-        val inputStream = body.byteStream()
-        
-        val updateDir = File(context.cacheDir, "updates")
-        if (!updateDir.exists()) updateDir.mkdirs()
-        
-        val file = File(updateDir, "update.apk")
-        val outputStream = FileOutputStream(file)
-        
-        val buffer = ByteArray(8 * 1024)
-        var bytesRead: Int
-        var totalBytesRead = 0L
         
         try {
-            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-                totalBytesRead += bytesRead
-                emit(totalBytesRead.toFloat() / contentLength)
+            val response = client.newCall(request).execute()
+            
+            if (!response.isSuccessful) {
+                android.util.Log.e("UpdateRepository", "Download failed. Code: ${response.code}, Message: ${response.message}")
+                throw Exception("Failed to download APK: HTTP ${response.code}")
             }
-            outputStream.flush()
-        } finally {
-            inputStream.close()
-            outputStream.close()
-            body.close()
+
+            val body = response.body ?: throw Exception("Empty response body")
+            val contentLength = body.contentLength()
+            val inputStream = body.byteStream()
+            
+            val updateDir = File(context.cacheDir, "updates")
+            if (!updateDir.exists()) updateDir.mkdirs()
+            
+            val file = File(updateDir, "update.apk")
+            val outputStream = FileOutputStream(file)
+            
+            val buffer = ByteArray(8 * 1024)
+            var bytesRead: Int
+            var totalBytesRead = 0L
+            
+            try {
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                    totalBytesRead += bytesRead
+                    if (contentLength > 0) {
+                        emit(totalBytesRead.toFloat() / contentLength)
+                    }
+                }
+                outputStream.flush()
+                android.util.Log.d("UpdateRepository", "Download complete. File size: ${file.length()}")
+            } finally {
+                inputStream.close()
+                outputStream.close()
+                body.close()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("UpdateRepository", "Download exception", e)
+            throw e
         }
     }.flowOn(Dispatchers.IO)
 

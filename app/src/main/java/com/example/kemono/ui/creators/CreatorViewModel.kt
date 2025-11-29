@@ -64,8 +64,11 @@ constructor(
                     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Combine filter and sort options first
+    // We need a debounced query for the filter state to avoid rapid updates
+    private val _debouncedSearchQuery = MutableStateFlow("")
+
     private val _filterState =
-            combine(_searchQuery, _sortOption, _selectedServices) { query, sort, services ->
+            combine(_debouncedSearchQuery, _sortOption, _selectedServices) { query, sort, services ->
                 Triple(query, sort, services)
             }
 
@@ -103,7 +106,8 @@ constructor(
                                                 .thenByDescending { it.updated }
                                 )
                             }
-                            SortOption.Popular -> result
+                            SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> result
+                            SortOption.Random -> result.shuffled() // Simple shuffle for creators if random is selected
                         }
                     }
                     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -168,11 +172,15 @@ constructor(
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        if (_searchMode.value == SearchMode.Posts) {
-            searchJob?.cancel()
-            searchJob = viewModelScope.launch {
-                kotlinx.coroutines.delay(1000) // Debounce 1000ms
+        
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(500) // Debounce 500ms for both modes
+            
+            if (_searchMode.value == SearchMode.Posts) {
                 fetchPosts()
+            } else {
+                _debouncedSearchQuery.value = query
             }
         }
     }
@@ -190,23 +198,44 @@ constructor(
                 currentOffset = 0
             }
             try {
-                // Note: The API for filtering by tags might be different or require client-side filtering
-                // For now, we fetch recent posts and filter client-side if needed, or pass query
                 val query = _searchQuery.value
                 val tags = _selectedTags.value.toList()
-                val result = repository.getRecentPosts(
-                    offset = currentOffset,
-                    query = if (query.isBlank()) null else query,
-                    tags = if (tags.isEmpty()) null else tags
-                )
+                val sort = _sortOption.value
+                
+                val result = when (sort) {
+                    SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
+                        val period = when (sort) {
+                            SortOption.PopularDay -> "day"
+                            SortOption.PopularWeek -> "week"
+                            SortOption.PopularMonth -> "month"
+                            else -> "week" // Default to week
+                        }
+                        // Popular posts API doesn't support tags/query in the same way, or maybe it does?
+                        // API def: getPopularPosts(date, period, offset)
+                        // It doesn't seem to support query/tags.
+                        repository.getPopularPosts(period = period, offset = currentOffset)
+                    }
+                    SortOption.Random -> {
+                        if (reset) repository.getRandomPosts() else emptyList() // Random doesn't support pagination really
+                    }
+                    else -> {
+                        // Default / Recent
+                        repository.getRecentPosts(
+                            offset = currentOffset,
+                            query = if (query.isBlank()) null else query,
+                            tags = if (tags.isEmpty()) null else tags
+                        )
+                    }
+                }
+
                 if (reset) {
                     _posts.value = result
                 } else {
                     _posts.value = _posts.value + result
                 }
                 
-                if (result.isNotEmpty()) {
-                    currentOffset += 50 // Assuming 50 is the limit
+                if (result.isNotEmpty() && sort != SortOption.Random) {
+                    currentOffset += 50
                 }
             } catch (e: Exception) {
                 if (e is retrofit2.HttpException && e.code() == 429) {
@@ -236,6 +265,9 @@ constructor(
         if (option == SortOption.Popular && _popularCreators.value.isEmpty()) {
             fetchPopularCreators()
         }
+        if (_searchMode.value == SearchMode.Posts) {
+            fetchPosts()
+        }
     }
 
     fun toggleServiceFilter(service: String) {
@@ -245,12 +277,18 @@ constructor(
         } else {
             _selectedServices.value = current + service
         }
+        if (_searchMode.value == SearchMode.Posts) {
+            fetchPosts()
+        }
     }
 
     fun clearFilters() {
         _selectedServices.value = emptySet()
         _selectedTags.value = emptySet()
         _sortOption.value = SortOption.Updated
+        if (_searchMode.value == SearchMode.Posts) {
+            fetchPosts()
+        }
     }
 
     fun fetchCreators() {
@@ -318,13 +356,14 @@ constructor(
     }
     fun toggleSelection(post: com.example.kemono.data.model.Post) {
         val current = _selectedPostIds.value
-        if (current.contains(post.id)) {
-            _selectedPostIds.value = current - post.id
+        val postId = post.id ?: return
+        if (current.contains(postId)) {
+            _selectedPostIds.value = current - postId
             if (_selectedPostIds.value.isEmpty()) {
                 _isSelectionMode.value = false
             }
         } else {
-            _selectedPostIds.value = current + post.id
+            _selectedPostIds.value = current + postId
             _isSelectionMode.value = true
         }
     }
@@ -351,10 +390,10 @@ constructor(
                         downloadRepository.downloadFile(
                             url,
                             file.name ?: "file",
-                            post.id,
-                            post.title,
-                            post.user,
-                            creatorName,
+                            post.id ?: "",
+                            post.title ?: "",
+                            post.user ?: "",
+                            creatorName ?: "",
                             mediaType
                         )
                     }
@@ -368,10 +407,10 @@ constructor(
                         downloadRepository.downloadFile(
                             url,
                             attachment.name ?: "attachment",
-                            post.id,
-                            post.title,
-                            post.user,
-                            creatorName,
+                            post.id ?: "",
+                            post.title ?: "",
+                            post.user ?: "",
+                            creatorName ?: "",
                             mediaType
                         )
                     }
@@ -386,7 +425,11 @@ enum class SortOption {
     Name,
     Updated,
     Favorites,
-    Popular
+    Popular,
+    PopularDay,
+    PopularWeek,
+    PopularMonth,
+    Random
 }
 
 enum class SearchMode {

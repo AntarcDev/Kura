@@ -41,8 +41,13 @@ fun PostItem(
         Row(modifier = Modifier.padding(8.dp)) {
             post.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
+                    val url = "https://kemono.su/thumbnail${file.path}"
+                    val isGif = file.path.endsWith(".gif", ignoreCase = true)
                     AsyncImage(
-                        model = "https://kemono.cr/thumbnail${file.path}",
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(url)
+                            .crossfade(!isGif)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier
                             .size(80.dp)
