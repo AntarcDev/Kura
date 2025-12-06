@@ -176,10 +176,85 @@ fun PostScreen(
                                     if (!file.path.isNullOrEmpty()) {
                                         val url = "https://kemono.su${file.path}"
                                         val mediaType = com.example.kemono.util.getMediaType(file.path)
+                                        val extension = file.path.substringAfterLast('.', "").lowercase()
+                                        val isAudio = extension in listOf("mp3", "wav", "ogg", "m4a")
+                                        val isArchive = extension in listOf("zip", "rar", "7z", "tar", "gz", "xz")
+                                        val isPsd = extension == "psd"
                                         
                                         Box(modifier = Modifier.fillMaxWidth()) {
-                                            when (mediaType) {
-                                                com.example.kemono.util.MediaType.VIDEO -> {
+                                            when {
+                                                isAudio -> {
+                                                    com.example.kemono.ui.components.AudioPlayer(
+                                                        url = url,
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (file.name ?: "file").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "AUDIO"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                isPsd -> {
+                                                    if (!file.thumbnailPath.isNullOrEmpty()) {
+                                                        val thumbnailUrl = "https://kemono.su${file.thumbnailPath}"
+                                                        Box(modifier = Modifier.fillMaxWidth()) {
+                                                            AsyncImage(
+                                                                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                                    .data(thumbnailUrl)
+                                                                    .crossfade(true)
+                                                                    .build(),
+                                                                contentDescription = "PSD Thumbnail",
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .height(300.dp)
+                                                                    .clickable { onImageClick(0) },
+                                                                contentScale = ContentScale.Fit
+                                                            )
+                                                            // PSD Badge
+                                                            Text(
+                                                                text = "PSD",
+                                                                modifier = Modifier
+                                                                    .align(Alignment.TopStart)
+                                                                    .padding(8.dp)
+                                                                    .background(MaterialTheme.colorScheme.primaryContainer, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                            )
+                                                        }
+                                                    } else {
+                                                        com.example.kemono.ui.components.ArchiveCard(
+                                                            fileName = file.name ?: "PSD File",
+                                                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                                            onDownloadClick = {
+                                                                val safeFileName = (file.name ?: "file").take(50) + "." + extension
+                                                                viewModel.downloadFile(
+                                                                    url = url,
+                                                                    fileName = safeFileName,
+                                                                    mediaType = "IMAGE"
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                                isArchive -> {
+                                                    com.example.kemono.ui.components.ArchiveCard(
+                                                        fileName = file.name ?: "Archive",
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (file.name ?: "file").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "ARCHIVE"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                mediaType == com.example.kemono.util.MediaType.VIDEO -> {
                                                     com.example.kemono.ui.components.VideoPlayer(
                                                             url = url,
                                                             modifier =
@@ -204,21 +279,24 @@ fun PostScreen(
                                                 }
                                             }
                                             
-                                            // Download button overlay
-                                            IconButton(
-                                                onClick = { 
-                                                    viewModel.downloadFile(
-                                                        url = url,
-                                                        fileName = file.name ?: "file",
-                                                        mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
-                                                    )
-                                                },
-                                                modifier = Modifier
-                                                    .align(Alignment.TopEnd)
-                                                    .padding(8.dp)
-                                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), CircleShape)
-                                            ) {
-                                                Icon(Icons.Default.Download, contentDescription = "Download file")
+                                            // Download button overlay (Only for non-audio, non-archive, and non-psd)
+                                            if (!isAudio && !isArchive && !isPsd) {
+                                                IconButton(
+                                                    onClick = { 
+                                                        val safeFileName = (file.name ?: "file").take(50)
+                                                        viewModel.downloadFile(
+                                                            url = url,
+                                                            fileName = safeFileName,
+                                                            mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                                        )
+                                                    },
+                                                    modifier = Modifier
+                                                        .align(Alignment.TopEnd)
+                                                        .padding(8.dp)
+                                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), CircleShape)
+                                                ) {
+                                                    Icon(Icons.Default.Download, contentDescription = "Download file")
+                                                }
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
@@ -244,20 +322,87 @@ fun PostScreen(
                                                 com.example.kemono.util.getMediaType(
                                                         attachment.path
                                                 )
-                                        // Offset index by 1 if main file exists, but here we just use index + 1 for simplicity in logic if needed
-                                        // Actually imageIndex logic was complex in previous code. 
-                                        // Let's just pass the index relative to attachments or global?
-                                        // The original code incremented imageIndex for both main file and attachments.
-                                        // We need to maintain that if we want gallery to work correctly.
-                                        // But calculating global index in LazyColumn items is tricky if we don't know if main file exists.
-                                        // For now, let's assume onImageClick takes the index in the list of *images*.
-                                        // We can calculate the offset based on main file presence.
+                                        val extension = attachment.path.substringAfterLast('.', "").lowercase()
+                                        val isAudio = extension in listOf("mp3", "wav", "ogg", "m4a")
+                                        val isArchive = extension in listOf("zip", "rar", "7z", "tar", "gz", "xz")
+                                        val isPsd = extension == "psd"
+
                                         val mainFileExists = !currentPost.file?.path.isNullOrEmpty()
                                         val globalIndex = index + (if (mainFileExists) 1 else 0)
 
                                         Column {
-                                            when (mediaType) {
-                                                com.example.kemono.util.MediaType.VIDEO -> {
+                                            when {
+                                                isAudio -> {
+                                                    com.example.kemono.ui.components.AudioPlayer(
+                                                        url = url,
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "AUDIO"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                isPsd -> {
+                                                    if (!attachment.thumbnailPath.isNullOrEmpty()) {
+                                                        val thumbnailUrl = "https://kemono.su${attachment.thumbnailPath}"
+                                                        Box(modifier = Modifier.fillMaxWidth()) {
+                                                            AsyncImage(
+                                                                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                                    .data(thumbnailUrl)
+                                                                    .crossfade(true)
+                                                                    .build(),
+                                                                contentDescription = "PSD Thumbnail",
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .height(300.dp)
+                                                                    .clickable { onImageClick(globalIndex) },
+                                                                contentScale = ContentScale.Fit
+                                                            )
+                                                            Text(
+                                                                text = "PSD",
+                                                                modifier = Modifier
+                                                                    .align(Alignment.TopStart)
+                                                                    .padding(8.dp)
+                                                                    .background(MaterialTheme.colorScheme.primaryContainer, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                            )
+                                                        }
+                                                    } else {
+                                                        com.example.kemono.ui.components.ArchiveCard(
+                                                            fileName = attachment.name ?: "PSD File",
+                                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                                            onDownloadClick = {
+                                                                val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
+                                                                viewModel.downloadFile(
+                                                                    url = url,
+                                                                    fileName = safeFileName,
+                                                                    mediaType = "IMAGE"
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                                isArchive -> {
+                                                    com.example.kemono.ui.components.ArchiveCard(
+                                                        fileName = attachment.name ?: "Archive",
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "ARCHIVE"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                mediaType == com.example.kemono.util.MediaType.VIDEO -> {
                                                     com.example.kemono.ui.components.VideoPlayer(
                                                             url = url,
                                                             modifier =
@@ -287,26 +432,29 @@ fun PostScreen(
                                                 }
                                             }
 
-                                            Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                        text = attachment.name ?: "Attachment",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        modifier = Modifier.weight(1f)
-                                                )
-                                                IconButton(
-                                                    onClick = {
-                                                        viewModel.downloadFile(
-                                                            url = url,
-                                                            fileName = attachment.name ?: "attachment",
-                                                            mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
-                                                        )
-                                                    }
+                                            if (!isAudio && !isArchive && !isPsd) {
+                                                Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
                                                 ) {
-                                                    Icon(Icons.Default.Download, contentDescription = "Download attachment")
+                                                    Text(
+                                                            text = attachment.name ?: "Attachment",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            modifier = Modifier.weight(1f)
+                                                    )
+                                                    IconButton(
+                                                        onClick = {
+                                                            val safeFileName = (attachment.name ?: "attachment").take(50)
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = if (mediaType == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                                            )
+                                                        }
+                                                    ) {
+                                                        Icon(Icons.Default.Download, contentDescription = "Download attachment")
+                                                    }
                                                 }
                                             }
                                             Spacer(modifier = Modifier.height(16.dp))

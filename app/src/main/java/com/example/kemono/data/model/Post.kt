@@ -16,5 +16,6 @@ data class Post(
 
 data class KemonoFile(
     val name: String,
-    val path: String
+    val path: String,
+    @SerializedName("thumbnail_path") val thumbnailPath: String? = null
 )
