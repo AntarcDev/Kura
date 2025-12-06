@@ -39,6 +39,7 @@ import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.Post
 import com.example.kemono.ui.components.CreatorItemSkeleton
 import com.example.kemono.ui.components.PostItemSkeleton
+import com.example.kemono.ui.components.CreatorTile
 import com.example.kemono.ui.components.SelectionTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +71,23 @@ fun CreatorScreen(
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+    val sortAscending by viewModel.sortAscending.collectAsState()
+    
+    var showFilterSheet by remember { mutableStateOf(false) }
+
+    if (showFilterSheet) {
+        com.example.kemono.ui.components.FilterBottomSheet(
+            onDismiss = { showFilterSheet = false },
+            sortOption = sortOption,
+            onSortOptionSelected = { viewModel.setSortOption(it) },
+            isAscending = sortAscending,
+            onAscendingToggle = viewModel::toggleSortAscending,
+            selectedServices = selectedServices,
+            onServiceToggle = viewModel::toggleServiceFilter,
+            onClearServices = viewModel::clearFilters, // Or create specific clear service function if clearFilters clears everything
+            availableServices = availableServices
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -81,7 +99,7 @@ fun CreatorScreen(
                 )
             } else {
                 val sortOptions = if (searchMode == SearchMode.Artists) {
-                    listOf("Name", "Updated", "Favorites", "Popular")
+                    emptyList() // We use BottomSheet
                 } else {
                     listOf("Recent", "Popular (Day)", "Popular (Week)", "Popular (Month)", "Random")
                 }
@@ -91,26 +109,22 @@ fun CreatorScreen(
                     onQueryChange = viewModel::onSearchQueryChange,
                     onSearch = { 
                         if (searchMode == SearchMode.Posts) viewModel.fetchPosts()
-                        // Artists search is live, so no explicit search needed usually, but can trigger refresh
                     },
                     onClearSearch = { viewModel.onSearchQueryChange("") },
                     sortOptions = sortOptions,
                     selectedSort = when (sortOption) {
                         SortOption.Name -> "Name"
                         SortOption.Updated -> if (searchMode == SearchMode.Artists) "Updated" else "Recent"
-                        SortOption.Favorites -> "Favorites"
-                        SortOption.Popular -> "Popular"
-                        SortOption.PopularDay -> "Popular (Day)"
-                        SortOption.PopularWeek -> "Popular (Week)"
-                        SortOption.PopularMonth -> "Popular (Month)"
+                        // SortOption.Favorites removed
+                        SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> "Popular"
+                        SortOption.Indexed -> "Indexed"
+                        SortOption.Service -> "Service"
                         SortOption.Random -> "Random"
                     },
-                    onSortSelected = { option ->
+                    onSortSelected = { option -> 
+                        // Only for Posts mode legacy dropdown
                         val newSort = when (option) {
-                            "Name" -> SortOption.Name
-                            "Updated", "Recent" -> SortOption.Updated
-                            "Favorites" -> SortOption.Favorites
-                            "Popular" -> SortOption.Popular
+                            "Recent" -> SortOption.Updated
                             "Popular (Day)" -> SortOption.PopularDay
                             "Popular (Week)" -> SortOption.PopularWeek
                             "Popular (Month)" -> SortOption.PopularMonth
@@ -119,10 +133,11 @@ fun CreatorScreen(
                         }
                         viewModel.setSortOption(newSort)
                     },
-                    filterOptions = availableServices,
-                    selectedFilters = selectedServices.toList(),
-                    onFilterSelected = viewModel::toggleServiceFilter,
-                    onTagsClick = { showTagsDialog = true },
+                    filterOptions = emptyList(), // We use BottomSheet for artists, nothing for Posts yet?
+                    selectedFilters = emptyList(),
+                    onFilterSelected = {},
+                    onFilterClick = if (searchMode == SearchMode.Artists) { { showFilterSheet = true } } else null,
+                    onTagsClick = if (searchMode == SearchMode.Posts) { { showTagsDialog = true } } else null,
                     placeholderText = if (searchMode == SearchMode.Artists) "Search artists or IDs..." else "Search posts..."
                 )
             }
@@ -195,7 +210,7 @@ fun CreatorScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(creators) { creator ->
-                                    CreatorItem(
+                                    CreatorTile(
                                         creator = creator,
                                         isFavorite = favorites.any { it.id == creator.id },
                                         onClick = { onCreatorClick(creator) },
@@ -210,7 +225,7 @@ fun CreatorScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(creators) { creator ->
-                                    CreatorItem(
+                                    CreatorTile(
                                         creator = creator,
                                         isFavorite = favorites.any { it.id == creator.id },
                                         onClick = { onCreatorClick(creator) },
@@ -382,150 +397,6 @@ fun TagItem(tag: String, selected: Boolean, onToggle: () -> Unit) {
     }
 }
 
-@Composable
-fun CreatorItem(
-    creator: Creator,
-    isFavorite: Boolean,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    compact: Boolean = false
-) {
-    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        if (compact) {
-            Box(modifier = Modifier.fillMaxSize().height(180.dp)) {
-                // Banner Background
-                AsyncImage(
-                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
-                )
-                
-                // Scrim
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f))
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    AsyncImage(
-                        model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentScale = ContentScale.Crop,
-                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = creator.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                IconButton(
-                    onClick = onFavoriteClick,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        } else {
-            Box(modifier = Modifier.fillMaxWidth().height(100.dp)) {
-                // Banner Background
-                AsyncImage(
-                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
-                )
-
-                // Scrim
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.6f))
-                )
-
-                Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    AsyncImage(
-                        model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentScale = ContentScale.Crop,
-                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = creator.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.weight(1f),
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                            IconButton(onClick = onFavoriteClick) {
-                                Icon(
-                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = creator.service,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
-                            Text(
-                                text = "ID: ${creator.id}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+// CreatorItem moved to ui/components/CreatorItem.kt
 
 

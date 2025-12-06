@@ -49,6 +49,7 @@ fun UnifiedTopBar(
     filterOptions: List<String> = emptyList(),
     selectedFilters: List<String> = emptyList(),
     onFilterSelected: (String) -> Unit = {},
+    onFilterClick: (() -> Unit)? = null,
     onTagsClick: (() -> Unit)? = null,
     placeholderText: String = "Search..."
 ) {
@@ -94,8 +95,14 @@ fun UnifiedTopBar(
             )
         },
         actions = {
-            if (sortOptions.isNotEmpty() || filterOptions.isNotEmpty()) {
-                IconButton(onClick = { showMenu = true }) {
+            if (sortOptions.isNotEmpty() || filterOptions.isNotEmpty() || onFilterClick != null) {
+                IconButton(onClick = { 
+                    if (onFilterClick != null) {
+                        onFilterClick()
+                    } else {
+                        showMenu = true 
+                    }
+                }) {
                     Icon(Icons.Default.FilterList, contentDescription = "Filter & Sort")
                 }
                 

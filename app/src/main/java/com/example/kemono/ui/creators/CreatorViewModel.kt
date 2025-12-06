@@ -22,29 +22,29 @@ import kotlinx.coroutines.launch
 class CreatorViewModel
 @Inject
 constructor(
-        private val repository: KemonoRepository,
-        networkMonitor: NetworkMonitor,
-        private val settingsRepository: SettingsRepository
+    private val repository: KemonoRepository,
+    networkMonitor: NetworkMonitor,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val isOnline =
-            networkMonitor.isOnline.stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(5000),
-                    true
-            )
+        networkMonitor.isOnline.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            true
+        )
 
     val favorites =
-            repository
-                    .getAllFavorites()
-                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        repository
+            .getAllFavorites()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val gridSize =
-            settingsRepository.gridSize.stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(5000),
-                    "Comfortable"
-            )
+        settingsRepository.gridSize.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            "Comfortable"
+        )
 
     private val _allCreators = MutableStateFlow<List<Creator>>(emptyList())
     private val _popularCreators = MutableStateFlow<List<Creator>>(emptyList())
@@ -54,69 +54,18 @@ constructor(
 
     private val _sortOption = MutableStateFlow(SortOption.Updated)
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
+    
+    // New Ascending State
+    private val _sortAscending = MutableStateFlow(false)
+    val sortAscending: StateFlow<Boolean> = _sortAscending.asStateFlow()
 
     private val _selectedServices = MutableStateFlow<Set<String>>(emptySet())
     val selectedServices: StateFlow<Set<String>> = _selectedServices.asStateFlow()
 
     val availableServices: StateFlow<List<String>> =
-            _allCreators
-                    .map { creators -> creators.map { it.service }.distinct().sorted() }
-                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    // Combine filter and sort options first
-    // We need a debounced query for the filter state to avoid rapid updates
-    private val _debouncedSearchQuery = MutableStateFlow("")
-
-    private val _filterState =
-            combine(_debouncedSearchQuery, _sortOption, _selectedServices) { query, sort, services ->
-                Triple(query, sort, services)
-            }
-
-    val creators: StateFlow<List<Creator>> =
-            combine(_allCreators, _popularCreators, favorites, _filterState) {
-                            all,
-                            popular,
-                            favs,
-                            (query, sort, services) ->
-                        val sourceList = if (sort == SortOption.Popular) popular else all
-                        var result = sourceList
-
-                        // Filter by service
-                        if (services.isNotEmpty()) {
-                            result = result.filter { it.service in services }
-                        }
-
-                        // Filter by query
-                        if (query.isNotBlank()) {
-                            result =
-                                    result.filter {
-                                        it.name.contains(query, ignoreCase = true) ||
-                                                it.id.contains(query, ignoreCase = true)
-                                    }
-                        }
-
-                        // Sort
-                        when (sort) {
-                            SortOption.Name -> result.sortedBy { it.name }
-                            SortOption.Updated -> result.sortedByDescending { it.updated }
-                            SortOption.Favorites -> {
-                                val favIds = favs.map { it.id }.toSet()
-                                result.sortedWith(
-                                        compareByDescending<Creator> { it.id in favIds }
-                                                .thenByDescending { it.updated }
-                                )
-                            }
-                            SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> result
-                            SortOption.Random -> result.shuffled() // Simple shuffle for creators if random is selected
-                        }
-                    }
-                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+        _allCreators
+            .map { creators -> creators.map { it.service }.distinct().sorted() }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _searchMode = MutableStateFlow(SearchMode.Artists)
     val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
@@ -129,7 +78,7 @@ constructor(
 
     private val _posts = MutableStateFlow<List<com.example.kemono.data.model.Post>>(emptyList())
     val posts: StateFlow<List<com.example.kemono.data.model.Post>> = _posts.asStateFlow()
-    
+
     private var currentOffset = 0
 
     // Selection State
@@ -139,8 +88,78 @@ constructor(
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     @Inject
     lateinit var downloadRepository: com.example.kemono.data.repository.DownloadRepository
+
+    // Combine filter and sort options first
+    private val _debouncedSearchQuery = MutableStateFlow("")
+
+    private data class FilterState(
+        val query: String,
+        val sort: SortOption,
+        val services: Set<String>,
+        val ascending: Boolean
+    )
+
+    private val _filterState =
+        combine(_debouncedSearchQuery, _sortOption, _selectedServices, _sortAscending) { query, sort, services, asc ->
+            FilterState(query, sort, services, asc)
+        }
+
+    val creators: StateFlow<List<Creator>> =
+        combine(_allCreators, _popularCreators, favorites, _filterState) {
+            all,
+            popular,
+            favs,
+            (query, sort, services, ascending) ->
+            
+            if (query == "52635557") {
+                 val exists = all.any { it.id == "52635557" }
+                 // Direct Check removed
+            }
+
+            // Start with all creators or popular list depending on sort option
+            var result = when (sort) {
+                SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> popular.ifEmpty { all }
+                else -> all
+            }
+
+            // Filter by service
+            if (services.isNotEmpty()) {
+                result = result.filter { it.service in services }
+            }
+
+            // Filter by query
+            if (query.isNotBlank()) {
+                result =
+                    result.filter {
+                        it.name.contains(query, ignoreCase = true) ||
+                            it.id.contains(query, ignoreCase = true)
+                    }
+            }
+
+            // Sort
+            val sorted = when (sort) {
+                SortOption.Name -> result.sortedBy { it.name }
+                SortOption.Updated -> result.sortedBy { it.updated }
+                SortOption.Indexed -> result.sortedBy { it.indexed }
+                SortOption.Service -> result.sortedBy { it.service }
+                SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
+                    result.sortedBy { it.favorited ?: 0 }
+                }
+                SortOption.Random -> result.shuffled()
+            }
+
+            // Apply ascending/descending
+            if (ascending) sorted else sorted.reversed()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         fetchCreators()
@@ -149,8 +168,6 @@ constructor(
 
     fun setSearchMode(mode: SearchMode) {
         _searchMode.value = mode
-        // Clear search query when switching modes to avoid confusion?
-        // _searchQuery.value = ""
         if (mode == SearchMode.Posts && _posts.value.isEmpty()) {
             fetchPosts()
         }
@@ -172,11 +189,11 @@ constructor(
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
-        
+
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             kotlinx.coroutines.delay(500) // Debounce 500ms for both modes
-            
+
             if (_searchMode.value == SearchMode.Posts) {
                 fetchPosts()
             } else {
@@ -201,7 +218,7 @@ constructor(
                 val query = _searchQuery.value
                 val tags = _selectedTags.value.toList()
                 val sort = _sortOption.value
-                
+
                 val result = when (sort) {
                     SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
                         val period = when (sort) {
@@ -210,16 +227,12 @@ constructor(
                             SortOption.PopularMonth -> "month"
                             else -> "week" // Default to week
                         }
-                        // Popular posts API doesn't support tags/query in the same way, or maybe it does?
-                        // API def: getPopularPosts(date, period, offset)
-                        // It doesn't seem to support query/tags.
                         repository.getPopularPosts(period = period, offset = currentOffset)
                     }
                     SortOption.Random -> {
-                        if (reset) repository.getRandomPosts() else emptyList() // Random doesn't support pagination really
+                        if (reset) repository.getRandomPosts() else emptyList()
                     }
                     else -> {
-                        // Default / Recent
                         repository.getRecentPosts(
                             offset = currentOffset,
                             query = if (query.isBlank()) null else query,
@@ -233,7 +246,7 @@ constructor(
                 } else {
                     _posts.value = _posts.value + result
                 }
-                
+
                 if (result.isNotEmpty() && sort != SortOption.Random) {
                     currentOffset += 50
                 }
@@ -262,12 +275,16 @@ constructor(
 
     fun setSortOption(option: SortOption) {
         _sortOption.value = option
-        if (option == SortOption.Popular && _popularCreators.value.isEmpty()) {
+        if ((option == SortOption.PopularDay || option == SortOption.PopularWeek || option == SortOption.PopularMonth) && _popularCreators.value.isEmpty()) {
             fetchPopularCreators()
         }
         if (_searchMode.value == SearchMode.Posts) {
             fetchPosts()
         }
+    }
+    
+    fun toggleSortAscending() {
+        _sortAscending.value = !_sortAscending.value
     }
 
     fun toggleServiceFilter(service: String) {
@@ -299,8 +316,7 @@ constructor(
                 val result = repository.getCreators()
                 _allCreators.value = result.sortedByDescending { it.updated }
 
-                // If we are in popular mode, refresh that too
-                if (_sortOption.value == SortOption.Popular) {
+                if (_sortOption.value == SortOption.PopularDay || _sortOption.value == SortOption.PopularWeek || _sortOption.value == SortOption.PopularMonth) {
                     fetchPopularCreators()
                 }
             } catch (e: Exception) {
@@ -327,7 +343,6 @@ constructor(
                 } else {
                     _error.value = e.message ?: "Failed to fetch popular creators"
                 }
-                // Fallback to updated if failed?
                 if (_popularCreators.value.isEmpty()) {
                     _sortOption.value = SortOption.Updated
                 }
@@ -341,12 +356,12 @@ constructor(
         viewModelScope.launch {
             val isFav = favorites.value.any { it.id == creator.id }
             val favCreator =
-                    com.example.kemono.data.model.FavoriteCreator(
-                            id = creator.id,
-                            service = creator.service,
-                            name = creator.name,
-                            updated = creator.updated.toString()
-                    )
+                FavoriteCreator(
+                    id = creator.id,
+                    service = creator.service,
+                    name = creator.name,
+                    updated = creator.updated.toString()
+                )
             if (isFav) {
                 repository.removeFavorite(favCreator)
             } else {
@@ -354,6 +369,7 @@ constructor(
             }
         }
     }
+
     fun toggleSelection(post: com.example.kemono.data.model.Post) {
         val current = _selectedPostIds.value
         val postId = post.id ?: return
@@ -379,10 +395,8 @@ constructor(
         
         viewModelScope.launch {
             postsToDownload.forEach { post ->
-                // Ensure we have creator name, or fallback
-                val creatorName = post.user // Ideally fetch name if needed, but ID is safe for now
+                val creatorName = post.user 
                 
-                // Download main file
                 post.file?.let { file ->
                     if (!file.path.isNullOrEmpty()) {
                         val url = "https://kemono.cr${file.path}"
@@ -399,7 +413,6 @@ constructor(
                     }
                 }
 
-                // Download attachments
                 post.attachments.forEach { attachment ->
                     if (!attachment.path.isNullOrEmpty()) {
                         val url = "https://kemono.cr${attachment.path}"
@@ -424,7 +437,8 @@ constructor(
 enum class SortOption {
     Name,
     Updated,
-    Favorites,
+    Indexed,
+    Service,
     Popular,
     PopularDay,
     PopularWeek,
