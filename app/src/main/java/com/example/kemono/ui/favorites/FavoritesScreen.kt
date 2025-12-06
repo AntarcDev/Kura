@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kemono.data.model.Creator
-import com.example.kemono.ui.creators.CreatorItem
+import com.example.kemono.ui.components.CreatorTile
 
 @Composable
 fun FavoritesScreen(
@@ -56,7 +56,7 @@ fun FavoritesScreen(
                         // To reuse CreatorItem fully, we'd need to pass isFavorite=true and a dummy
                         // or actual toggle.
                         // Since it's the favorites screen, isFavorite is always true.
-                        CreatorItem(
+                        CreatorTile(
                                 creator = creator,
                                 isFavorite = true,
                                 onClick = { onCreatorClick(creator) },

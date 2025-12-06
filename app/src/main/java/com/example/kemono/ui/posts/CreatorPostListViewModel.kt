@@ -111,10 +111,60 @@ class CreatorPostListViewModel @Inject constructor(
             _isLoading.value = true
             _error.value = null
             try {
-                // Fetching first page for now
-                _posts.value = repository.getCreatorPosts(service, creatorId)
+                if (service == "discord") {
+                    fetchDiscordChannels(creatorId)
+                } else {
+                    // Fetching first page for now
+                    _posts.value = repository.getCreatorPosts(service, creatorId)
+                }
             } catch (e: Exception) {
                 _error.value = e.message ?: "Failed to load posts"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // Discord State
+    private val _discordChannels = MutableStateFlow<List<com.example.kemono.data.model.DiscordChannel>>(emptyList())
+    val discordChannels: StateFlow<List<com.example.kemono.data.model.DiscordChannel>> = _discordChannels.asStateFlow()
+
+    private val _selectedChannel = MutableStateFlow<com.example.kemono.data.model.DiscordChannel?>(null)
+    val selectedChannel: StateFlow<com.example.kemono.data.model.DiscordChannel?> = _selectedChannel.asStateFlow()
+
+    private val _discordPosts = MutableStateFlow<List<com.example.kemono.data.model.DiscordPost>>(emptyList())
+    val discordPosts: StateFlow<List<com.example.kemono.data.model.DiscordPost>> = _discordPosts.asStateFlow()
+
+    fun fetchDiscordChannels(serverId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val channels = repository.getDiscordChannels(serverId)
+                _discordChannels.value = channels
+                if (channels.isNotEmpty()) {
+                    selectChannel(channels.first())
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to load channels: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun selectChannel(channel: com.example.kemono.data.model.DiscordChannel) {
+        _selectedChannel.value = channel
+        fetchDiscordPosts(channel.id)
+    }
+
+    fun fetchDiscordPosts(channelId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val posts = repository.getDiscordChannelPosts(channelId)
+                _discordPosts.value = posts
+            } catch (e: Exception) {
+                _error.value = "Failed to load channel posts: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
@@ -158,7 +208,7 @@ class CreatorPostListViewModel @Inject constructor(
                 // Download main file
                 post.file?.let { file ->
                     if (!file.path.isNullOrEmpty()) {
-                        val url = "https://kemono.su${file.path}"
+                        val url = "https://kemono.cr${file.path}"
                         val mediaType = if (com.example.kemono.util.getMediaType(file.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
@@ -175,7 +225,7 @@ class CreatorPostListViewModel @Inject constructor(
                 // Download attachments
                 post.attachments.forEach { attachment ->
                     if (!attachment.path.isNullOrEmpty()) {
-                        val url = "https://kemono.su${attachment.path}"
+                        val url = "https://kemono.cr${attachment.path}"
                         val mediaType = if (com.example.kemono.util.getMediaType(attachment.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
@@ -190,6 +240,40 @@ class CreatorPostListViewModel @Inject constructor(
                 }
             }
             clearSelection()
+        }
+    }
+
+    fun downloadFancard(fancard: com.example.kemono.data.model.Fancard) {
+        viewModelScope.launch {
+            val currentCreator = _creator.value ?: return@launch
+            val creatorName = currentCreator.name ?: "Unknown Creator"
+            val subFolder = "Fancards"
+            
+            val url = if (fancard.file?.path != null) {
+                "https://kemono.cr/data${fancard.file.path}"
+            } else if (fancard.hash != null && fancard.ext != null) {
+                val hash = fancard.hash
+                val ext = fancard.ext
+                val prefix1 = hash.take(2)
+                val prefix2 = hash.drop(2).take(2)
+                val baseUrl = fancard.server ?: "https://kemono.cr"
+                "$baseUrl/data/$prefix1/$prefix2/$hash$ext"
+            } else {
+                fancard.coverUrl ?: "https://kemono.cr/icons/fanbox/${fancard.userId}"
+            }
+            
+            val fileName = "Fancard ${fancard.id}${fancard.ext ?: ".jpg"}"
+
+            downloadRepository.downloadFile(
+                url = url,
+                fileName = fileName,
+                postId = fancard.id,
+                postTitle = "Fancard ${fancard.id}",
+                creatorId = fancard.userId,
+                creatorName = creatorName,
+                mediaType = "IMAGE",
+                subFolder = subFolder
+            )
         }
     }
 }
