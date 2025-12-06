@@ -28,6 +28,7 @@ import com.example.kemono.di.NetworkModule_ProvideGithubApiFactory;
 import com.example.kemono.di.NetworkModule_ProvideGithubOkHttpClientFactory;
 import com.example.kemono.di.NetworkModule_ProvideGithubRetrofitFactory;
 import com.example.kemono.di.NetworkModule_ProvideImageLoaderFactory;
+import com.example.kemono.di.NetworkModule_ProvideImageOkHttpClientFactory;
 import com.example.kemono.di.NetworkModule_ProvideKemonoApiFactory;
 import com.example.kemono.di.NetworkModule_ProvideOkHttpClientFactory;
 import com.example.kemono.di.NetworkModule_ProvideRetrofitFactory;
@@ -629,11 +630,13 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
 
     private Provider<CookieJar> provideCookieJarProvider;
 
-    private Provider<OkHttpClient> provideOkHttpClientProvider;
+    private Provider<OkHttpClient> provideImageOkHttpClientProvider;
 
     private Provider<ImageLoader> provideImageLoaderProvider;
 
     private Provider<SettingsRepository> settingsRepositoryProvider;
+
+    private Provider<OkHttpClient> provideOkHttpClientProvider;
 
     private Provider<Retrofit> provideRetrofitProvider;
 
@@ -677,19 +680,20 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
       this.sessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SessionManager>(singletonCImpl, 3));
       this.provideCookieJarProvider = DoubleCheck.provider(new SwitchingProvider<CookieJar>(singletonCImpl, 2));
-      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 1));
+      this.provideImageOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 1));
       this.provideImageLoaderProvider = DoubleCheck.provider(new SwitchingProvider<ImageLoader>(singletonCImpl, 0));
       this.settingsRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepository>(singletonCImpl, 4));
+      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 8));
       this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 7));
       this.provideKemonoApiProvider = DoubleCheck.provider(new SwitchingProvider<KemonoApi>(singletonCImpl, 6));
-      this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 8));
-      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 9));
+      this.provideAppDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 9));
+      this.networkMonitorProvider = DoubleCheck.provider(new SwitchingProvider<NetworkMonitor>(singletonCImpl, 10));
       this.kemonoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<KemonoRepository>(singletonCImpl, 5));
-      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 10));
-      this.provideGithubOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 14));
-      this.provideGithubRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 13));
-      this.provideGithubApiProvider = DoubleCheck.provider(new SwitchingProvider<GithubApi>(singletonCImpl, 12));
-      this.updateRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UpdateRepository>(singletonCImpl, 11));
+      this.downloadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<DownloadRepository>(singletonCImpl, 11));
+      this.provideGithubOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 15));
+      this.provideGithubRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 14));
+      this.provideGithubApiProvider = DoubleCheck.provider(new SwitchingProvider<GithubApi>(singletonCImpl, 13));
+      this.updateRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UpdateRepository>(singletonCImpl, 12));
     }
 
     @Override
@@ -732,10 +736,10 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // coil.ImageLoader 
-          return (T) NetworkModule_ProvideImageLoaderFactory.provideImageLoader(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideOkHttpClientProvider.get());
+          return (T) NetworkModule_ProvideImageLoaderFactory.provideImageLoader(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideImageOkHttpClientProvider.get());
 
-          case 1: // okhttp3.OkHttpClient 
-          return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideCookieJarProvider.get());
+          case 1: // @javax.inject.Named("ImageClient") okhttp3.OkHttpClient 
+          return (T) NetworkModule_ProvideImageOkHttpClientFactory.provideImageOkHttpClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideCookieJarProvider.get());
 
           case 2: // okhttp3.CookieJar 
           return (T) NetworkModule_ProvideCookieJarFactory.provideCookieJar(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.sessionManagerProvider.get());
@@ -755,25 +759,28 @@ public final class DaggerKemonoApp_HiltComponents_SingletonC {
           case 7: // retrofit2.Retrofit 
           return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideOkHttpClientProvider.get());
 
-          case 8: // com.example.kemono.data.local.AppDatabase 
+          case 8: // okhttp3.OkHttpClient 
+          return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideCookieJarProvider.get());
+
+          case 9: // com.example.kemono.data.local.AppDatabase 
           return (T) DatabaseModule_ProvideAppDatabaseFactory.provideAppDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 9: // com.example.kemono.util.NetworkMonitor 
+          case 10: // com.example.kemono.util.NetworkMonitor 
           return (T) new NetworkMonitor(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 10: // com.example.kemono.data.repository.DownloadRepository 
+          case 11: // com.example.kemono.data.repository.DownloadRepository 
           return (T) new DownloadRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.downloadDao());
 
-          case 11: // com.example.kemono.data.repository.UpdateRepository 
+          case 12: // com.example.kemono.data.repository.UpdateRepository 
           return (T) new UpdateRepository(singletonCImpl.provideGithubApiProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 12: // com.example.kemono.data.remote.GithubApi 
+          case 13: // com.example.kemono.data.remote.GithubApi 
           return (T) NetworkModule_ProvideGithubApiFactory.provideGithubApi(singletonCImpl.provideGithubRetrofitProvider.get());
 
-          case 13: // @javax.inject.Named("GithubRetrofit") retrofit2.Retrofit 
+          case 14: // @javax.inject.Named("GithubRetrofit") retrofit2.Retrofit 
           return (T) NetworkModule_ProvideGithubRetrofitFactory.provideGithubRetrofit(singletonCImpl.provideGithubOkHttpClientProvider.get());
 
-          case 14: // @javax.inject.Named("GithubClient") okhttp3.OkHttpClient 
+          case 15: // @javax.inject.Named("GithubClient") okhttp3.OkHttpClient 
           return (T) NetworkModule_ProvideGithubOkHttpClientFactory.provideGithubOkHttpClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);

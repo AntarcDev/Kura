@@ -81,6 +81,11 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(
                                                 "post/${post.service}/${post.user}/${post.id}"
                                         )
+                                    },
+                                    onCreatorClick = { creator ->
+                                        navController.navigate(
+                                                "creator/${creator.service}/${creator.id}"
+                                        )
                                     }
                             )
                         }
