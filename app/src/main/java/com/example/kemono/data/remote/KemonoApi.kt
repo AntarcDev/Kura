@@ -7,13 +7,15 @@ import com.example.kemono.data.model.PostResponse
 import com.example.kemono.data.model.PostListResponse
 import com.example.kemono.data.model.CreatorListResponse
 import com.example.kemono.data.model.Tag
+import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface KemonoApi {
 
-    @GET("creators") suspend fun getCreators(): com.google.gson.JsonElement
+    @retrofit2.http.Headers("Cache-Control: no-cache")
+    @GET("creators") suspend fun getCreators(): ResponseBody
 
 
 
@@ -22,7 +24,7 @@ interface KemonoApi {
             @Query("o") offset: Int = 0,
             @Query("q") query: String? = null,
             @Query("tag") tags: List<String>? = null
-    ): PostListResponse // Try List<Post> again, maybe the issue was something else?
+    ): PostListResponse
     // User said: "Expected BEGIN_ARRAY but was BEGIN_OBJECT"
     // This DEFINITELY means it returns an object.
     // Let's try PostListResponse? Or maybe just generic Map/Any to debug?
@@ -52,7 +54,7 @@ interface KemonoApi {
     suspend fun getCreatorProfile(
             @Path("service") service: String,
             @Path("creatorId") creatorId: String
-    ): Creator
+    ): ResponseBody
 
     @GET("{service}/user/{creatorId}/posts")
     suspend fun getCreatorPosts(
@@ -89,6 +91,15 @@ interface KemonoApi {
     ): List<com.example.kemono.data.model.Fancard>
 
     @GET("posts/tags") suspend fun getTags(): List<Tag>
+
+    @GET("discord/channel/lookup/{discord_server}")
+    suspend fun getDiscordChannels(@Path("discord_server") id: String): List<com.example.kemono.data.model.DiscordChannel>
+
+    @GET("discord/channel/{channel_id}")
+    suspend fun getDiscordChannelPosts(
+        @Path("channel_id") id: String,
+        @Query("o") offset: Int = 0
+    ): List<com.example.kemono.data.model.DiscordPost>
 }
 
 data class RandomPostRedirect(

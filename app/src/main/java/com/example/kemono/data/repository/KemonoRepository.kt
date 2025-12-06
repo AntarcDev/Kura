@@ -39,39 +39,70 @@ constructor(
         }
 
         return try {
-            val jsonElement = api.getCreators()
-            val creators = if (jsonElement.isJsonArray) {
-                val jsonArray = jsonElement.asJsonArray
-                val gson = com.google.gson.Gson()
-                jsonArray.map { gson.fromJson(it, Creator::class.java) }
-            } else if (jsonElement.isJsonObject) {
-                val jsonObject = jsonElement.asJsonObject
-                val gson = com.google.gson.Gson()
-                // Try known keys
-                val list = when {
-                    jsonObject.has("creators") -> jsonObject.getAsJsonArray("creators")
-                    jsonObject.has("results") -> jsonObject.getAsJsonArray("results")
-                    jsonObject.has("users") -> jsonObject.getAsJsonArray("users")
-                    jsonObject.has("data") -> jsonObject.getAsJsonArray("data")
-                    else -> com.google.gson.JsonArray()
+            val responseBody = api.getCreators()
+            val creators = mutableListOf<Creator>()
+            
+            responseBody.charStream().use { charStream ->
+                val reader = com.google.gson.stream.JsonReader(charStream)
+                val gson = com.google.gson.GsonBuilder()
+                    .registerTypeAdapter(Creator::class.java, com.example.kemono.data.model.CreatorDeserializer())
+                    .create()
+                
+                // Determine if it's an array or object
+                val token = reader.peek()
+                if (token == com.google.gson.stream.JsonToken.BEGIN_ARRAY) {
+                    reader.beginArray()
+                    while (reader.hasNext()) {
+                        try {
+                            val creator = gson.fromJson<Creator>(reader, Creator::class.java)
+                            if (creator.id != null) {
+                                creators.add(creator)
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("KemonoRepo", "Error parsing creator: ${e.message}")
+                        }
+                    }
+                    reader.endArray()
+                } else if (token == com.google.gson.stream.JsonToken.BEGIN_OBJECT) {
+                    // Try to find "creators" or "results" array inside object
+                    // This is complex for streaming, but we can do a simple check
+                    // For now, if it's an object, it might be an error or unexpected format.
+                    // Given we verified it's a list, we focus on that.
+                    // But to be robust:
+                    val jsonObject = gson.fromJson<com.google.gson.JsonObject>(reader, com.google.gson.JsonObject::class.java)
+                     val list = when {
+                        jsonObject.has("creators") -> jsonObject.getAsJsonArray("creators")
+                        jsonObject.has("results") -> jsonObject.getAsJsonArray("results")
+                        jsonObject.has("users") -> jsonObject.getAsJsonArray("users")
+                        jsonObject.has("data") -> jsonObject.getAsJsonArray("data")
+                        else -> com.google.gson.JsonArray()
+                    }
+                    creators.addAll(list.map { gson.fromJson(it, Creator::class.java) }.filter { it.id != null })
                 }
-                list.map { gson.fromJson(it, Creator::class.java) }
-            } else {
-                emptyList()
             }
             
             if (creators.isNotEmpty()) {
-                val validCreators = creators.filter { it.id != null }
-                cacheDao.cacheCreators(validCreators.map { it.toCached() })
-                validCreators
+                // Batch insert to avoid transaction limits/OOM
+                val chunkSize = 1000
+                creators.chunked(chunkSize).forEach { chunk ->
+                    try {
+                        cacheDao.cacheCreators(chunk.map { it.toCached() })
+                    } catch (e: Exception) {
+                        android.util.Log.e("KemonoRepo", "Failed to cache chunk: ${e.message}")
+                    }
+                }
+                creators
             } else {
-                emptyList()
+                // If parsing resulted in empty list but no exception, try cache
+                cacheDao.getAllCachedCreators().first().map { it.toCreator() }
             }
         } catch (e: Exception) {
+            android.util.Log.e("KemonoRepo", "Failed to fetch creators: ${e.message}")
             try {
                 cacheDao.getAllCachedCreators().first().map { it.toCreator() }
             } catch (cacheError: Exception) {
-                throw e
+                // If cache fails too, rethrow original error to let ViewModel handle it
+               throw e
             }
         }
     }
@@ -130,8 +161,7 @@ constructor(
         if (!isOnline) return emptyList()
 
         val response = api.getRecentPosts(offset, query, tags)
-        val posts = if (response.posts.isNotEmpty()) response.posts else response.results
-        return posts.filter { it.id != null }
+        return response.posts.filter { it.id != null }
     }
 
     suspend fun getCreatorProfile(service: String, creatorId: String): Creator {
@@ -143,9 +173,23 @@ constructor(
         }
 
         return try {
-            val creator = api.getCreatorProfile(service, creatorId)
-            cacheDao.cacheCreators(listOf(creator.toCached()))
-            creator
+            val responseBody = api.getCreatorProfile(service, creatorId)
+            val jsonString = responseBody.string()
+            
+            // Debug log content
+            // android.util.Log.d("KemonoRepo", "Profile JSON for $creatorId: $jsonString")
+            
+            val gson = com.google.gson.GsonBuilder()
+                .registerTypeAdapter(Creator::class.java, com.example.kemono.data.model.CreatorDeserializer())
+                .create()
+            try {
+                val creator = gson.fromJson(jsonString, Creator::class.java)
+                cacheDao.cacheCreators(listOf(creator.toCached()))
+                creator
+            } catch (e: Exception) {
+                 android.util.Log.e("KemonoRepo", "Failed to parse profile JSON: $jsonString", e)
+                 throw e
+            }
         } catch (e: Exception) {
             val cached = cacheDao.getCachedCreator(creatorId)
             cached?.toCreator() ?: throw e
@@ -266,5 +310,21 @@ constructor(
 
     suspend fun getTags(): List<String> {
         return api.getTags().map { it.tag }
+    }
+
+    suspend fun getDiscordChannels(serverId: String): List<com.example.kemono.data.model.DiscordChannel> {
+        return try {
+            api.getDiscordChannels(serverId)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getDiscordChannelPosts(channelId: String, offset: Int = 0): List<com.example.kemono.data.model.DiscordPost> {
+        return try {
+            api.getDiscordChannelPosts(channelId, offset)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

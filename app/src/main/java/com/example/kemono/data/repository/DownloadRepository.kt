@@ -27,12 +27,18 @@ constructor(
                 postTitle: String,
                 creatorId: String,
                 creatorName: String,
-                mediaType: String
+                mediaType: String,
+                subFolder: String? = null
         ) {
                 val sanitizedCreator = sanitizeFileName(creatorName)
                 val sanitizedPost = sanitizeFileName(postTitle)
                 val sanitizedFile = sanitizeFileName(fileName)
-                val subPath = "Kemono/$sanitizedCreator/$sanitizedPost/$sanitizedFile"
+                
+                val subPath = if (subFolder != null) {
+                    "Kemono/$sanitizedCreator/${sanitizeFileName(subFolder)}/$sanitizedFile"
+                } else {
+                    "Kemono/$sanitizedCreator/$sanitizedPost/$sanitizedFile"
+                }
 
                 val request =
                         DownloadManager.Request(Uri.parse(url))
@@ -45,8 +51,10 @@ constructor(
                                         Environment.DIRECTORY_DOWNLOADS,
                                         subPath
                                 )
-                                .setAllowedOverMetered(true)
-                                .setAllowedOverRoaming(true)
+                                .addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                                .addRequestHeader("Referer", "https://kemono.su/")
+                                .addRequestHeader("Accept", "text/css,*/*;q=0.1")
+                                .addRequestHeader("Accept-Language", "en-US,en;q=0.9")
 
                 val downloadId = downloadManager.enqueue(request)
 

@@ -24,7 +24,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://kemono.su/api/v1/"
+    private const val BASE_URL = "https://kemono.cr/api/v1/"
     private const val GITHUB_API_URL = "https://api.github.com/"
 
     @Provides
@@ -132,7 +132,10 @@ object NetworkModule {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor { chain ->
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .addNetworkInterceptor { chain ->
                     val requestBuilder =
                             chain.request()
                                     .newBuilder()
@@ -145,8 +148,8 @@ object NetworkModule {
                                             "text/css"
                                     ) // Required by kemono.cr to bypass DDoS-Guard
                                     .addHeader("Accept-Language", "en-US,en;q=0.9")
-                                    .addHeader("Referer", "https://kemono.su/")
-                                    .addHeader("Origin", "https://kemono.su")
+                                    .addHeader("Referer", "https://kemono.cr/")
+                                    .addHeader("Origin", "https://kemono.cr")
                                     .addHeader("DNT", "1")
                                     .addHeader("Connection", "keep-alive")
                                     .addHeader("Sec-Fetch-Dest", "empty")
@@ -184,7 +187,13 @@ object NetworkModule {
         return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(
+                    GsonConverterFactory.create(
+                        com.google.gson.GsonBuilder()
+                            .registerTypeAdapter(com.example.kemono.data.model.Creator::class.java, com.example.kemono.data.model.CreatorDeserializer())
+                            .create()
+                    )
+                )
                 .build()
     }
 
@@ -231,9 +240,41 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named("ImageClient")
+    fun provideImageOkHttpClient(@ApplicationContext context: Context, cookieJar: CookieJar): OkHttpClient {
+        val cacheSize = 250L * 1024L * 1024L // 250 MB for images
+        val cache = okhttp3.Cache(context.cacheDir.resolve("image_http_cache"), cacheSize)
+
+        return OkHttpClient.Builder()
+            .cache(cache)
+            .cookieJar(cookieJar)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addNetworkInterceptor { chain ->
+                val requestBuilder =
+                    chain.request()
+                        .newBuilder()
+                        .addHeader(
+                            "User-Agent",
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                        )
+                        .addHeader("Referer", "https://kemono.cr/")
+                        .addHeader("Origin", "https://kemono.cr")
+                        // Use standard Accept header for images, or */*
+                        .addHeader("Accept", "*/*")
+                        .addHeader("Connection", "keep-alive")
+
+                chain.proceed(requestBuilder.build())
+            }
+            .build()
+    }
+
+    @Provides
+    @Singleton
     fun provideImageLoader(
         @ApplicationContext context: Context,
-        okHttpClient: OkHttpClient
+        @Named("ImageClient") okHttpClient: OkHttpClient
     ): coil.ImageLoader {
         return coil.ImageLoader.Builder(context)
             .okHttpClient(okHttpClient)
