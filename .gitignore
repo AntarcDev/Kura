@@ -114,4 +114,5 @@ build_log.txt
 *whatever*.txt
 /*.json
 /*.txt
-
+check_links.py
+find_creator.py

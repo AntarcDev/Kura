@@ -12,17 +12,22 @@ Unlock a seamless browsing experience with **Kura** (蔵 - "Storehouse"). Built 
 
 ### 🎨 Immersive Discovery
 *   **Unified Search**: Search for creators by name or ID with a debounced, lag-free interface.
-*   **Rich Creator Profiles**: View detailed stats, banners, announcements, tags, and linked accounts.
+*   **Rich Creator Profiles**: View detailed stats, banners, announcements, tags, and linked accounts (now with tile-based navigation).
 *   **Dynamic Layouts**: Switch between "Compact" grids for speed or "Comfortable" lists for detail.
-*   **Advanced Sorting**: Sort by Name, Updated Date, or Popularity.
-*   **Tag Filtering**: Filter posts by tags to find specific content within a creator's feed.
+*   **Advanced Sorting & Filtering**: 
+    *   Sort by Popularity, Date Indexed, Date Updated, or Alphabetical (Asc/Desc).
+    *   Filter by Service (Patreon, Fanbox, Fantia, Discord, etc.) with color-coded toggles.
+*   **Optimized Performance**: efficiently handles 100k+ artists using stream parsing and batch caching.
 
 ### 📥 Intelligent Archiving
 *   **Inline Downloads**: Automatically detects and downloads images/GIFs embedded within post text.
 *   **Bulk Actions**: Select multiple posts to download in batch.
 *   **Organized Downloads**: Files are automatically sorted into `Downloads/Kemono/<Artist>/<PostTitle>/`.
 *   **Background Manager**: Robust background processing via WorkManager with persistent retry logic.
-*   **Media Support**: Handles images, videos, and attachments seamlessly.
+*   **Enhanced Media Support**: 
+    *   **Discord**: Full support for viewing queued Discord archives (Channels, Embeds, Attachments).
+    *   **PSD & Archives**: Native preview for PSDs and card-based handling for ZIP/RAR/7z files.
+    *   **Audio**: Integrated audio player for music and voice clips.
 
 ### 🖼️ Beautiful Gallery
 *   **Artist-Centric View**: Offline collection grouped by Artist for easy browsing.
