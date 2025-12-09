@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -570,21 +571,36 @@ fun DiscordContent(
     Column(modifier = Modifier.fillMaxSize()) {
         // Channel Selector
         if (channels.isNotEmpty()) {
-            ScrollableTabRow(
-                selectedTabIndex = channels.indexOf(selectedChannel).coerceAtLeast(0),
-                edgePadding = 16.dp,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary,
+        // Channel Selector
+        if (channels.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                channels.forEach { channel ->
-                    Tab(
-                        selected = channel == selectedChannel,
-                        onClick = { onChannelSelect(channel) },
-                        text = { Text(channel.name) }
-                    )
+                items(channels) { channel ->
+                    val isSelected = channel == selectedChannel
+                    val containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+
+                    Box(
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.small)
+                            .background(containerColor)
+                            .clickable { onChannelSelect(channel) }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = channel.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = contentColor,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
                 }
             }
+        }
         }
 
         // Chat List
