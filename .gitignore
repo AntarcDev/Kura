@@ -105,14 +105,11 @@ Thumbs.db
 *.swp
 *~
 .*.swp
-FEATURE_IDEAS.md
 
 # Error logs and temporary files
 *error*.txt
 *_log.txt
 build_log.txt
-*whatever*.txt
 /*.json
 /*.txt
-check_links.py
-find_creator.py
+

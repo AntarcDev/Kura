@@ -132,9 +132,6 @@ object NetworkModule {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
                 .addNetworkInterceptor { chain ->
                     val requestBuilder =
                             chain.request()
@@ -148,13 +145,8 @@ object NetworkModule {
                                             "text/css"
                                     ) // Required by kemono.cr to bypass DDoS-Guard
                                     .addHeader("Accept-Language", "en-US,en;q=0.9")
-                                    .addHeader("Referer", "https://kemono.cr/")
-                                    .addHeader("Origin", "https://kemono.cr")
                                     .addHeader("DNT", "1")
                                     .addHeader("Connection", "keep-alive")
-                                    .addHeader("Sec-Fetch-Dest", "empty")
-                                    .addHeader("Sec-Fetch-Mode", "cors")
-                                    .addHeader("Sec-Fetch-Site", "same-origin")
 
                     val response = chain.proceed(requestBuilder.build())
 
@@ -259,10 +251,8 @@ object NetworkModule {
                             "User-Agent",
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                         )
-                        .addHeader("Referer", "https://kemono.cr/")
-                        .addHeader("Origin", "https://kemono.cr")
-                        // Use standard Accept header for images, or */*
-                        .addHeader("Accept", "*/*")
+                        // Removed strict Referer/Origin pointing to .cr when requests go to .su
+                        // Removed complex Sec-Fetch headers that might trigger anti-bot if mismatched
                         .addHeader("Connection", "keep-alive")
 
                 chain.proceed(requestBuilder.build())
@@ -288,9 +278,11 @@ object NetworkModule {
             }
                 .memoryCache {
                     coil.memory.MemoryCache.Builder(context)
-                        .maxSizePercent(0.25)
+                        .maxSizePercent(0.20)
                         .build()
                 }
+                .bitmapConfig(android.graphics.Bitmap.Config.RGB_565) // 50% memory saving for opaque images
+                .allowHardware(true) // Ensure hardware bitmaps are used (native memory)
                 .diskCache {
                     coil.disk.DiskCache.Builder()
                             .directory(context.cacheDir.resolve("image_cache"))

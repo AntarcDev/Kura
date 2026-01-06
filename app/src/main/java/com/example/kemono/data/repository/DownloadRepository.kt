@@ -52,9 +52,7 @@ constructor(
                                         subPath
                                 )
                                 .addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                                .addRequestHeader("Referer", "https://kemono.su/")
-                                .addRequestHeader("Accept", "text/css,*/*;q=0.1")
-                                .addRequestHeader("Accept-Language", "en-US,en;q=0.9")
+                                .addRequestHeader("Connection", "keep-alive")
 
                 val downloadId = downloadManager.enqueue(request)
 

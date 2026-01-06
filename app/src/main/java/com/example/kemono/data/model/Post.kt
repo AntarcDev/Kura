@@ -11,7 +11,8 @@ data class Post(
     val substring: String? = null,
     val published: String? = null,
     val file: KemonoFile? = null,
-    val attachments: List<KemonoFile> = emptyList()
+    val attachments: List<KemonoFile> = emptyList(),
+    @SerializedName("fav_count") val favCount: Int? = 0
 )
 
 data class KemonoFile(

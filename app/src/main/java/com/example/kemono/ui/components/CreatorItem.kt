@@ -21,6 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Creator
+import com.example.kemono.util.ServiceMapper
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun CreatorTile(
@@ -28,14 +30,24 @@ fun CreatorTile(
     isFavorite: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
-    compact: Boolean = false
+    compact: Boolean = false,
+    autoplayGifs: Boolean = true
 ) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         if (compact) {
             Box(modifier = Modifier.fillMaxSize().height(180.dp)) {
                 // Banner Background
                 AsyncImage(
-                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
+                    model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                        .data("https://kemono.cr/banners/${creator.service}/${creator.id}")
+                        .crossfade(true)
+                        .apply {
+                            if (!autoplayGifs) {
+                                decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                memoryCacheKey("https://kemono.cr/banners/${creator.service}/${creator.id}" + "_static")
+                            }
+                        }
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -57,7 +69,16 @@ fun CreatorTile(
                     verticalArrangement = Arrangement.Center
                 ) {
                     AsyncImage(
-                        model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data("https://kemono.cr/icons/${creator.service}/${creator.id}")
+                            .crossfade(true)
+                            .apply {
+                                if (!autoplayGifs) {
+                                    decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                    memoryCacheKey("https://kemono.cr/icons/${creator.service}/${creator.id}" + "_static")
+                                }
+                            }
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier
                             .size(60.dp)
@@ -66,7 +87,7 @@ fun CreatorTile(
                         contentScale = ContentScale.Crop,
                         error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = creator.name,
                         style = MaterialTheme.typography.titleSmall,
@@ -76,28 +97,65 @@ fun CreatorTile(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = ServiceMapper.getDisplayName(creator.service),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(ServiceMapper.getServiceColor(creator.service), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
                 }
                 
-                IconButton(
-                    onClick = onFavoriteClick,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .size(32.dp)
+                Column(
+                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp),
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    if ((creator.favorited ?: 0) > 0) {
+                         Box(
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "♥ ${creator.favorited}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    IconButton(
+                        onClick = onFavoriteClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         } else {
             Box(modifier = Modifier.fillMaxWidth().height(100.dp)) {
                 // Banner Background
                 AsyncImage(
-                    model = "https://kemono.su/banners/${creator.service}/${creator.id}",
+                    model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                        .data("https://kemono.cr/banners/${creator.service}/${creator.id}")
+                        .crossfade(true)
+                        .apply {
+                            if (!autoplayGifs) {
+                                decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                memoryCacheKey("https://kemono.cr/banners/${creator.service}/${creator.id}" + "_static")
+                            }
+                        }
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -113,7 +171,16 @@ fun CreatorTile(
 
                 Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
-                        model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data("https://kemono.cr/icons/${creator.service}/${creator.id}")
+                            .crossfade(true)
+                            .apply {
+                                if (!autoplayGifs) {
+                                    decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                    memoryCacheKey("https://kemono.cr/icons/${creator.service}/${creator.id}" + "_static")
+                                }
+                            }
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier
                             .size(50.dp)
@@ -139,11 +206,21 @@ fun CreatorTile(
                                 fontWeight = FontWeight.Bold
                             )
                             IconButton(onClick = onFavoriteClick) {
-                                Icon(
-                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                        contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White
+                                    )
+                                    if ((creator.favorited ?: 0) > 0) {
+                                         Text(
+                                            text = "${creator.favorited}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
                             }
                         }
                         Row(
@@ -151,9 +228,10 @@ fun CreatorTile(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = creator.service,
+                                text = ServiceMapper.getDisplayName(creator.service),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = ServiceMapper.getServiceColor(creator.service),
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "ID: ${creator.id}",

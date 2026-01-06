@@ -38,4 +38,9 @@ object DatabaseModule {
     fun provideDownloadDao(database: AppDatabase): com.example.kemono.data.local.DownloadDao {
         return database.downloadDao()
     }
+
+    @Provides
+    fun provideSearchHistoryDao(database: AppDatabase): com.example.kemono.data.local.SearchHistoryDao {
+        return database.searchHistoryDao()
+    }
 }

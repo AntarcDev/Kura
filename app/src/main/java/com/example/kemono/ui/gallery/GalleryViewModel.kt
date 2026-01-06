@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kemono.data.model.DownloadedItem
 import com.example.kemono.data.repository.DownloadRepository
+import com.example.kemono.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,7 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
 @HiltViewModel
-class GalleryViewModel @Inject constructor(repository: DownloadRepository) : ViewModel() {
+class GalleryViewModel @Inject constructor(
+    repository: DownloadRepository,
+    settingsRepository: SettingsRepository
+) : ViewModel() {
+
+    val gridDensity = settingsRepository.gridDensity
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Medium")
 
     private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()

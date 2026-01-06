@@ -1,6 +1,7 @@
 package com.example.kemono.ui.downloads
 
 import android.app.DownloadManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -59,6 +63,14 @@ fun DownloadManagerScreen(
         onOpenClick: () -> Unit // Navigate to gallery
 ) {
         val items by viewModel.downloadItems.collectAsState()
+        val layoutMode by viewModel.layoutMode.collectAsState()
+        val gridDensity by viewModel.gridDensity.collectAsState()
+
+        val minSize = when (gridDensity) {
+            "Small" -> 120.dp
+            "Large" -> 200.dp
+            else -> 150.dp
+        }
 
         Scaffold(
                 topBar = {
@@ -79,24 +91,117 @@ fun DownloadManagerScreen(
                                 contentAlignment = Alignment.Center
                         ) { Text("No downloads yet", style = MaterialTheme.typography.bodyLarge) }
                 } else {
-                        LazyColumn(
-                                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                                contentPadding =
-                                        androidx.compose.foundation.layout.PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        if (layoutMode == "Grid") {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                            ) {
                                 items(items, key = { it.item.id }) { uiState ->
-                                        DownloadItemCard(
-                                                uiState = uiState,
-                                                onDelete = {
-                                                        viewModel.deleteDownload(uiState.item)
-                                                },
-                                                onOpen = onOpenClick
-                                        )
+                                    DownloadGridItem(
+                                        uiState = uiState,
+                                        onDelete = { viewModel.deleteDownload(uiState.item) },
+                                        onOpen = onOpenClick
+                                    )
                                 }
+                            }
+                        } else {
+                            LazyColumn(
+                                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                    items(items, key = { it.item.id }) { uiState ->
+                                            DownloadItemCard(
+                                                    uiState = uiState,
+                                                    onDelete = {
+                                                            viewModel.deleteDownload(uiState.item)
+                                                    },
+                                                    onOpen = onOpenClick
+                                            )
+                                    }
+                            }
                         }
                 }
         }
+}
+
+@Composable
+fun DownloadGridItem(
+    uiState: DownloadItemUiState,
+    onDelete: () -> Unit,
+    onOpen: () -> Unit
+) {
+    val item = uiState.item
+    val status = uiState.status
+    
+    Card(
+        modifier = Modifier.fillMaxWidth().height(180.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(java.io.File(item.filePath))
+                    .videoFrameMillis(1000)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.6f))
+                    .padding(8.dp)
+            ) {
+                Column {
+                    Text(
+                        text = item.fileName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = androidx.compose.ui.graphics.Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    if (status != null && status.status == DownloadManager.STATUS_RUNNING) {
+                        LinearProgressIndicator(
+                            progress = status.progress,
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(2.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f)
+                        )
+                    } else if (status?.status == DownloadManager.STATUS_SUCCESSFUL) {
+                         Text(
+                            text = "Completed",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = androidx.compose.ui.graphics.Color.Green
+                        )
+                    }
+                }
+            }
+            
+            // Delete button on top right
+             IconButton(
+                onClick = onDelete,
+                modifier = Modifier.align(Alignment.TopEnd).padding(4.dp).size(24.dp)
+            ) {
+                 Box(modifier = Modifier.background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f), RoundedCornerShape(12.dp))) {
+                     Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier.padding(4.dp)
+                     )
+                 }
+            }
+        }
+    }
 }
 
 @Composable

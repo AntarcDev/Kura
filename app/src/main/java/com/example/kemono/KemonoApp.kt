@@ -14,4 +14,10 @@ class KemonoApp : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return imageLoader
     }
+
+    override fun onCreate() {
+        super.onCreate()
+        val crashHandler = com.example.kemono.util.CrashHandler(this)
+        Thread.setDefaultUncaughtExceptionHandler(crashHandler)
+    }
 }

@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,12 +41,15 @@ constructor(
             .getAllFavorites()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val gridSize =
-        settingsRepository.gridSize.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            "Comfortable"
-        )
+    val favoritePostIds: StateFlow<Set<String>> =
+        repository
+            .getAllFavoritePosts()
+            .map { posts -> posts.map { it.id }.toSet() }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    val artistLayoutMode = settingsRepository.artistLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Grid")
+    val postLayoutMode = settingsRepository.postLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "List")
+    val gridDensity = settingsRepository.gridDensity.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Medium")
 
     private val _allCreators = MutableStateFlow<List<Creator>>(emptyList())
     private val _popularCreators = MutableStateFlow<List<Creator>>(emptyList())
@@ -66,7 +71,8 @@ constructor(
         _allCreators
             .map { creators -> creators.map { it.service }.distinct().sorted() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
+// Duplicates removed
+    
     private val _searchMode = MutableStateFlow(SearchMode.Artists)
     val searchMode: StateFlow<SearchMode> = _searchMode.asStateFlow()
 
@@ -90,6 +96,9 @@ constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -159,6 +168,7 @@ constructor(
             // Apply ascending/descending
             if (ascending) sorted else sorted.reversed()
         }
+        .flowOn(kotlinx.coroutines.Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -173,7 +183,7 @@ constructor(
         }
     }
 
-    fun toggleTag(tag: String) {
+    fun toggleTagFilter(tag: String) {
         val current = _selectedTags.value
         if (current.contains(tag)) {
             _selectedTags.value = current - tag
@@ -203,21 +213,31 @@ constructor(
     }
 
     fun loadMorePosts() {
-        if (!_isLoading.value) {
+        if (!_isLoading.value && !_isRefreshing.value) {
             fetchPosts(reset = false)
         }
     }
 
-    fun fetchPosts(reset: Boolean = true) {
-        viewModelScope.launch {
-            if (reset) {
+    private var fetchPostsJob: kotlinx.coroutines.Job? = null
+
+    fun fetchPosts(reset: Boolean = true, isRefresh: Boolean = false) {
+        fetchPostsJob?.cancel()
+        fetchPostsJob = viewModelScope.launch {
+            if (isRefresh) {
+                _isRefreshing.value = true
+            } else if (reset) {
                 _isLoading.value = true
                 currentOffset = 0
             }
+            // If just loading more (reset=false, isRefresh=false), we don't set separate loading state yet
+            // or we could use a separate "isLoadingMore" if needed, but for now this is fine.
+            
             try {
                 val query = _searchQuery.value
                 val tags = _selectedTags.value.toList()
                 val sort = _sortOption.value
+
+
 
                 val result = when (sort) {
                     SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
@@ -227,13 +247,15 @@ constructor(
                             SortOption.PopularMonth -> "month"
                             else -> "week" // Default to week
                         }
-                        repository.getPopularPosts(period = period, offset = currentOffset)
+                        // API limits seem fragile, sticking to 50
+                        repository.getPopularPosts(limit = 50, period = period, offset = currentOffset)
                     }
                     SortOption.Random -> {
                         if (reset) repository.getRandomPosts() else emptyList()
                     }
                     else -> {
                         repository.getRecentPosts(
+                            limit = 50, // Hardcoded to 50 for safety
                             offset = currentOffset,
                             query = if (query.isBlank()) null else query,
                             tags = if (tags.isEmpty()) null else tags
@@ -248,9 +270,10 @@ constructor(
                 }
 
                 if (result.isNotEmpty() && sort != SortOption.Random) {
-                    currentOffset += 50
+                    currentOffset += result.size // Critical Fix: Increment by actual count
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 if (e is retrofit2.HttpException && e.code() == 429) {
                     _error.value = "Too many requests. Please wait a moment."
                 } else {
@@ -258,6 +281,7 @@ constructor(
                 }
             } finally {
                 _isLoading.value = false
+                _isRefreshing.value = false
             }
         }
     }
@@ -308,9 +332,13 @@ constructor(
         }
     }
 
-    fun fetchCreators() {
+    fun fetchCreators(isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _isLoading.value = true
+            if (isRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _isLoading.value = true
+            }
             _error.value = null
             try {
                 val result = repository.getCreators()
@@ -327,13 +355,19 @@ constructor(
                 }
             } finally {
                 _isLoading.value = false
+                _isRefreshing.value = false
             }
         }
     }
 
     private fun fetchPopularCreators() {
         viewModelScope.launch {
-            _isLoading.value = true
+            // We don't necessarily need to trigger global loading for background fetching popular creators if not refreshing
+            // but for simplicity we can keep it light.
+            // If called from fetchCreators/setSortOption, the parent function handles loading state mostly.
+            // But if called standalone, we might want it.
+            // However, seeing usage, it's mostly auxiliary.
+            
             try {
                 val result = repository.getPopularCreators()
                 _popularCreators.value = result
@@ -346,8 +380,6 @@ constructor(
                 if (_popularCreators.value.isEmpty()) {
                     _sortOption.value = SortOption.Updated
                 }
-            } finally {
-                _isLoading.value = false
             }
         }
     }
@@ -366,6 +398,27 @@ constructor(
                 repository.removeFavorite(favCreator)
             } else {
                 repository.addFavorite(favCreator)
+            }
+        }
+    }
+
+    fun toggleFavoritePost(post: com.example.kemono.data.model.Post) {
+        viewModelScope.launch {
+            val postId = post.id ?: return@launch
+            val isFav = favoritePostIds.value.contains(postId)
+            val favPost = com.example.kemono.data.model.FavoritePost(
+                id = postId,
+                service = post.service ?: "",
+                user = post.user ?: "",
+                title = post.title ?: "",
+                content = post.content ?: "",
+                thumbnailPath = post.file?.path ?: post.attachments.firstOrNull()?.path,
+                published = post.published ?: ""
+            )
+            if (isFav) {
+                repository.removeFavoritePost(favPost)
+            } else {
+                repository.addFavoritePost(favPost)
             }
         }
     }
@@ -389,6 +442,30 @@ constructor(
         _isSelectionMode.value = false
     }
 
+    // Search History
+    val searchHistory = repository.getSearchHistory()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun addToSearchHistory(query: String) {
+        viewModelScope.launch {
+            repository.addToSearchHistory(query)
+        }
+    }
+
+    fun removeFromSearchHistory(query: String) {
+        viewModelScope.launch {
+            repository.removeFromSearchHistory(query)
+        }
+    }
+
+    fun clearSearchHistory() {
+        viewModelScope.launch {
+            repository.clearSearchHistory()
+        }
+    }
+
+    // Existing methods...
+    
     fun downloadSelectedPosts() {
         val selectedIds = _selectedPostIds.value
         val postsToDownload = _posts.value.filter { it.id in selectedIds }

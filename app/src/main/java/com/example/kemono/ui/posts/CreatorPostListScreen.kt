@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
@@ -66,6 +67,7 @@ import androidx.compose.foundation.text.BasicText
 @Composable
 fun CreatorPostListScreen(
     viewModel: CreatorPostListViewModel = hiltViewModel(),
+    settingsViewModel: com.example.kemono.ui.settings.SettingsViewModel = hiltViewModel(),
     onPostClick: (Post) -> Unit,
     onBackClick: () -> Unit,
     onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit
@@ -83,6 +85,8 @@ fun CreatorPostListScreen(
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+    val favoritePostIds by viewModel.favoritePostIds.collectAsState()
+    val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var selectedFancard by remember { mutableStateOf<Fancard?>(null) }
@@ -131,7 +135,8 @@ fun CreatorPostListScreen(
                         CreatorProfileHeader(
                             creator = it,
                             isFavorite = isFavorite,
-                            onFavoriteClick = { viewModel.toggleFavorite() }
+                            onFavoriteClick = { viewModel.toggleFavorite() },
+                            autoplayGifs = autoplayGifs
                         )
                     }
                     
@@ -183,7 +188,12 @@ fun CreatorPostListScreen(
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.fillMaxSize()
                                     ) {
-                                        items(posts) { post ->
+                                        itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
+                                            if (index >= posts.size - 1) {
+                                                LaunchedEffect(Unit) {
+                                                    viewModel.loadMorePosts()
+                                                }
+                                            }
                                             PostItem(
                                                 post = post,
                                                 selected = selectedPostIds.contains(post.id),
@@ -198,7 +208,11 @@ fun CreatorPostListScreen(
                                                     viewModel.toggleSelection(post)
                                                 },
                                                 onCreatorClick = {},
-                                                showCreator = false
+                                                showCreator = false,
+                                                isFavorite = favoritePostIds.contains(post.id),
+                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                autoplayGifs = autoplayGifs,
+                                                showService = false
                                             )
                                         }
                                     }
@@ -214,7 +228,8 @@ fun CreatorPostListScreen(
                                     onFancardClick = { fancard ->
                                         selectedFancard = fancard
                                     },
-                                    onCreatorClick = onCreatorClick
+                                    onCreatorClick = onCreatorClick,
+                                    autoplayGifs = autoplayGifs
                                 )
                             }
                         }
@@ -245,7 +260,8 @@ fun ProfileDetailsContent(
     fancards: List<Fancard>,
     service: String,
     onFancardClick: (Fancard) -> Unit,
-    onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit
+    onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit,
+    autoplayGifs: Boolean
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
@@ -272,21 +288,41 @@ fun ProfileDetailsContent(
         // Fancards Section (Fanbox Only)
         if (service == "fanbox") {
             item {
-                ProfileSection(title = "Fancards", isEmpty = fancards.isEmpty()) {
-                    // Chunk manually since we are inside a Column, not Lazy list items directly anymore
-                    fancards.chunked(2).forEach { rowItems ->
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            rowItems.forEach { fancard ->
-                                FancardItem(
-                                    fancard = fancard,
-                                    service = service,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = { onFancardClick(fancard) }
-                                )
-                            }
-                            if (rowItems.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                Text(
+                    text = "Fancards",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            
+            if (fancards.isEmpty()) {
+                item {
+                    Text(
+                        text = "There's nothing here... (╥﹏╥)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            } else {
+                // Chunk logic for grid-like rows in LazyColumn
+                val chunkedFancards = fancards.chunked(2)
+                items(chunkedFancards) { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), 
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowItems.forEach { fancard ->
+                            FancardItem(
+                                fancard = fancard,
+                                service = service,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onFancardClick(fancard) }
+                            )
+                        }
+                        if (rowItems.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -333,7 +369,8 @@ fun ProfileDetailsContent(
                                         }
                                     },
                                     onFavoriteClick = {}, // No-op for now
-                                    compact = true
+                                    compact = true,
+                                    autoplayGifs = autoplayGifs
                                 )
                             }
                         }
@@ -416,12 +453,11 @@ fun FancardItem(
             val imageLoader = context.imageLoader
             val imageRequest = remember(imageUrl) {
                 ImageRequest.Builder(context)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    // Explicitly add headers again just in case
-                    .addHeader("Referer", "https://kemono.cr/")
-                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .build()
+                .data(imageUrl)
+                .crossfade(true)
+                .addHeader("Referer", "https://kemono.cr/")
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .build()
             }
 
             AsyncImage(
@@ -609,7 +645,7 @@ fun DiscordContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(posts) { post ->
+            items(posts, key = { it.id }) { post ->
                 DiscordPostItem(post = post)
             }
         }

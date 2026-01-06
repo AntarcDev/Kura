@@ -16,7 +16,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.AttachFile
 import com.example.kemono.data.model.Post
+import com.example.kemono.util.ServiceMapper
+import com.example.kemono.util.DateUtils
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -26,7 +32,12 @@ fun PostItem(
     onCreatorClick: () -> Unit = {},
     selected: Boolean = false,
     onLongClick: () -> Unit = {},
-    showCreator: Boolean = true
+    showCreator: Boolean = true,
+    isFavorite: Boolean = false,
+    onFavoriteClick: () -> Unit = {},
+
+    autoplayGifs: Boolean = true,
+    showService: Boolean = true
 ) {
     Card(
         modifier = Modifier
@@ -40,11 +51,8 @@ fun PostItem(
         Row(modifier = Modifier.padding(8.dp)) {
             post.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
-                    val url = if (!file.thumbnailPath.isNullOrEmpty()) {
-                        "https://kemono.su${file.thumbnailPath}"
-                    } else {
-                        "https://kemono.su/thumbnail${file.path}"
-                    }
+                    // Use direct file URL (kemono.cr) as thumbnail since /thumbnail endpoint is unreliable
+                    val url = "https://kemono.cr${file.path}"
                     val isGif = file.path.endsWith(".gif", ignoreCase = true)
                     val isPsd = file.path.endsWith(".psd", ignoreCase = true)
                     
@@ -53,6 +61,15 @@ fun PostItem(
                             model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                 .data(url)
                                 .crossfade(!isGif)
+                                .apply {
+                                    if (!autoplayGifs) {
+                                        // Force static image decoding (first frame only) for ALL images if autoplay is off.
+                                        // This ensures GIFs, WebPs, etc. do not animate even if detection fails.
+                                        decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                        // Use a different cache key to avoid retrieving the animated version from memory cache
+                                        memoryCacheKey(url + "_static")
+                                    }
+                                }
                                 .build(),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
@@ -73,23 +90,80 @@ fun PostItem(
                     }
                 }
             }
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
+                // Service Badge
+                if (showService) {
+                    val serviceColor = ServiceMapper.getServiceColor(post.service)
+                    val serviceName = ServiceMapper.getDisplayName(post.service)
+                    
+                    Text(
+                        text = serviceName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(serviceColor, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
                 Text(
-                    text = post.title ?: "Untitled",
+                    text = if (post.title.isNullOrBlank()) "Untitled" else post.title,
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
-                    text = post.published ?: "Unknown date",
+                    text = DateUtils.formatPublishedDate(post.published),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Metadata Row (Attachments)
+                if (post.attachments.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.material3.Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.AttachFile,
+                            contentDescription = "Attachments",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${post.attachments.size}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
                 if (showCreator) {
                     Text(
                         text = "View Creator",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onCreatorClick() }.padding(top = 4.dp)
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .clickable { onCreatorClick() }
+                    )
+                }
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                androidx.compose.material3.IconButton(onClick = onFavoriteClick) {
+                    androidx.compose.material3.Icon(
+                        imageVector = if (isFavorite) androidx.compose.material.icons.Icons.Default.Favorite else androidx.compose.material.icons.Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if ((post.favCount ?: 0) > 0) {
+                     Text(
+                        text = "${post.favCount}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

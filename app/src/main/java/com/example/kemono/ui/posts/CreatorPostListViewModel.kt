@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,27 +54,31 @@ class CreatorPostListViewModel @Inject constructor(
 
     init {
         fetchCreatorProfile()
-        fetchPosts()
+        fetchPosts(reset = true)
         checkIfFavorite()
         fetchProfileDetails()
+        observeFavoritePosts()
     }
+    
+    // ... [Other methods unchanged]
 
-    private fun fetchProfileDetails() {
+
+
+    private fun fetchCreatorProfile() {
         viewModelScope.launch {
-            // Fetch in parallel
-            launch { _announcements.value = repository.getCreatorAnnouncements(service, creatorId) }
-            launch { _tags.value = repository.getCreatorTags(service, creatorId) }
-            launch { _links.value = repository.getCreatorLinks(service, creatorId) }
-            if (service == "fanbox") {
-                launch { _fancards.value = repository.getCreatorFancards(service, creatorId) }
+            try {
+                val creator = repository.getCreatorProfile(service, creatorId)
+                _creator.value = creator
+            } catch (e: Exception) {
+                // Log or handle error, but posts might still load
             }
         }
     }
 
     private fun checkIfFavorite() {
         viewModelScope.launch {
-            repository.isFavorite(creatorId).collect {
-                _isFavorite.value = it
+            repository.isFavorite(creatorId).collect { isFav ->
+                _isFavorite.value = isFav
             }
         }
     }
@@ -81,44 +86,149 @@ class CreatorPostListViewModel @Inject constructor(
     fun toggleFavorite() {
         viewModelScope.launch {
             val currentCreator = _creator.value ?: return@launch
-            val favoriteCreator = FavoriteCreator(
-                id = currentCreator.id,
-                name = currentCreator.name,
-                service = currentCreator.service,
-                updated = currentCreator.updated.toString()
-            )
-            
             if (_isFavorite.value) {
-                repository.removeFavorite(favoriteCreator)
+                // Remove
+                val fav = com.example.kemono.data.model.FavoriteCreator(
+                    id = currentCreator.id,
+                    name = currentCreator.name ?: "",
+                    service = currentCreator.service,
+                    updated = currentCreator.updated.toString()
+                )
+                repository.removeFavorite(fav)
             } else {
-                repository.addFavorite(favoriteCreator)
+                // Add
+                val fav = com.example.kemono.data.model.FavoriteCreator(
+                    id = currentCreator.id,
+                    name = currentCreator.name ?: "",
+                    service = currentCreator.service,
+                    updated = currentCreator.updated.toString()
+                )
+                repository.addFavorite(fav)
             }
         }
     }
 
-    private fun fetchCreatorProfile() {
+    private fun fetchProfileDetails() {
         viewModelScope.launch {
-            try {
-                _creator.value = repository.getCreatorProfile(service, creatorId)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            // Fetch announcements
+            launch {
+                try {
+                    _announcements.value = repository.getCreatorAnnouncements(service, creatorId)
+                } catch (_: Exception) {}
+            }
+            // Fetch tags
+            launch {
+                try {
+                    _tags.value = repository.getCreatorTags(service, creatorId)
+                } catch (_: Exception) {}
+            }
+            // Fetch links
+            launch {
+                try {
+                    _links.value = repository.getCreatorLinks(service, creatorId)
+                } catch (_: Exception) {}
+            }
+            // Fetch fancards
+            launch {
+                try {
+                    _fancards.value = repository.getCreatorFancards(service, creatorId)
+                } catch (_: Exception) {}
             }
         }
     }
 
-    fun fetchPosts() {
+    // Favorite Posts State
+    private val _favoritePostIds = MutableStateFlow<Set<String>>(emptySet())
+    val favoritePostIds: StateFlow<Set<String>> = _favoritePostIds.asStateFlow()
+
+    private fun observeFavoritePosts() {
         viewModelScope.launch {
-            _isLoading.value = true
+            repository.getAllFavoritePosts().collect { favorites ->
+                _favoritePostIds.value = favorites.map { it.id }.toSet()
+            }
+        }
+    }
+
+    fun toggleFavoritePost(post: Post) {
+        viewModelScope.launch {
+            val postId = post.id ?: return@launch
+            val isFav = _favoritePostIds.value.contains(postId)
+            
+            val favoritePost = com.example.kemono.data.model.FavoritePost(
+                id = postId,
+                user = post.user ?: creatorId, // Fallback to current creator
+                service = post.service ?: service,
+                title = post.title ?: "Untitled",
+                content = post.content ?: "",
+                thumbnailPath = post.file?.path,
+                published = post.published ?: "",
+                added = System.currentTimeMillis()
+            )
+
+            if (isFav) {
+                repository.removeFavoritePost(favoritePost)
+            } else {
+                repository.addFavoritePost(favoritePost)
+            }
+        }
+    }
+
+    private var currentOffset = 0
+    private var fetchJob: kotlinx.coroutines.Job? = null
+
+    fun loadMorePosts() {
+        if (!_isLoading.value) {
+            fetchPosts(reset = false)
+        }
+    }
+
+    fun fetchPosts(reset: Boolean = false) {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
+            if (reset) {
+                _isLoading.value = true
+                currentOffset = 0
+            }
+            // If just loading more, we might want a separate loading state or just keep it silent/bottom loader
+            // For now, let's reuse _isLoading but handle UI strictly? 
+            // Better to only set isLoading=true for initial load or full refresh.
+            // But complex. Let's stick to simple isLoading for now.
+             if (reset) _isLoading.value = true
+             
             _error.value = null
             try {
                 if (service == "discord") {
                     fetchDiscordChannels(creatorId)
                 } else {
-                    // Fetching first page for now
-                    _posts.value = repository.getCreatorPosts(service, creatorId)
+                    // API does not reliably support custom limits for this endpoint.
+                    // We rely on the server's default page size (usually 50) to avoid 400 errors or gaps.
+                    val newPosts = repository.getCreatorPosts(
+                        service = service, 
+                        creatorId = creatorId, 
+                        limit = 50, // Hardcoded to 50 as API seems to enforce/expect this
+                        offset = currentOffset
+                    )
+                    
+                    if (reset) {
+                        _posts.value = newPosts
+                    } else {
+                        _posts.value = _posts.value + newPosts
+                    }
+                    
+                    // Critical Fix: Increment offset by actual items received, not expected limit.
+                    // This handles if server returns fewer items or ignores limit.
+                    if (newPosts.isNotEmpty()) {
+                        currentOffset += newPosts.size
+                    }
                 }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to load posts"
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                     // Too many requests
+                } else if (e is retrofit2.HttpException && e.code() == 400) {
+                    _error.value = "Error loading posts (400). Limit might be too high."
+                } else {
+                    _error.value = e.message ?: "Failed to load posts"
+                }
             } finally {
                 _isLoading.value = false
             }

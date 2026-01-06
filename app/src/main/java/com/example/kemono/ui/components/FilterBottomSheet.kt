@@ -11,6 +11,8 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.*
@@ -27,6 +29,7 @@ import com.example.kemono.ui.creators.SortOption
 @Composable
 fun FilterBottomSheet(
     onDismiss: () -> Unit,
+    searchMode: com.example.kemono.ui.creators.SearchMode,
     sortOption: SortOption,
     onSortOptionSelected: (SortOption) -> Unit,
     isAscending: Boolean,
@@ -34,7 +37,10 @@ fun FilterBottomSheet(
     selectedServices: Set<String>,
     onServiceToggle: (String) -> Unit,
     onClearServices: () -> Unit,
-    availableServices: List<String>
+    availableServices: List<String>,
+    availableTags: List<String> = emptyList(),
+    selectedTags: Set<String> = emptySet(),
+    onTagToggle: (String) -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
@@ -52,54 +58,39 @@ fun FilterBottomSheet(
         }
     ) {
         var selectedTabIndex by remember { mutableIntStateOf(0) }
+        
+        // Adjust tabs based on mode
+        val showTags = searchMode == com.example.kemono.ui.creators.SearchMode.Posts
+        val tabs = if (showTags) {
+            listOf("Services", "Tags", "Sorting")
+        } else {
+            listOf("Services", "Sorting") // 0=Services, 1=Sorting
+        }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp) // Add padding for navigation bar
+                .padding(bottom = 32.dp)
         ) {
-            // Header Row: Tabs + Asc/Desc Button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Full Width Tabs
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                divider = {}
             ) {
-                TabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(24.dp)), // Rounded Tabs
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    divider = {}
-                ) {
+                tabs.forEachIndexed { index, title ->
                     Tab(
-                        selected = selectedTabIndex == 0,
-                        onClick = { selectedTabIndex = 0 },
-                        text = { Text("Services") }
-                    )
-                    Tab(
-                        selected = selectedTabIndex == 1,
-                        onClick = { selectedTabIndex = 1 },
-                        text = { Text("Sorting") }
-                    )
-                }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                // Asc/Desc Toggle
-                FilledTonalIconButton(
-                    onClick = onAscendingToggle,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                        contentDescription = if (isAscending) "Ascending" else "Descending"
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title) }
                     )
                 }
             }
@@ -107,20 +98,117 @@ fun FilterBottomSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Content
-            Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
-                if (selectedTabIndex == 0) {
-                    ServicesContent(
-                        selectedServices = selectedServices,
-                        onServiceToggle = onServiceToggle,
-                        onClearServices = onClearServices,
-                        availableServices = availableServices
-                    )
+            Box(modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp)) {
+                if (showTags) {
+                    when (selectedTabIndex) {
+                        0 -> ServicesContent(selectedServices, onServiceToggle, onClearServices, availableServices)
+                        1 -> TagsContent(selectedTags, onTagToggle, availableTags)
+                        2 -> SortingContent(sortOption, onSortOptionSelected, availableServices, searchMode, isAscending, onAscendingToggle)
+                    }
                 } else {
-                    SortingContent(
-                        currentSort = sortOption,
-                        onSortSelected = onSortOptionSelected,
-                        availableServices = availableServices
+                    when (selectedTabIndex) {
+                        0 -> ServicesContent(selectedServices, onServiceToggle, onClearServices, availableServices)
+                        1 -> SortingContent(sortOption, onSortOptionSelected, availableServices, searchMode, isAscending, onAscendingToggle)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TagsContent(
+    selectedTags: Set<String>,
+    onTagToggle: (String) -> Unit,
+    availableTags: List<String>
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    
+    val filteredTags = remember(searchQuery, availableTags) {
+        if (searchQuery.isBlank()) {
+            availableTags.take(50)
+        } else {
+            availableTags.filter { it.contains(searchQuery, ignoreCase = true) }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search tags...") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true,
+            trailingIcon = if (searchQuery.isNotEmpty()) {
+                { IconButton(onClick = { searchQuery = "" }) { Icon(Icons.Default.Close, contentDescription = null) } }
+            } else null
+        )
+        
+        // Pinned Selected Tags
+        if (selectedTags.isNotEmpty()) {
+            androidx.compose.foundation.lazy.LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(selectedTags.toList().size) { index ->
+                    val tag = selectedTags.toList()[index]
+                    InputChip(
+                        selected = true,
+                        onClick = { onTagToggle(tag) },
+                        label = { Text(tag) },
+                        trailingIcon = { Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp)) }
                     )
+                }
+            }
+            HorizontalDivider()
+        }
+
+        if (availableTags.isEmpty()) {
+             Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                Text("No tags available", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                 item {
+                    val message = if (searchQuery.isBlank() && availableTags.size > 50) {
+                        "Showing top 50 tags. Search to find more."
+                    } else null
+
+                    if (message != null) {
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        filteredTags.forEach { tag ->
+                            val isSelected = selectedTags.contains(tag)
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { onTagToggle(tag) },
+                                label = { Text(tag) },
+                                leadingIcon = if (isSelected) {
+                                    { Icon(Icons.Default.Check, contentDescription = null) }
+                                } else null
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -235,20 +323,59 @@ fun ServicesContent(
 fun SortingContent(
     currentSort: SortOption,
     onSortSelected: (SortOption) -> Unit,
-    availableServices: List<String>
+    availableServices: List<String>,
+    searchMode: com.example.kemono.ui.creators.SearchMode? = null,
+    isAscending: Boolean? = null,
+    onAscendingToggle: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        val options = listOf(
+        // Ascending/Descending Toggle for Artists
+        if (searchMode == com.example.kemono.ui.creators.SearchMode.Artists && isAscending != null && onAscendingToggle != null) {
+             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAscendingToggle() }
+                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = if (isAscending) "Ascending Order" else "Descending Order",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Icon(
+                    imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            HorizontalDivider(thickness = 2.dp)
+        }
+
+        val allOptions = listOf(
             SortOption.Popular to "Popularity",
             SortOption.Indexed to "Date Indexed",
             SortOption.Updated to "Date Updated",
             SortOption.Name to "Alphabetical",
             SortOption.Service to "Service"
         )
+        
+        val options = if (searchMode == com.example.kemono.ui.creators.SearchMode.Posts) {
+            // For Posts, we effectively only support Recent (Indexed/Updated) and Popular
+             allOptions.filter { 
+                it.first == SortOption.Popular || 
+                it.first == SortOption.Indexed || 
+                it.first == SortOption.Updated
+            }
+        } else {
+            allOptions
+        }
         
         options.forEach { (option, label) ->
             Row(

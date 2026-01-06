@@ -7,34 +7,37 @@ import com.example.kemono.data.model.PostResponse
 import com.example.kemono.data.model.PostListResponse
 import com.example.kemono.data.model.CreatorListResponse
 import com.example.kemono.data.model.Tag
+import com.example.kemono.data.model.AccountResponse
+import com.example.kemono.data.model.ApiFavorite
+import com.example.kemono.data.model.LoginRequest
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Body
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Header
 
 interface KemonoApi {
 
-    @retrofit2.http.Headers("Cache-Control: no-cache")
     @GET("creators") suspend fun getCreators(): ResponseBody
+
+
 
 
 
     @GET("posts")
     suspend fun getRecentPosts(
+            @Query("limit") limit: Int = 50,
             @Query("o") offset: Int = 0,
             @Query("q") query: String? = null,
             @Query("tag") tags: List<String>? = null
     ): PostListResponse
-    // User said: "Expected BEGIN_ARRAY but was BEGIN_OBJECT"
-    // This DEFINITELY means it returns an object.
-    // Let's try PostListResponse? Or maybe just generic Map/Any to debug?
-    // No, let's try to be smart. PopularPostsResponse has `posts`.
-    // Let's assume it's List<Post> and maybe the user hit an error page (which is an object)?
-    // But they said "The Posts screen say...".
-    // Let's change it to PostListResponse.
 
     @GET("posts/popular")
     suspend fun getPopularPosts(
+            @Query("limit") limit: Int = 50,
             @Query("date") date: String? = null,
             @Query("period") period: String? = null,
             @Query("o") offset: Int = 0
@@ -60,6 +63,7 @@ interface KemonoApi {
     suspend fun getCreatorPosts(
             @Path("service") service: String,
             @Path("creatorId") creatorId: String,
+            @Query("limit") limit: Int = 50,
             @Query("o") offset: Int = 0,
             @Query("q") query: String? = null
     ): List<Post>
@@ -91,6 +95,43 @@ interface KemonoApi {
     ): List<com.example.kemono.data.model.Fancard>
 
     @GET("posts/tags") suspend fun getTags(): List<Tag>
+
+    @POST("https://kemono.cr/api/v1/authentication/login")
+    suspend fun login(@Body request: LoginRequest): Response<ResponseBody>
+
+    @GET("https://kemono.cr/api/v1/account")
+    suspend fun getAccount(): AccountResponse
+
+    @GET("https://kemono.cr/api/v1/account/favorites")
+    suspend fun getApiFavorites(
+        @Query("type") type: String? = null
+    ): List<ApiFavorite>
+
+    @POST("https://kemono.cr/api/v1/favorites/creator/{service}/{id}")
+    suspend fun addFavoriteArtist(
+        @Path("service") service: String,
+        @Path("id") id: String
+    ): Response<ResponseBody>
+
+    @retrofit2.http.DELETE("https://kemono.cr/api/v1/favorites/creator/{service}/{id}")
+    suspend fun removeFavoriteArtist(
+        @Path("service") service: String,
+        @Path("id") id: String
+    ): Response<ResponseBody>
+
+    @POST("https://kemono.cr/api/v1/favorites/post/{service}/{user}/{id}")
+    suspend fun addFavoritePost(
+        @Path("service") service: String,
+        @Path("user") user: String,
+        @Path("id") id: String
+    ): Response<ResponseBody>
+
+    @retrofit2.http.DELETE("https://kemono.cr/api/v1/favorites/post/{service}/{user}/{id}")
+    suspend fun removeFavoritePost(
+        @Path("service") service: String,
+        @Path("user") user: String,
+        @Path("id") id: String
+    ): Response<ResponseBody>
 
     @GET("discord/channel/lookup/{discord_server}")
     suspend fun getDiscordChannels(@Path("discord_server") id: String): List<com.example.kemono.data.model.DiscordChannel>

@@ -47,6 +47,30 @@ constructor(
 
     private val _creatorName = MutableStateFlow<String?>(null)
 
+    val isFavorite = repository.isPostFavorite(postId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            val currentPost = _post.value ?: return@launch
+            val favPost = com.example.kemono.data.model.FavoritePost(
+                id = currentPost.id ?: return@launch,
+                service = currentPost.service ?: "",
+                user = currentPost.user ?: "",
+                title = currentPost.title ?: "",
+                content = currentPost.content ?: "",
+                thumbnailPath = currentPost.file?.path ?: currentPost.attachments.firstOrNull()?.path,
+                published = currentPost.published ?: ""
+            )
+            val isFav = isFavorite.value
+            if (isFav) {
+                repository.removeFavoritePost(favPost)
+            } else {
+                repository.addFavoritePost(favPost)
+            }
+        }
+    }
+
     init {
         fetchPost()
         fetchCreatorProfile()
@@ -98,7 +122,7 @@ constructor(
             // Download main file
             currentPost.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
-                    val url = "https://kemono.su${file.path}"
+                    val url = "https://kemono.cr${file.path}"
                     val fileName = file.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(file.path) ==
@@ -121,7 +145,7 @@ constructor(
             // Download attachments
             currentPost.attachments.forEach { attachment ->
                 if (!attachment.path.isNullOrEmpty()) {
-                    val url = "https://kemono.su${attachment.path}"
+                    val url = "https://kemono.cr${attachment.path}"
                     val fileName = attachment.name
                     val mediaType =
                             if (com.example.kemono.util.getMediaType(attachment.path) ==

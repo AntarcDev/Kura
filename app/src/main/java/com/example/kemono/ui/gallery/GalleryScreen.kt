@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import kotlinx.coroutines.flow.map
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,8 +47,14 @@ fun GalleryScreen(
         onItemClick: (DownloadedItem, Int) -> Unit
 ) {
     val items by viewModel.galleryItems.collectAsState()
-
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val gridDensity by viewModel.gridDensity.collectAsState()
+
+    val minSize = when (gridDensity) {
+        "Small" -> 120.dp
+        "Large" -> 200.dp
+        else -> 150.dp
+    }
 
     Scaffold(
         topBar = { 
@@ -67,7 +74,7 @@ fun GalleryScreen(
                 )
             } else {
                 LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                        columns = GridCells.Adaptive(minSize),
                         contentPadding = PaddingValues(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -75,7 +82,7 @@ fun GalleryScreen(
                     items.forEachIndexed { index, item ->
                         when (item) {
                             is GalleryUiItem.Header -> {
-                                item(span = { GridItemSpan(3) }) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
                                     Text(
                                             text = item.title,
                                             style = MaterialTheme.typography.titleMedium,

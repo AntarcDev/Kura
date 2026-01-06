@@ -4,10 +4,13 @@ import com.example.kemono.data.local.CacheDao
 import com.example.kemono.data.local.FavoriteDao
 import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.FavoriteCreator
+import com.example.kemono.data.model.FavoritePost
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.model.toCached
 import com.example.kemono.data.model.toCreator
 import com.example.kemono.data.model.toPost
+import com.example.kemono.data.model.Account
+import com.example.kemono.data.model.LoginRequest
 import com.example.kemono.data.remote.KemonoApi
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,9 +18,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+
+import com.example.kemono.data.model.SearchHistory
+import com.example.kemono.data.local.SearchHistoryDao
 
 @Singleton
 class KemonoRepository
@@ -26,8 +34,63 @@ constructor(
         private val api: KemonoApi,
         private val favoriteDao: FavoriteDao,
         private val cacheDao: CacheDao,
+        private val searchHistoryDao: SearchHistoryDao,
         private val networkMonitor: com.example.kemono.util.NetworkMonitor
 ) {
+    private val _loginEvent = kotlinx.coroutines.flow.MutableSharedFlow<Unit>()
+    val loginEvent: Flow<Unit> = _loginEvent.asSharedFlow()
+    
+    // Account State
+    private val _accountState = kotlinx.coroutines.flow.MutableStateFlow<Account?>(null)
+    val accountState: Flow<Account?> = _accountState.asSharedFlow()
+
+    suspend fun login(username: String, password: String): Result<Boolean> {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) return Result.failure(Exception("No internet connection"))
+
+        return try {
+            val response = api.login(LoginRequest(username, password))
+            if (response.isSuccessful) {
+                // CookieJar handles the session cookie automatically.
+                // We just need to verify success.
+                _loginEvent.emit(Unit)
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Login failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun refreshAccount() {
+        try {
+            fetchAccount()
+        } catch (e: Exception) {
+            // Ignore error on refresh
+        }
+    }
+
+    fun logout() {
+        _accountState.value = null
+        // We can't clear cookies here easily without injecting SessionManager or CookieJar
+        // So we rely on the caller (ViewModel) to clear the persistent session.
+    }
+
+    suspend fun fetchAccount(): Result<Account> {
+         return try {
+            val response = api.getAccount()
+            val acc = response.props.account
+            _accountState.value = acc
+            Result.success(acc)
+        } catch (e: Exception) {
+             if (e is retrofit2.HttpException && (e.code() == 401 || e.code() == 403)) {
+                 _accountState.value = null
+             }
+            Result.failure(e)
+        }
+    }
+
     suspend fun getCreators(): List<Creator> {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) {
@@ -128,11 +191,11 @@ constructor(
         return allCreators.filter { it.id in popularCreatorIds }
     }
 
-    suspend fun getPopularPosts(date: String? = null, period: String? = null, offset: Int = 0): List<Post> {
+    suspend fun getPopularPosts(limit: Int = 50, date: String? = null, period: String? = null, offset: Int = 0): List<Post> {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList() // TODO: Implement caching for popular posts?
 
-        val response = api.getPopularPosts(date, period, offset)
+        val response = api.getPopularPosts(limit, date, period, offset)
         return response.posts
     }
 
@@ -156,11 +219,11 @@ constructor(
         }
     }
 
-    suspend fun getRecentPosts(offset: Int = 0, query: String? = null, tags: List<String>? = null): List<Post> {
+    suspend fun getRecentPosts(limit: Int = 50, offset: Int = 0, query: String? = null, tags: List<String>? = null): List<Post> {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList()
 
-        val response = api.getRecentPosts(offset, query, tags)
+        val response = api.getRecentPosts(limit, offset, query, tags)
         return response.posts.filter { it.id != null }
     }
 
@@ -199,6 +262,7 @@ constructor(
     suspend fun getCreatorPosts(
             service: String,
             creatorId: String,
+            limit: Int = 50,
             offset: Int = 0,
             query: String? = null
     ): List<Post> {
@@ -217,7 +281,7 @@ constructor(
         }
 
         return try {
-            val posts = api.getCreatorPosts(service, creatorId, offset, query)
+            val posts = api.getCreatorPosts(service, creatorId, limit, offset, query)
             cacheDao.cachePosts(posts.map { it.toCached() })
             posts.filter { it.id != null }
         } catch (e: Exception) {
@@ -308,6 +372,22 @@ constructor(
         return favoriteDao.isFavorite(id)
     }
 
+    fun getAllFavoritePosts(): Flow<List<FavoritePost>> {
+        return favoriteDao.getAllFavoritePosts()
+    }
+
+    suspend fun addFavoritePost(post: FavoritePost) {
+        favoriteDao.insertFavoritePost(post)
+    }
+
+    suspend fun removeFavoritePost(post: FavoritePost) {
+        favoriteDao.deleteFavoritePost(post)
+    }
+
+    fun isPostFavorite(id: String): Flow<Boolean> {
+        return favoriteDao.isPostFavorite(id)
+    }
+
     suspend fun getTags(): List<String> {
         return api.getTags().map { it.tag }
     }
@@ -326,5 +406,141 @@ constructor(
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    suspend fun importFavorites(): Int {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) throw Exception("No internet connection")
+        
+        var count = 0
+
+        // 1. Import Artists
+        val apiArtists = api.getApiFavorites(type = "artist")
+        android.util.Log.d("KemonoRepo", "Fetched ${apiArtists.size} favorite artists")
+        apiArtists.forEach { fav ->
+             val favorite = FavoriteCreator(
+                id = fav.id,
+                service = fav.service,
+                name = fav.name,
+                updated = fav.updated
+            )
+            try {
+                favoriteDao.insertFavorite(favorite)
+                count++
+            } catch (e: Exception) {
+                android.util.Log.e("KemonoRepo", "Failed to import artist ${fav.id}: ${e.message}")
+            }
+        }
+
+        // 2. Import Posts
+        val apiPosts = api.getApiFavorites(type = "post")
+        android.util.Log.d("KemonoRepo", "Fetched ${apiPosts.size} favorite posts")
+
+        // Fetch details in parallel chunks
+        kotlinx.coroutines.coroutineScope {
+            val chunkedPosts = apiPosts.chunked(5)
+            chunkedPosts.forEach { chunk ->
+                val deferredDetails = chunk.map { fav ->
+                    async {
+                        try {
+                            if (!fav.user.isNullOrBlank()) {
+                                api.getPost(fav.service, fav.user, fav.id).post
+                            } else {
+                                null
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("KemonoRepo", "Failed to fetch details for post ${fav.id}: ${e.message}")
+                            null
+                        }
+                    }
+                }
+                
+                val details = deferredDetails.awaitAll()
+                
+                chunk.zip(details).forEach { (fav, fullPost) ->
+                    val thumbnail = fullPost?.file?.path ?: fullPost?.attachments?.firstOrNull()?.path
+                    val favoritePost = FavoritePost(
+                        id = fav.id,
+                        service = fav.service,
+                        user = fav.user ?: "",
+                        title = fullPost?.title ?: fav.name ?: "Untitled",
+                        content = fullPost?.content ?: "",
+                        published = fullPost?.published ?: fav.indexed ?: "",
+                        thumbnailPath = thumbnail,
+                        added = System.currentTimeMillis()
+                    )
+                    
+                    try {
+                        favoriteDao.insertFavoritePost(favoritePost)
+                        count++
+                    } catch (e: Exception) {
+                        android.util.Log.e("KemonoRepo", "Failed to insert imported post ${fav.id}: ${e.message}")
+                    }
+                }
+            }
+        }
+        
+        android.util.Log.d("KemonoRepo", "Successfully imported $count items")
+        return count
+    }
+
+    suspend fun pushFavoritesToAccount(): Int {
+         val isOnline = networkMonitor.isOnline.first()
+         if (!isOnline) throw Exception("No internet connection")
+         
+         var successCount = 0
+
+         // --- Artists ---
+         val localFavorites = favoriteDao.getAllFavorites().first()
+         val apiFavorites = api.getApiFavorites(type = "artist")
+         val remoteIds = apiFavorites.map { it.id }.toSet()
+         val toPush = localFavorites.filter { it.id !in remoteIds }
+
+         android.util.Log.d("KemonoRepo", "Found ${toPush.size} artists to push")
+         toPush.forEach { fav ->
+             try {
+                 val response = api.addFavoriteArtist(fav.service, fav.id)
+                 if (response.isSuccessful) successCount++
+             } catch (e: Exception) {
+                 android.util.Log.e("KemonoRepo", "Error pushing artist ${fav.name}: ${e.message}")
+             }
+         }
+
+         // --- Posts ---
+         val localPosts = favoriteDao.getAllFavoritePosts().first()
+         val apiPosts = api.getApiFavorites(type = "post")
+         val remotePostIds = apiPosts.map { it.id }.toSet()
+         val postsToPush = localPosts.filter { it.id !in remotePostIds }
+
+         android.util.Log.d("KemonoRepo", "Found ${postsToPush.size} posts to push")
+         postsToPush.forEach { post ->
+             try {
+                 val response = api.addFavoritePost(post.service, post.user, post.id)
+                 if (response.isSuccessful) successCount++
+             } catch (e: Exception) {
+                 android.util.Log.e("KemonoRepo", "Error pushing post ${post.title}: ${e.message}")
+             }
+         }
+
+         return successCount
+    }
+
+    // Search History
+    fun getSearchHistory(limit: Int = 10): Flow<List<SearchHistory>> {
+        return searchHistoryDao.getRecentSearchHistory(limit)
+    }
+
+    suspend fun addToSearchHistory(query: String) {
+        if (query.isNotBlank()) {
+            searchHistoryDao.insert(SearchHistory(query.trim()))
+        }
+    }
+
+    suspend fun removeFromSearchHistory(query: String) {
+        searchHistoryDao.delete(query)
+    }
+
+    suspend fun clearSearchHistory() {
+        searchHistoryDao.clear()
     }
 }

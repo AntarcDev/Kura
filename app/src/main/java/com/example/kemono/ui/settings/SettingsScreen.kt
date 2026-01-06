@@ -7,11 +7,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,15 +28,20 @@ import com.example.kemono.ui.components.UpdateDialog
 
 enum class SettingsRoute {
     Main,
-    General,
+    Account,
     Appearance,
     Data,
-    Advanced
+    Advanced,
+    Licenses,
+    Privacy
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onLoginClick: () -> Unit
+) {
     var currentRoute by remember { mutableStateOf(SettingsRoute.Main) }
     
     val updateAvailable by viewModel.updateAvailable.collectAsState()
@@ -56,6 +64,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         }
     }
 
+    val account by viewModel.account.collectAsState()
+
     if (updateAvailable != null) {
         UpdateDialog(
             release = updateAvailable!!,
@@ -77,10 +87,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     Text(
                         text = when (currentRoute) {
                             SettingsRoute.Main -> "Settings"
-                            SettingsRoute.General -> "General"
+                            SettingsRoute.Account -> "Account"
                             SettingsRoute.Appearance -> "Appearance"
                             SettingsRoute.Data -> "Data & Storage"
                             SettingsRoute.Advanced -> "Advanced"
+                            SettingsRoute.Licenses -> "Licenses"
+                            SettingsRoute.Privacy -> "Privacy Policy"
                         }
                     )
                 },
@@ -97,30 +109,43 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         Box(modifier = Modifier.padding(paddingValues)) {
             when (currentRoute) {
                 SettingsRoute.Main -> SettingsMain(
-                    onNavigate = { currentRoute = it }
+                    onNavigate = { currentRoute = it },
+                    viewModel = viewModel
                 )
-                SettingsRoute.General -> SettingsGeneral(viewModel)
+                SettingsRoute.Account -> SettingsAccount(
+                    viewModel = viewModel,
+                    onLoginClick = onLoginClick,
+                    onLogoutClick = { viewModel.logout() }
+                )
                 SettingsRoute.Appearance -> SettingsAppearance(viewModel)
                 SettingsRoute.Data -> SettingsData(viewModel)
                 SettingsRoute.Advanced -> SettingsAdvanced(viewModel)
+                SettingsRoute.Licenses -> LicensesScreen(onBackClick = { currentRoute = SettingsRoute.Main })
+                SettingsRoute.Privacy -> PrivacyPolicyScreen(onBackClick = { currentRoute = SettingsRoute.Main })
             }
         }
     }
 }
 
 @Composable
-fun SettingsMain(onNavigate: (SettingsRoute) -> Unit) {
+fun SettingsMain(
+    onNavigate: (SettingsRoute) -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        val updateAvailable by viewModel.updateAvailable.collectAsState()
+
         SettingsCategoryItem(
-            icon = Icons.Default.Info,
-            title = "General",
-            subtitle = "App information and about",
-            onClick = { onNavigate(SettingsRoute.General) }
+             icon = Icons.Default.Person,
+             title = "Account",
+             subtitle = "Profile, login, and sync settings",
+             onClick = { onNavigate(SettingsRoute.Account) }
         )
+        
         SettingsCategoryItem(
             icon = Icons.Default.Edit,
             title = "Appearance",
@@ -130,7 +155,7 @@ fun SettingsMain(onNavigate: (SettingsRoute) -> Unit) {
         SettingsCategoryItem(
             icon = Icons.Default.Delete,
             title = "Data & Storage",
-            subtitle = "Cache management",
+            subtitle = "Downloads and cache management",
             onClick = { onNavigate(SettingsRoute.Data) }
         )
         SettingsCategoryItem(
@@ -139,8 +164,135 @@ fun SettingsMain(onNavigate: (SettingsRoute) -> Unit) {
             subtitle = "DDoS-Guard, cookies, and developer tools",
             onClick = { onNavigate(SettingsRoute.Advanced) }
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SettingsItem(
+            title = "Check for Updates",
+            subtitle = "Current version: ${com.example.kemono.BuildConfig.VERSION_NAME}",
+            onClick = { viewModel.checkForUpdate() }
+        )
+        
+        AboutSection(
+            onLicensesClick = { onNavigate(SettingsRoute.Licenses) },
+            onPrivacyClick = { onNavigate(SettingsRoute.Privacy) }
+        )
     }
 }
+
+@Composable
+fun SettingsAccount(
+    viewModel: SettingsViewModel,
+    onLoginClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
+    val account by viewModel.account.collectAsState()
+    val sessionCookie by viewModel.sessionCookie.collectAsState()
+    val hasSession by viewModel.hasSession.collectAsState()
+    val importStatus by viewModel.importStatus.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        if (account != null) {
+            SettingsCategoryItem(
+                 icon = Icons.Default.Person,
+                 title = "Profile",
+                 subtitle = "Logged in as ${account!!.username} (ID: ${account!!.id})",
+                 onClick = { /* Could navigate to full profile if we had route traversal here */ }
+            )
+            SettingsCategoryItem(
+                 icon = Icons.AutoMirrored.Filled.ExitToApp,
+                 title = "Log Out",
+                 subtitle = "Clear session and cached data",
+                 onClick = onLogoutClick
+            )
+        } else {
+             SettingsCategoryItem(
+                 icon = Icons.Default.Person,
+                 title = "Log In",
+                 subtitle = "Connect your kemono.su account",
+                 onClick = onLoginClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Favorites Synchronization", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            
+            Text(
+                text = "Sync favorite artists between the app and your kemono.su account.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = { viewModel.importFavorites() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = importStatus != "Importing..."
+            ) {
+                if (importStatus == "Importing...") {
+                     CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text("Import Favorites from Website")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = { viewModel.pushFavorites() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = importStatus != "Importing..." && importStatus != "Pushing favorites..."
+            ) {
+                 if (importStatus == "Pushing favorites...") {
+                     CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text("Push Favorites to Account")
+            }
+            
+            if (importStatus != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                     colors = CardDefaults.cardColors(
+                        containerColor = if (importStatus!!.startsWith("Error")) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                         Text(
+                            text = importStatus!!,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        IconButton(onClick = { viewModel.clearImportStatus() }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Clear")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+        
+
 
 @Composable
 fun SettingsCategoryItem(
@@ -156,33 +308,9 @@ fun SettingsCategoryItem(
         trailingContent = { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null) },
         modifier = Modifier.clickable(onClick = onClick)
     )
-    HorizontalDivider()
+
 }
 
-@Composable
-fun SettingsGeneral(viewModel: SettingsViewModel) {
-    val downloadLocation by viewModel.downloadLocation.collectAsState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        SettingsItem(
-            title = "Check for Updates",
-            subtitle = "Current version: ${com.example.kemono.BuildConfig.VERSION_NAME}",
-            onClick = { viewModel.checkForUpdate() }
-        )
-        SettingsItem(
-            title = "Download Location",
-            subtitle = downloadLocation ?: "Default",
-            onClick = { /* TODO: Open folder picker */ }
-        )
-        AboutSection()
-    }
-}
 
 @Composable
 fun SettingsItem(title: String, subtitle: String, onClick: () -> Unit) {
@@ -196,72 +324,129 @@ fun SettingsItem(title: String, subtitle: String, onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsAppearance(viewModel: SettingsViewModel) {
+    val themeMode by viewModel.appThemeMode.collectAsState()
+    val gridDensity by viewModel.gridDensity.collectAsState()
+    val artistLayoutMode by viewModel.artistLayoutMode.collectAsState()
+    val postLayoutMode by viewModel.postLayoutMode.collectAsState()
+    val downloadLayoutMode by viewModel.downloadLayoutMode.collectAsState()
+    val favoriteLayoutMode by viewModel.favoriteLayoutMode.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Theme Setting
-        var expandedTheme by remember { mutableStateOf(false) }
-        val themeMode by viewModel.themeMode.collectAsState()
-        ExposedDropdownMenuBox(
-            expanded = expandedTheme,
-            onExpandedChange = { expandedTheme = !expandedTheme }
-        ) {
-            OutlinedTextField(
-                value = themeMode,
-                onValueChange = { },
-                readOnly = true,
-                label = { Text("Theme") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
+        // Theme Section
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Theme",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
             )
-            ExposedDropdownMenu(
-                expanded = expandedTheme,
-                onDismissRequest = { expandedTheme = false }
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("System", "Light", "Dark").forEach { mode ->
-                    DropdownMenuItem(
-                        text = { Text(mode) },
-                        onClick = {
-                            viewModel.setThemeMode(mode)
-                            expandedTheme = false
-                        }
+                    FilterChip(
+                        selected = themeMode == mode,
+                        onClick = { viewModel.setThemeMode(mode) },
+                        label = { Text(mode) },
+                        leadingIcon = if (themeMode == mode) {
+                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                        } else null
                     )
                 }
             }
         }
 
-        // Grid Size Setting
-        var expandedGrid by remember { mutableStateOf(false) }
-        val gridSize by viewModel.gridSize.collectAsState()
-        ExposedDropdownMenuBox(
-            expanded = expandedGrid,
-            onExpandedChange = { expandedGrid = !expandedGrid }
-        ) {
-            OutlinedTextField(
-                value = gridSize,
-                onValueChange = { },
-                readOnly = true,
-                label = { Text("Grid Size") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrid) },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
+
+
+        // Grid Density Section
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Grid Density",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
             )
-            ExposedDropdownMenu(
-                expanded = expandedGrid,
-                onDismissRequest = { expandedGrid = false }
-            ) {
-                listOf("Compact", "Comfortable").forEach { size ->
-                    DropdownMenuItem(
-                        text = { Text(size) },
-                        onClick = {
-                            viewModel.setGridSize(size)
-                            expandedGrid = false
-                        }
+            Text(
+                text = "Controls the size of items in grid views.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Small", "Medium", "Large").forEach { density ->
+                    FilterChip(
+                        selected = gridDensity == density,
+                        onClick = { viewModel.setGridDensity(density) },
+                        label = { Text(density) },
+                        leadingIcon = if (gridDensity == density) {
+                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                        } else null
                     )
                 }
+            }
+        }
+
+
+
+        // Layout Options Section
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                text = "Layout Preferences",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            LayoutOptionSelector(
+                label = "Creators Layout",
+                currentValue = artistLayoutMode,
+                onValueChange = { viewModel.setArtistLayoutMode(it) }
+            )
+
+            LayoutOptionSelector(
+                label = "Posts Layout",
+                currentValue = postLayoutMode,
+                onValueChange = { viewModel.setPostLayoutMode(it) }
+            )
+
+            LayoutOptionSelector(
+                label = "Downloads Layout",
+                currentValue = downloadLayoutMode,
+                onValueChange = { viewModel.setDownloadLayoutMode(it) }
+            )
+
+            LayoutOptionSelector(
+                label = "Profile",
+                currentValue = favoriteLayoutMode,
+                onValueChange = { viewModel.setFavoriteLayoutMode(it) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun LayoutOptionSelector(
+    label: String,
+    currentValue: String,
+    onValueChange: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("List", "Grid").forEach { option ->
+                 FilterChip(
+                    selected = currentValue == option,
+                    onClick = { onValueChange(option) },
+                    label = { Text(option) },
+                    leadingIcon = if (currentValue == option) {
+                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                    } else null
+                )
             }
         }
     }
@@ -269,6 +454,11 @@ fun SettingsAppearance(viewModel: SettingsViewModel) {
 
 @Composable
 fun SettingsData(viewModel: SettingsViewModel) {
+    val cacheStats by viewModel.cacheStats.collectAsState()
+    val autoplayGifs by viewModel.autoplayGifs.collectAsState()
+    val context = LocalContext.current
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -277,24 +467,97 @@ fun SettingsData(viewModel: SettingsViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
+            text = "Data Usage",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        val downloadLocation by viewModel.downloadLocation.collectAsState()
+        SettingsItem(
+            title = "Download Location",
+            subtitle = downloadLocation ?: "Default",
+            onClick = { /* TODO: Open folder picker */ }
+        )
+
+        ListItem(
+            headlineContent = { Text("Autoplay GIFs") },
+            supportingContent = { Text("Automatically play GIFs in grids and lists.") },
+            trailingContent = {
+                Switch(
+                    checked = autoplayGifs,
+                    onCheckedChange = { viewModel.setAutoplayGifs(it) }
+                )
+            }
+        )
+
+
+
+        Text(
             text = "Storage Management",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
-        
-        Text(
-            text = "Clearing the cache will remove all temporary images and data. Your downloads will not be affected.",
-            style = MaterialTheme.typography.bodyMedium
-        )
 
-        Button(
-            onClick = { viewModel.clearCache() },
+        // Media Cache Card
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            Icon(Icons.Default.Delete, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Clear Image Cache")
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Media Cache", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = "Images, thumbnails, and preview data.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = android.text.format.Formatter.formatShortFileSize(context, cacheStats.mediaCacheSize),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.clearMediaCache() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Clear Media")
+                }
+            }
+        }
+
+        // Network Cache Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Network Cache", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = "API responses and temporary data.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = android.text.format.Formatter.formatShortFileSize(context, cacheStats.networkCacheSize),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.clearNetworkCache() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Clear Network")
+                }
+            }
         }
     }
 }
@@ -358,7 +621,7 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
             }
         }
 
-        HorizontalDivider()
+
 
         // Session Cookie Section
         Text(text = "Session Cookie", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
@@ -400,5 +663,25 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
                 }
             }
         }
+        
+
+
+
+
+        // Crash Reporting Section
+        val crashReportingEnabled by viewModel.crashReportingEnabled.collectAsState()
+        
+        Text(text = "Crash Reporting", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        
+        ListItem(
+            headlineContent = { Text("Anonymous Crash Reporting") },
+            supportingContent = { Text("Save crash logs locally and prompt to send via email on next launch.") },
+            trailingContent = {
+                Switch(
+                    checked = crashReportingEnabled,
+                    onCheckedChange = { viewModel.setCrashReportingEnabled(it) }
+                )
+            }
+        )
     }
 }

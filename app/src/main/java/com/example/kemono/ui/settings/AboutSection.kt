@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AboutSection() {
+fun AboutSection(
+    onLicensesClick: () -> Unit,
+    onPrivacyClick: () -> Unit
+) {
     val context = LocalContext.current
     val infiniteTransition = rememberInfiniteTransition(label = "MadeByAnimation")
     val color by infiniteTransition.animateColor(
@@ -79,10 +82,10 @@ fun AboutSection() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { /* TODO: Show Licenses */ }) {
+                OutlinedButton(onClick = onLicensesClick) {
                     Text("Licenses")
                 }
-                OutlinedButton(onClick = { /* TODO: Show Privacy Policy */ }) {
+                OutlinedButton(onClick = onPrivacyClick) {
                     Text("Privacy Policy")
                 }
             }

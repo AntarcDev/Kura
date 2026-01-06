@@ -7,6 +7,7 @@ import coil.imageLoader
 import com.example.kemono.data.local.SessionManager
 import com.example.kemono.data.repository.KemonoRepository
 
+import com.example.kemono.data.model.Account
 import com.example.kemono.data.repository.SettingsRepository
 import com.example.kemono.data.repository.UpdateRepository
 import com.example.kemono.data.model.GithubRelease
@@ -65,45 +66,119 @@ constructor(
     private val _readyToInstall = MutableStateFlow<File?>(null)
     val readyToInstall: StateFlow<File?> = _readyToInstall.asStateFlow()
 
-    val themeMode =
+    val appThemeMode =
             settingsRepository.themeMode.stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(5000),
                     "System"
             )
-    val gridSize =
-            settingsRepository.gridSize.stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(5000),
-                    "Comfortable"
-            )
-    val downloadLocation =
-            settingsRepository.downloadLocation.stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(5000),
-                    null
-            )
+    val artistLayoutMode = settingsRepository.artistLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Grid")
+    val postLayoutMode = settingsRepository.postLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "List")
+    val downloadLayoutMode = settingsRepository.downloadLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "List")
+    val favoriteLayoutMode = settingsRepository.favoriteLayoutMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Grid")
+    val gridDensity = settingsRepository.gridDensity.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Medium")
+    val crashReportingEnabled = settingsRepository.crashReportingEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val downloadLocation = settingsRepository.downloadLocation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    val autoplayGifs = settingsRepository.autoplayGifs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    // Stats
+    data class CacheStats(val mediaCacheSize: Long, val networkCacheSize: Long, val totalSize: Long)
+    private val _cacheStats = MutableStateFlow(CacheStats(0, 0, 0))
+    val cacheStats: StateFlow<CacheStats> = _cacheStats.asStateFlow()
+
+    val account = repository.accountState
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    init {
+        // Initialize cache stats
+        calculateCacheStats()
+        
+        viewModelScope.launch {
+            repository.loginEvent.collect {
+                // Trigger refresh if needed, though Flow might handle it if repo updates validity
+                 repository.refreshAccount()
+            }
+        }
+    }
 
     fun setThemeMode(mode: String) {
         viewModelScope.launch { settingsRepository.setThemeMode(mode) }
     }
-
+    
+    // Deprecated but kept for compatibility logic helper if needed
     fun setGridSize(size: String) {
-        viewModelScope.launch { settingsRepository.setGridSize(size) }
-    }
-
-    fun setDownloadLocation(uri: String) {
-        viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
-    }
-
-    @OptIn(coil.annotation.ExperimentalCoilApi::class)
-    fun clearCache() {
         viewModelScope.launch {
-            context.imageLoader.memoryCache?.clear()
-            context.imageLoader.diskCache?.clear()
-            repository.cleanExpiredCache()
+            settingsRepository.setGridSize(size)
+            // Auto-migrate for better UX
+            if (size == "Compact") {
+                settingsRepository.setGridDensity("Small")
+                settingsRepository.setArtistLayoutMode("Grid")
+            } else {
+                settingsRepository.setGridDensity("Medium")
+            }
         }
     }
+
+    fun setArtistLayoutMode(mode: String) = viewModelScope.launch { settingsRepository.setArtistLayoutMode(mode) }
+    fun setPostLayoutMode(mode: String) = viewModelScope.launch { settingsRepository.setPostLayoutMode(mode) }
+    fun setDownloadLayoutMode(mode: String) = viewModelScope.launch { settingsRepository.setDownloadLayoutMode(mode) }
+    fun setFavoriteLayoutMode(mode: String) = viewModelScope.launch { settingsRepository.setFavoriteLayoutMode(mode) }
+    fun setGridDensity(density: String) = viewModelScope.launch { settingsRepository.setGridDensity(density) }
+    fun setCrashReportingEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setCrashReportingEnabled(enabled) }
+    fun setDownloadLocation(uri: String) = viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
+    fun setAutoplayGifs(enabled: Boolean) = viewModelScope.launch { settingsRepository.setAutoplayGifs(enabled) }
+
+    private fun calculateCacheStats() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val imageCache = context.cacheDir.resolve("image_cache")
+            val imageHttpCache = context.cacheDir.resolve("image_http_cache")
+            val httpCache = context.cacheDir.resolve("http_cache")
+            val githubCache = context.cacheDir.resolve("github_cache")
+
+            val mediaSize = getDirSize(imageCache) + getDirSize(imageHttpCache)
+            val networkSize = getDirSize(httpCache) + getDirSize(githubCache)
+            val totalSize = mediaSize + networkSize
+
+            _cacheStats.value = CacheStats(
+                mediaCacheSize = mediaSize,
+                networkCacheSize = networkSize,
+                totalSize = totalSize
+            )
+        }
+    }
+
+    fun clearMediaCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            context.cacheDir.resolve("image_cache").deleteRecursively()
+            context.cacheDir.resolve("image_http_cache").deleteRecursively()
+            // Reset coil memory cache if possible, or trigger reload.
+            // For now just file deletion.
+            // Coil.imageLoader(context).memoryCache?.clear() // Requires main thread usually or context
+            
+            calculateCacheStats()
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+             coil.Coil.imageLoader(context).memoryCache?.clear()
+             coil.Coil.imageLoader(context).diskCache?.clear()
+        }
+    }
+
+    fun clearNetworkCache() {
+        viewModelScope.launch(Dispatchers.IO) {
+            context.cacheDir.resolve("http_cache").deleteRecursively()
+            context.cacheDir.resolve("github_cache").deleteRecursively()
+            
+            repository.cleanExpiredCache() // Clean internal repo cache
+            
+            calculateCacheStats()
+        }
+    }
+    
+    private fun getDirSize(dir: File): Long {
+        if (!dir.exists()) return 0
+        return dir.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
+    }
+
 
     fun updateSessionCookie(cookie: String) {
         _sessionCookie.value = cookie
@@ -115,6 +190,11 @@ constructor(
         _sessionCookie.value = ""
         sessionManager.clearSession()
         _hasSession.value = false
+        repository.logout()
+    }
+    
+    fun logout() {
+        clearSession()
     }
 
     fun initializeDDoSGuard() {
@@ -162,7 +242,7 @@ constructor(
                         if (release != null) {
                             _updateAvailable.value = release
                         } else {
-                            _updateError.value = "App is up to date"
+                            _updateError.value = "Kura is up to date"
                         }
                     },
                     onFailure = { e ->
@@ -214,5 +294,40 @@ constructor(
             setDataAndType(uri, "application/vnd.android.package-archive")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
         }
+    }
+
+    private val _importStatus = MutableStateFlow<String?>(null)
+    val importStatus: StateFlow<String?> = _importStatus.asStateFlow()
+
+    fun importFavorites() {
+        viewModelScope.launch {
+            _importStatus.value = "Importing..."
+            try {
+                val count = withContext(Dispatchers.IO) {
+                    repository.importFavorites()
+                }
+                _importStatus.value = "Successfully imported $count favorites"
+            } catch (e: Exception) {
+                _importStatus.value = "Error: ${e.message}"
+            }
+        }
+    }
+
+    fun pushFavorites() {
+        viewModelScope.launch {
+            _importStatus.value = "Pushing favorites..."
+            try {
+                val count = withContext(Dispatchers.IO) {
+                    repository.pushFavoritesToAccount()
+                }
+                _importStatus.value = "Successfully pushed $count favorites"
+            } catch (e: Exception) {
+                _importStatus.value = "Error: ${e.message}"
+            }
+        }
+    }
+    
+    fun clearImportStatus() {
+        _importStatus.value = null
     }
 }

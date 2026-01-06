@@ -57,7 +57,7 @@ object HtmlConverter {
 
             // Add the image
             imageSpan.source?.let { src ->
-                val fullUrl = if (src.startsWith("http")) src else "https://kemono.su$src"
+                val fullUrl = if (src.startsWith("http")) src else "https://kemono.cr$src"
                 nodes.add(ContentNode.Image(fullUrl))
             }
 

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -36,11 +37,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.unit.dp
 
+import com.example.kemono.ui.profile.ProfileScreen
+
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     data object Creators : BottomNavItem("creators", Icons.Default.Home, "Creators")
     data object Downloads : BottomNavItem("downloads", Icons.Default.Download, "Downloads")
     data object Gallery : BottomNavItem("gallery", Icons.Default.Image, "Gallery")
-    data object Favorites : BottomNavItem("favorites", Icons.Default.Favorite, "Favorites")
+    data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profile")
     data object Settings : BottomNavItem("settings", Icons.Default.Settings, "Settings")
 }
 
@@ -50,14 +53,15 @@ fun MainScreen(
         viewModel: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
         onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit,
         onPostClick: (com.example.kemono.data.model.Post) -> Unit,
-        onNavigateToGalleryItem: (Int) -> Unit
+        onNavigateToGalleryItem: (Int) -> Unit,
+        onLoginClick: () -> Unit
 ) {
     val items =
             listOf(
                     BottomNavItem.Creators,
                     BottomNavItem.Downloads,
                     BottomNavItem.Gallery,
-                    BottomNavItem.Favorites,
+                    BottomNavItem.Profile,
                     BottomNavItem.Settings
             )
 
@@ -141,8 +145,12 @@ fun MainScreen(
                         )
                 BottomNavItem.Gallery ->
                         GalleryScreen(onItemClick = { _, index -> onNavigateToGalleryItem(index) })
-                BottomNavItem.Favorites -> FavoritesScreen(onCreatorClick = onCreatorClick)
-                BottomNavItem.Settings -> SettingsScreen()
+                BottomNavItem.Profile -> ProfileScreen(
+                    onCreatorClick = onCreatorClick,
+                    onPostClick = onPostClick,
+                    onLoginClick = onLoginClick
+                )
+                BottomNavItem.Settings -> SettingsScreen(onLoginClick = onLoginClick)
             }
         }
     }

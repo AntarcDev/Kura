@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,16 +38,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 
+import com.example.kemono.ui.settings.SettingsViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostScreen(
         viewModel: PostViewModel = hiltViewModel(),
+        settingsViewModel: SettingsViewModel = hiltViewModel(),
         onBackClick: () -> Unit,
         onImageClick: (Int) -> Unit
 ) {
     val post by viewModel.post.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
 
     Scaffold(
             topBar = {
@@ -57,6 +63,14 @@ fun PostScreen(
                             }
                         },
                         actions = {
+                            val isFavorite by viewModel.isFavorite.collectAsState()
+                            IconButton(onClick = { viewModel.toggleFavorite() }) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = "Favorite",
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                             IconButton(onClick = { viewModel.downloadMedia() }) {
                                 Icon(Icons.Default.Download, contentDescription = "Download")
                             }
@@ -109,7 +123,9 @@ fun PostScreen(
 
                                 // Render HTML content
                                 val htmlContent = currentPost.content ?: "No content available"
-                                val contentNodes = com.example.kemono.util.HtmlConverter.parseHtmlContent(htmlContent)
+                                val contentNodes = remember(htmlContent) {
+                                    com.example.kemono.util.HtmlConverter.parseHtmlContent(htmlContent)
+                                }
                                 val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
 
                                 contentNodes.forEach { node ->
@@ -138,6 +154,12 @@ fun PostScreen(
                                                     model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                         .data(node.url)
                                                         .crossfade(!isGif)
+                                                        .apply {
+                                                            if (!autoplayGifs) {
+                                                                decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                                                memoryCacheKey(node.url + "_static")
+                                                            }
+                                                        }
                                                         .build(),
                                                     contentDescription = null,
                                                     modifier = Modifier
@@ -174,7 +196,7 @@ fun PostScreen(
                             item {
                                 currentPost.file?.let { file ->
                                     if (!file.path.isNullOrEmpty()) {
-                                        val url = "https://kemono.su${file.path}"
+                                        val url = "https://kemono.cr${file.path}"
                                         val mediaType = com.example.kemono.util.getMediaType(file.path)
                                         val extension = file.path.substringAfterLast('.', "").lowercase()
                                         val isAudio = extension in listOf("mp3", "wav", "ogg", "m4a")
@@ -182,6 +204,9 @@ fun PostScreen(
                                         val isPsd = extension == "psd"
                                         
                                         Box(modifier = Modifier.fillMaxWidth()) {
+                                            // Use direct file URL (kemono.cr) for preview
+                                            val previewUrl = "https://kemono.cr${file.path}"
+
                                             when {
                                                 isAudio -> {
                                                     com.example.kemono.ui.components.AudioPlayer(
@@ -199,12 +224,19 @@ fun PostScreen(
                                                 }
                                                 isPsd -> {
                                                     if (!file.thumbnailPath.isNullOrEmpty()) {
-                                                        val thumbnailUrl = "https://kemono.su${file.thumbnailPath}"
+                                                        // Try loading the PSD file directly if supported, or fallback
+                                                        val thumbnailUrl = "https://kemono.cr${file.path}"
                                                         Box(modifier = Modifier.fillMaxWidth()) {
                                                             AsyncImage(
                                                                 model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                                     .data(thumbnailUrl)
                                                                     .crossfade(true)
+                                                                    .apply {
+                                                                        if (!autoplayGifs) {
+                                                                            decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                                                            memoryCacheKey(thumbnailUrl + "_static")
+                                                                        }
+                                                                    }
                                                                     .build(),
                                                                 contentDescription = "PSD Thumbnail",
                                                                 modifier = Modifier
@@ -264,8 +296,14 @@ fun PostScreen(
                                                 else -> {
                                                 AsyncImage(
                                                         model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                                            .data(url)
+                                                            .data(previewUrl)
                                                             .crossfade(mediaType != com.example.kemono.util.MediaType.GIF)
+                                                            .apply {
+                                                                if (!autoplayGifs) {
+                                                                    decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                                                    memoryCacheKey(previewUrl + "_static")
+                                                                }
+                                                            }
                                                             .build(),
                                                         contentDescription = null,
                                                         modifier =
@@ -317,7 +355,7 @@ fun PostScreen(
                                 items(currentPost.attachments.size) { index ->
                                     val attachment = currentPost.attachments[index]
                                     if (!attachment.path.isNullOrEmpty()) {
-                                        val url = "https://kemono.su${attachment.path}"
+                                        val url = "https://kemono.cr${attachment.path}"
                                         val mediaType =
                                                 com.example.kemono.util.getMediaType(
                                                         attachment.path
@@ -331,6 +369,9 @@ fun PostScreen(
                                         val globalIndex = index + (if (mainFileExists) 1 else 0)
 
                                         Column {
+                                            // Use direct file URL (kemono.cr) for preview
+                                            val previewUrl = "https://kemono.cr${attachment.path}"
+
                                             when {
                                                 isAudio -> {
                                                     com.example.kemono.ui.components.AudioPlayer(
@@ -348,12 +389,18 @@ fun PostScreen(
                                                 }
                                                 isPsd -> {
                                                     if (!attachment.thumbnailPath.isNullOrEmpty()) {
-                                                        val thumbnailUrl = "https://kemono.su${attachment.thumbnailPath}"
+                                                        val thumbnailUrl = "https://kemono.cr${attachment.path}"
                                                         Box(modifier = Modifier.fillMaxWidth()) {
                                                             AsyncImage(
                                                                 model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                                     .data(thumbnailUrl)
                                                                     .crossfade(true)
+                                                                    .apply {
+                                                                        if (!autoplayGifs) {
+                                                                            decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                                                            memoryCacheKey(thumbnailUrl + "_static")
+                                                                        }
+                                                                    }
                                                                     .build(),
                                                                 contentDescription = "PSD Thumbnail",
                                                                 modifier = Modifier
@@ -414,8 +461,14 @@ fun PostScreen(
                                                 else -> {
                                                 AsyncImage(
                                                         model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                                            .data(url)
+                                                            .data(previewUrl)
                                                             .crossfade(mediaType != com.example.kemono.util.MediaType.GIF)
+                                                            .apply {
+                                                                if (!autoplayGifs) {
+                                                                    decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                                                    memoryCacheKey(previewUrl + "_static")
+                                                                }
+                                                            }
                                                             .build(),
                                                         contentDescription = attachment.name,
                                                         modifier =

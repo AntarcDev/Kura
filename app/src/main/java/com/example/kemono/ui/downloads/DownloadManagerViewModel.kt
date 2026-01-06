@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.kemono.data.model.DownloadedItem
 import com.example.kemono.data.repository.DownloadRepository
 import com.example.kemono.data.repository.DownloadStatus
+import com.example.kemono.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -17,11 +18,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-data class DownloadItemUiState(val item: DownloadedItem, val status: DownloadStatus? = null)
-
 @HiltViewModel
-class DownloadManagerViewModel @Inject constructor(private val repository: DownloadRepository) :
-        ViewModel() {
+class DownloadManagerViewModel @Inject constructor(
+    private val repository: DownloadRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+
+    val layoutMode = settingsRepository.downloadLayoutMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "List")
+        
+    val gridDensity = settingsRepository.gridDensity
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Medium")
 
     private val _downloadStatuses = MutableStateFlow<Map<Long, DownloadStatus>>(emptyMap())
 
@@ -73,3 +80,8 @@ class DownloadManagerViewModel @Inject constructor(private val repository: Downl
         }
     }
 }
+
+data class DownloadItemUiState(
+    val item: DownloadedItem,
+    val status: DownloadStatus?
+)

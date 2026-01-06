@@ -31,6 +31,12 @@ class UpdateRepository @Inject constructor(
             } else {
                 Result.success(null)
             }
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 404) {
+                Result.success(null)
+            } else {
+                Result.failure(e)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

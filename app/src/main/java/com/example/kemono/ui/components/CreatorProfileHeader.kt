@@ -22,12 +22,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Creator
+import com.example.kemono.util.ServiceMapper
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun CreatorProfileHeader(
     creator: Creator,
     isFavorite: Boolean,
-    onFavoriteClick: () -> Unit
+    onFavoriteClick: () -> Unit,
+    autoplayGifs: Boolean = true
 ) {
     Box(
         modifier = Modifier
@@ -36,7 +39,16 @@ fun CreatorProfileHeader(
     ) {
         // Banner Background
         AsyncImage(
-            model = "https://kemono.su/banners/${creator.service}/${creator.id}",
+            model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                .data("https://kemono.cr/banners/${creator.service}/${creator.id}")
+                .crossfade(true)
+                .apply {
+                    if (!autoplayGifs) {
+                        decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                        memoryCacheKey("https://kemono.cr/banners/${creator.service}/${creator.id}" + "_static")
+                    }
+                }
+                .build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize(),
@@ -75,7 +87,16 @@ fun CreatorProfileHeader(
         ) {
             Box(contentAlignment = Alignment.TopEnd) {
                 AsyncImage(
-                    model = "https://kemono.cr/icons/${creator.service}/${creator.id}",
+                    model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                        .data("https://kemono.cr/icons/${creator.service}/${creator.id}")
+                        .crossfade(true)
+                        .apply {
+                            if (!autoplayGifs) {
+                                decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                memoryCacheKey("https://kemono.cr/icons/${creator.service}/${creator.id}" + "_static")
+                            }
+                        }
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier
                         .size(80.dp)
@@ -83,19 +104,27 @@ fun CreatorProfileHeader(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentScale = ContentScale.Crop
                 )
-                IconButton(
-                    onClick = onFavoriteClick,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .offset(x = 4.dp, y = (-4).dp)
-                        .align(Alignment.TopEnd)
-                ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
-                    )
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp)) {
+                    IconButton(
+                        onClick = onFavoriteClick,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    if ((creator.favorited ?: 0) > 0) {
+                        Text(
+                            text = "${creator.favorited}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             
@@ -108,11 +137,19 @@ fun CreatorProfileHeader(
                 color = MaterialTheme.colorScheme.onBackground
             )
             
-            Text(
-                text = "${creator.service} • ID: ${creator.id}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = ServiceMapper.getDisplayName(creator.service),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = ServiceMapper.getServiceColor(creator.service),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = " • ID: ${creator.id}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

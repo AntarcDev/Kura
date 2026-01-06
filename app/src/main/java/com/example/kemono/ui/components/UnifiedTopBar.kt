@@ -12,8 +12,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.History
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,144 +60,182 @@ fun UnifiedTopBar(
     onFilterSelected: (String) -> Unit = {},
     onFilterClick: (() -> Unit)? = null,
     onTagsClick: (() -> Unit)? = null,
-    placeholderText: String = "Search..."
+    placeholderText: String = "Search...",
+    
+    // Search History
+    searchHistory: List<com.example.kemono.data.model.SearchHistory> = emptyList(),
+    onHistoryItemClick: (String) -> Unit = {},
+    onHistoryItemRemove: (String) -> Unit = {},
+    onClearHistory: () -> Unit = {},
+
+    trailingContent: @Composable (() -> Unit)? = null,
+    actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showHistory by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
-    TopAppBar(
+    androidx.compose.material3.CenterAlignedTopAppBar(
         title = {
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = { Text(placeholderText) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 8.dp),
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = {
-                            onQueryChange("")
-                            onClearSearch()
-                            focusManager.clearFocus()
-                        }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear")
-                        }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = {
-                    onSearch()
-                    focusManager.clearFocus()
-                })
-            )
-        },
-        actions = {
-            if (sortOptions.isNotEmpty() || filterOptions.isNotEmpty() || onFilterClick != null) {
-                IconButton(onClick = { 
-                    if (onFilterClick != null) {
-                        onFilterClick()
-                    } else {
-                        showMenu = true 
-                    }
-                }) {
-                    Icon(Icons.Default.FilterList, contentDescription = "Filter & Sort")
-                }
-                
-                if (onTagsClick != null) {
-                    IconButton(onClick = onTagsClick) {
-                        // Use a label or tag icon. Icons.Default.Label is good.
-                        // Or AutoMirrored.List if Label isn't available, but Label should be.
-                        // Let's use a generic icon if needed, but Label is standard.
-                        // If Label is not imported, I might need to import it.
-                        // I'll use Icons.Default.Check for now as a placeholder if I'm unsure, 
-                        // but actually I should use a proper icon. 
-                        // Let's assume Icons.Default.Info or similar if Label is missing, 
-                        // but I'll try to use a specific one.
-                        // Actually, let's use Icons.Default.Search for tags? No.
-                        // Let's use Icons.Default.Menu? No.
-                        // I'll use Icons.Default.FilterList for the main filter, and maybe Icons.Default.List for tags?
-                        // Or just text "Tags"?
-                        // Let's use Icons.Default.Add for now, or better, import Icons.Default.Label.
-                        // I will add the import in a separate block if needed, but for now I'll use Icons.Default.Check as I know it's there, 
-                        // and then swap it or use a text button.
-                        // Actually, let's just use Text "Tags" inside an IconButton? No, that's ugly.
-                        // I'll use Icons.Default.Build (Settings-like) or similar.
-                        // Wait, I can just use Icons.Default.Star for favorites...
-                        // Let's use Icons.Default.Add as a placeholder for "Add Tags".
-                        Icon(Icons.Default.Add, contentDescription = "Tags")
-                    }
-                }
-                
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    if (sortOptions.isNotEmpty()) {
-                        DropdownMenuItem(
-                            text = { Text("Sort By", style = MaterialTheme.typography.labelLarge) },
-                            onClick = { }
-                        )
-                        sortOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { 
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(option)
-                                        if (option == selectedSort) {
-                                            // Checkmark or bold?
-                                            // For now just text
+            androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { 
+                        onQueryChange(it)
+                        showHistory = true 
+                    },
+                    placeholder = { Text(placeholderText) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { showHistory = it.isFocused },
+                    singleLine = true,
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    },
+                    trailingIcon = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    onQueryChange("")
+                                    onClearSearch()
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear")
+                                }
+                            }
+                            
+                            // Filter Logic inside Search Bar
+                            if (sortOptions.isNotEmpty() || filterOptions.isNotEmpty() || onFilterClick != null) {
+                                IconButton(onClick = { 
+                                    if (onFilterClick != null) {
+                                        onFilterClick()
+                                    } else {
+                                        showMenu = true 
+                                    }
+                                }) {
+                                    Icon(Icons.Default.FilterList, contentDescription = "Filter & Sort")
+                                }
+                                
+                                if (onTagsClick != null) {
+                                  IconButton(onClick = onTagsClick) {
+                                      Icon(Icons.Default.List, contentDescription = "Tags")
+                                  }
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }
+                                ) {
+                                    if (sortOptions.isNotEmpty()) {
+                                        DropdownMenuItem(
+                                            text = { Text("Sort By", style = MaterialTheme.typography.labelLarge) },
+                                            onClick = { }
+                                        )
+                                        sortOptions.forEach { option ->
+                                            DropdownMenuItem(
+                                                text = { 
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Text(option)
+                                                    }
+                                                },
+                                                onClick = {
+                                                    onSortSelected(option)
+                                                    showMenu = false
+                                                },
+                                                trailingIcon = if (option == selectedSort) {
+                                                    { Icon(Icons.Default.Check, contentDescription = "Selected") }
+                                                } else null
+                                            )
                                         }
                                     }
-                                },
-                                onClick = {
-                                    onSortSelected(option)
-                                    showMenu = false
-                                },
-                                trailingIcon = if (option == selectedSort) {
-                                    { Icon(Icons.Default.Check, contentDescription = "Selected") }
-                                } else null
-                            )
-                        }
-                    }
-                    
-                    if (sortOptions.isNotEmpty() && filterOptions.isNotEmpty()) {
-                        androidx.compose.material3.HorizontalDivider()
-                    }
+                                    
+                                    if (sortOptions.isNotEmpty() && filterOptions.isNotEmpty()) {
+                                        androidx.compose.material3.HorizontalDivider()
+                                    }
 
-                    if (filterOptions.isNotEmpty()) {
-                        DropdownMenuItem(
-                            text = { Text("Filter By", style = MaterialTheme.typography.labelLarge) },
-                            onClick = { }
-                        )
-                        filterOptions.forEach { option ->
-                            val isSelected = selectedFilters.contains(option)
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    onFilterSelected(option)
-                                    // Don't close menu for multi-select filters?
-                                    // User might want to select multiple.
-                                    // But standard dropdown closes. Let's keep it simple for now.
-                                },
-                                trailingIcon = if (isSelected) {
-                                    { Icon(Icons.Default.Check, contentDescription = "Selected") }
-                                } else null
-                            )
+                                    if (filterOptions.isNotEmpty()) {
+                                        DropdownMenuItem(
+                                            text = { Text("Filter By", style = MaterialTheme.typography.labelLarge) },
+                                            onClick = { }
+                                        )
+                                        filterOptions.forEach { option ->
+                                            val isSelected = selectedFilters.contains(option)
+                                            DropdownMenuItem(
+                                                text = { Text(option) },
+                                                onClick = {
+                                                    onFilterSelected(option)
+                                                },
+                                                trailingIcon = if (isSelected) {
+                                                    { Icon(Icons.Default.Check, contentDescription = "Selected") }
+                                                } else null
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Extra Content (e.g. Sync button)
+                            trailingContent?.invoke()
                         }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = {
+                        onSearch()
+                        showHistory = false
+                        focusManager.clearFocus()
+                    })
+                )
+
+                DropdownMenu(
+                    expanded = showHistory && searchHistory.isNotEmpty() && query.isEmpty(), // Show when focused and empty (recent history)
+                    onDismissRequest = { showHistory = false },
+                    properties = androidx.compose.ui.window.PopupProperties(focusable = false),
+                    modifier = Modifier.fillMaxWidth(0.9f).align(Alignment.Center)
+                ) {
+                     searchHistory.forEach { apiHistory ->
+                        DropdownMenuItem(
+                            text = { 
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(apiHistory.query, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                            },
+                            onClick = {
+                                onHistoryItemClick(apiHistory.query)
+                                showHistory = false
+                                focusManager.clearFocus()
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = { onHistoryItemRemove(apiHistory.query) }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Remove", modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        )
                     }
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                "Clear Search History", 
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelMedium
+                            ) 
+                        },
+                        onClick = {
+                            onClearHistory()
+                            showHistory = false
+                        }
+                    )
                 }
             }
-        }
+        },
+        actions = actions
     )
 }

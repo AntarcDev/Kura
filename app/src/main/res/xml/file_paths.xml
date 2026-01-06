@@ -2,4 +2,5 @@
 <paths>
     <cache-path name="updates" path="updates/" />
     <external-cache-path name="updates" path="updates/" />
+    <files-path name="crash_logs" path="crash_logs/" />
 </paths>
