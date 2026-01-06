@@ -113,3 +113,6 @@ build_log.txt
 /*.json
 /*.txt
 
+# Agent
+.agent/
+
