@@ -6,8 +6,10 @@
 
 **Kura** (蔵) is a native Android client for Kemono. It provides a mobile interface for content discovery, metadata indexing, and media archival via the Kemono API.
 
-**Note**: First of all I made this for my own use and I'm not a professional developer. This is a work in progress and has a lot of room for improvement. Updates can and will break the app or some functions. Use at your own risk!
+
 ---
+
+**Note**: First of all I made this for my own use and I'm not a professional developer. This is a work in progress and has a lot of room for improvement. Updates can and will break the app or some functions. Use at your own risk!
 
 ## Features
 
