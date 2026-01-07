@@ -38,7 +38,7 @@ fun PrivacyPolicyScreen(
 
         PrivacyItem(
             title = "Local Data Storage",
-            description = "All application data, including your search history, favorites, and settings, is stored locally on your device. When you uninstall the app, this data is deleted."
+            description = "All application data, including your search history, favorites, and settings, is stored locally on your device, (unless you decide to log into a kemono account). When you uninstall the app, this data is deleted."
         )
 
         PrivacyItem(
@@ -53,7 +53,7 @@ fun PrivacyPolicyScreen(
         
         PrivacyItem(
             title = "Login Credentials",
-            description = "When you log in, the app stores your session cookie securely on your device. This cookie is only used to authenticate requests with kemono.cr."
+            description = "When you log in, the app stores your session cookie securely on your device. This cookie is only used to authenticate requests with kemono."
         )
     }
 }

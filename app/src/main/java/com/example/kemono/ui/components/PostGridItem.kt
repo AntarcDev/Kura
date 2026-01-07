@@ -2,8 +2,10 @@ package com.example.kemono.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -34,6 +37,7 @@ import com.example.kemono.data.model.Post
 import com.example.kemono.util.ServiceMapper
 import androidx.compose.material.icons.filled.AttachFile
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun PostGridItem(
     post: Post,
@@ -42,14 +46,16 @@ fun PostGridItem(
     onLongClick: () -> Unit,
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {},
-    autoplayGifs: Boolean = true
+    autoplayGifs: Boolean = true,
+    showCreator: Boolean = false,
+    onCreatorClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
+            .combinedClickable(
                 onClick = onClick,
-//                onLongClick = onLongClick // TODO: Add if LongPress is needed in Grid
+                onLongClick = onLongClick
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
@@ -171,24 +177,39 @@ fun PostGridItem(
                                 fontSize = 10.sp
                             )
                         }
-                     }
-                 }
+                    }
+                }
                 
-                 // Favorite Button (Bottom Right)
-                 androidx.compose.material3.IconButton(
-                    onClick = onFavoriteClick,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .align(Alignment.BottomEnd)
+                // Buttons Overlay (Bottom Right)
+                Row(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    androidx.compose.material3.Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
-                         // Add shadow for visibility? Or relying on overlay might be safer if image is light. 
-                         // Let's rely on tint change for now.
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (showCreator) {
+                        androidx.compose.material3.IconButton(
+                            onClick = onCreatorClick,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "View Creator",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp) // Matched size
+                            )
+                        }
+                    }
+                    
+                    androidx.compose.material3.IconButton(
+                        onClick = onFavoriteClick,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        androidx.compose.material3.Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
             

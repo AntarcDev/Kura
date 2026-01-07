@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kemono.data.model.Creator
 import com.example.kemono.ui.components.CreatorTile
+import com.example.kemono.ui.components.SelectionTopAppBar
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,9 @@ fun FavoritesScreen(
     val layoutMode by viewModel.layoutMode.collectAsState()
     val gridDensity by viewModel.gridDensity.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val selectedPostIds by viewModel.selectedPostIds.collectAsState()
 
     val minSize = when (gridDensity) {
         "Small" -> 120.dp
@@ -56,19 +60,27 @@ fun FavoritesScreen(
 
     Scaffold(
             topBar = {
-                Column {
-                    com.example.kemono.ui.components.UnifiedTopBar(
-                        query = searchQuery,
-                        onQueryChange = viewModel::onSearchQueryChange,
-                        onClearSearch = { viewModel.onSearchQueryChange("") }
+                if (isSelectionMode) {
+                    SelectionTopAppBar(
+                        selectedCount = selectedPostIds.size,
+                        onClearSelection = viewModel::clearSelection,
+                        onDownloadSelected = viewModel::downloadSelectedPosts
                     )
-                    TabRow(selectedTabIndex = selectedTab) {
-                        titles.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTab == index,
-                                onClick = { selectedTab = index },
-                                text = { Text(title) }
-                            )
+                } else {
+                    Column {
+                        com.example.kemono.ui.components.UnifiedTopBar(
+                            query = searchQuery,
+                            onQueryChange = viewModel::onSearchQueryChange,
+                            onClearSearch = { viewModel.onSearchQueryChange("") }
+                        )
+                        TabRow(selectedTabIndex = selectedTab) {
+                            titles.forEachIndexed { index, title ->
+                                Tab(
+                                    selected = selectedTab == index,
+                                    onClick = { selectedTab = index },
+                                    text = { Text(title) }
+                                )
+                            }
                         }
                     }
                 }
@@ -152,12 +164,31 @@ fun FavoritesScreen(
                                 )
                                 com.example.kemono.ui.components.PostGridItem(
                                     post = post,
-                                    selected = false,
-                                    onClick = { onPostClick(post) }, 
-                                    onLongClick = { viewModel.toggleFavoritePost(post) },
+                                    selected = selectedPostIds.contains(post.id),
+                                    onClick = { 
+                                        if (isSelectionMode) {
+                                            viewModel.toggleSelection(post)
+                                        } else {
+                                            onPostClick(post)
+                                        }
+                                    }, 
+                                    onLongClick = { viewModel.toggleSelection(post) },
                                     isFavorite = true,
                                     onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                    autoplayGifs = autoplayGifs
+                                    autoplayGifs = autoplayGifs,
+                                    showCreator = true,
+                                    onCreatorClick = { 
+                                        if (post.user != null) {
+                                             val creator = com.example.kemono.data.model.Creator(
+                                                id = post.user,
+                                                service = post.service ?: "",
+                                                name = "Unknown", // Ideally we be able to navigate even without name
+                                                indexed = 0,
+                                                updated = 0
+                                            )
+                                            onCreatorClick(creator)
+                                        }
+                                    }
                                 )
                             }
                         }

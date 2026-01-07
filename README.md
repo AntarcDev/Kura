@@ -9,6 +9,8 @@
 
 ---
 
+**WARNING**: Versions prior 0.8 are broken due to domain changes. Please update to the latest version.
+
 **Note**: First of all I made this for my own use and I'm not a professional developer. This is a work in progress and has a lot of room for improvement. Updates can and will break the app or some functions. Use at your own risk!
 
 ## Features
@@ -17,7 +19,7 @@
 *   **Unified Search**: Search for creators by name or ID with a debounced, lag-free interface.
 *   **Rich Creator Profiles**: View detailed stats, banners, announcements, tags, and linked accounts with tile-based navigation.
 *   **Dynamic Layouts**: Switch between compact grids for speed or comfortable lists for detail.
-*   **Advanced Sorting & Filtering**: Sort by popularity, date, or name; filter by service with color-coded toggles.
+*   **Advanced Sorting & Filtering**: Sort by popularity, date, or name; filter tags or by service with color-coded toggles.
 *   **Optimized Performance**: Efficiently handles 100k+ artists using stream parsing and batch caching.
 
 ### Intelligent Archiving

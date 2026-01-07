@@ -336,7 +336,18 @@ fun CreatorScreen(
                                             },
                                             isFavorite = favoritePostIds.contains(post.id),
                                             onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                            autoplayGifs = autoplayGifs
+                                            autoplayGifs = autoplayGifs,
+                                            showCreator = true,
+                                            onCreatorClick = {
+                                                 val creator = com.example.kemono.data.model.Creator(
+                                                    id = post.user ?: "",
+                                                    service = post.service ?: "",
+                                                    name = "Unknown",
+                                                    updated = 0,
+                                                    indexed = 0
+                                                )
+                                                onCreatorClick(creator)
+                                            }
                                         )
                                     }
                                     if (isLoading && posts.isNotEmpty()) {

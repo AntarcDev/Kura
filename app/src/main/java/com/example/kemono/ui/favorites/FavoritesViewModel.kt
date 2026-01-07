@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val repository: KemonoRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val downloadRepository: com.example.kemono.data.repository.DownloadRepository
 ) : ViewModel() {
 
     val layoutMode = settingsRepository.favoriteLayoutMode
@@ -80,5 +81,86 @@ class FavoritesViewModel @Inject constructor(
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    // Selection State
+    private val _selectedPostIds = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
+    val selectedPostIds: StateFlow<Set<String>> = _selectedPostIds.asStateFlow()
+
+    private val _isSelectionMode = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
+
+    fun toggleSelection(post: com.example.kemono.data.model.Post) {
+        val current = _selectedPostIds.value
+        val postId = post.id ?: return
+        if (current.contains(postId)) {
+            _selectedPostIds.value = current - postId
+            if (_selectedPostIds.value.isEmpty()) {
+                _isSelectionMode.value = false
+            }
+        } else {
+            _selectedPostIds.value = current + postId
+            _isSelectionMode.value = true
+        }
+    }
+
+    fun clearSelection() {
+        _selectedPostIds.value = emptySet()
+        _isSelectionMode.value = false
+    }
+
+    fun downloadSelectedPosts() {
+        val selectedIds = _selectedPostIds.value
+        val allFavorites = favoritePosts.value
+        val postsToDownload = allFavorites.filter { it.id in selectedIds }
+        
+        viewModelScope.launch {
+            postsToDownload.forEach { favPost ->
+                try {
+                    // Fetch full post to get file/attachment details
+                    if (favPost.service.isNotBlank() && !favPost.user.isNullOrBlank() && favPost.id.isNotBlank()) {
+                         val fullPost = repository.getPost(favPost.service, favPost.user, favPost.id)
+                         val creatorName = fullPost.user // or favPost.user name lookup? FullPost has user ID usually.
+                         // Actually Post.user is often the creator ID. Name might need lookup or just use ID.
+
+                         fullPost.file?.let { file ->
+                            if (!file.path.isNullOrEmpty()) {
+                                val url = "https://kemono.cr${file.path}"
+                                val mediaType = if (com.example.kemono.util.getMediaType(file.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                downloadRepository.downloadFile(
+                                    url,
+                                    file.name ?: "file",
+                                    fullPost.id ?: "",
+                                    fullPost.title ?: "",
+                                    fullPost.user ?: "",
+                                    creatorName ?: "",
+                                    mediaType
+                                )
+                            }
+                        }
+
+                        fullPost.attachments.forEach { attachment ->
+                            if (!attachment.path.isNullOrEmpty()) {
+                                val url = "https://kemono.cr${attachment.path}"
+                                val mediaType = if (com.example.kemono.util.getMediaType(attachment.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                                downloadRepository.downloadFile(
+                                    url,
+                                    attachment.name ?: "attachment",
+                                    fullPost.id ?: "",
+                                    fullPost.title ?: "",
+                                    fullPost.user ?: "",
+                                    creatorName ?: "",
+                                    mediaType
+                                )
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Log or handle error (e.g. offline and not cached)
+                    e.printStackTrace()
+                }
+            }
+            clearSelection()
+        }
     }
 }

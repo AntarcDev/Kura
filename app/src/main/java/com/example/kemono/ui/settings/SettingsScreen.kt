@@ -43,6 +43,7 @@ fun SettingsScreen(
     onLoginClick: () -> Unit
 ) {
     var currentRoute by remember { mutableStateOf(SettingsRoute.Main) }
+    var showLayoutDialog by remember { mutableStateOf(false) }
     
     val updateAvailable by viewModel.updateAvailable.collectAsState()
     val downloadProgress by viewModel.downloadProgress.collectAsState()
@@ -213,7 +214,7 @@ fun SettingsAccount(
              SettingsCategoryItem(
                  icon = Icons.Default.Person,
                  title = "Log In",
-                 subtitle = "Connect your kemono.su account",
+                 subtitle = "Connect your kemono.cr account",
                  onClick = onLoginClick
             )
         }
@@ -224,7 +225,7 @@ fun SettingsAccount(
             Text(text = "Favorites Synchronization", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             
             Text(
-                text = "Sync favorite artists between the app and your kemono.su account.",
+                text = "Sync favorite artists between the app and your kemono.cr account.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -651,7 +652,9 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
                 Text("Save Cookie")
             }
 
-            if (hasSession) {
+
+
+    if (hasSession) {
                 OutlinedButton(
                     onClick = { 
                         viewModel.clearSession()

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -87,6 +88,8 @@ fun CreatorPostListScreen(
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
     val favoritePostIds by viewModel.favoritePostIds.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    val postLayoutMode by settingsViewModel.postLayoutMode.collectAsState()
+    val gridDensity by settingsViewModel.gridDensity.collectAsState()
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var selectedFancard by remember { mutableStateOf<Fancard?>(null) }
@@ -183,37 +186,76 @@ fun CreatorPostListScreen(
                                         onChannelSelect = viewModel::selectChannel
                                     )
                                 } else {
-                                    LazyColumn(
-                                        contentPadding = PaddingValues(bottom = 16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
-                                            if (index >= posts.size - 1) {
-                                                LaunchedEffect(Unit) {
-                                                    viewModel.loadMorePosts()
-                                                }
-                                            }
-                                            PostItem(
-                                                post = post,
-                                                selected = selectedPostIds.contains(post.id),
-                                                onClick = { 
-                                                    if (isSelectionMode) {
-                                                        viewModel.toggleSelection(post)
-                                                    } else {
-                                                        onPostClick(post)
+                                    if (postLayoutMode == "Grid") {
+                                        val minSize = when (gridDensity) {
+                                            "Small" -> 120.dp
+                                            "Large" -> 200.dp
+                                            else -> 150.dp
+                                        }
+                                        LazyVerticalGrid(
+                                            columns = GridCells.Adaptive(minSize),
+                                            contentPadding = PaddingValues(16.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
+                                                if (index >= posts.size - 1) {
+                                                    LaunchedEffect(Unit) {
+                                                        viewModel.loadMorePosts()
                                                     }
-                                                },
-                                                onLongClick = {
-                                                    viewModel.toggleSelection(post)
-                                                },
-                                                onCreatorClick = {},
-                                                showCreator = false,
-                                                isFavorite = favoritePostIds.contains(post.id),
-                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                                autoplayGifs = autoplayGifs,
-                                                showService = false
-                                            )
+                                                }
+                                                com.example.kemono.ui.components.PostGridItem(
+                                                    post = post,
+                                                    selected = selectedPostIds.contains(post.id),
+                                                    onClick = { 
+                                                        if (isSelectionMode) {
+                                                            viewModel.toggleSelection(post)
+                                                        } else {
+                                                            onPostClick(post)
+                                                        }
+                                                    },
+                                                    onLongClick = { viewModel.toggleSelection(post) },
+                                                    isFavorite = favoritePostIds.contains(post.id),
+                                                    onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    autoplayGifs = autoplayGifs,
+                                                    showCreator = false // Already on profile
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        LazyColumn(
+                                            contentPadding = PaddingValues(bottom = 16.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
+                                                if (index >= posts.size - 1) {
+                                                    LaunchedEffect(Unit) {
+                                                        viewModel.loadMorePosts()
+                                                    }
+                                                }
+                                                PostItem(
+                                                    post = post,
+                                                    selected = selectedPostIds.contains(post.id),
+                                                    onClick = { 
+                                                        if (isSelectionMode) {
+                                                            viewModel.toggleSelection(post)
+                                                        } else {
+                                                            onPostClick(post)
+                                                        }
+                                                    },
+                                                    onLongClick = {
+                                                        viewModel.toggleSelection(post)
+                                                    },
+                                                    onCreatorClick = {},
+                                                    showCreator = false,
+                                                    isFavorite = favoritePostIds.contains(post.id),
+                                                    onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    autoplayGifs = autoplayGifs,
+                                                    showService = false
+                                                )
+                                            }
                                         }
                                     }
                                 }
