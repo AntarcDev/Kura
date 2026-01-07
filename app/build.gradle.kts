@@ -13,8 +13,8 @@ android {
         applicationId = "com.antarc.kura"
         minSdk = 24
         targetSdk = 34
-        versionCode = 5
-        versionName = "0.7"
+        versionCode = 6
+        versionName = "0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
