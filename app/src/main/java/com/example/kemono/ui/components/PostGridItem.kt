@@ -38,6 +38,19 @@ import com.example.kemono.util.ServiceMapper
 import androidx.compose.material.icons.filled.AttachFile
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+/**
+ * A grid item composable representing a single post.
+ *
+ * @param post The post data to display.
+ * @param selected Whether the item is currently selected in multi-select mode.
+ * @param onClick Callback when the item is clicked.
+ * @param onLongClick Callback when the item is long-clicked.
+ * @param isFavorite Whether the post is marked as a favorite.
+ * @param onFavoriteClick Callback when the favorite button is clicked.
+ * @param autoplayGifs Whether GIFs should autoplay.
+ * @param showCreator Whether to show the creator's avatar/button (used in Global/Favorite grids).
+ * @param onCreatorClick Callback when the creator button is clicked.
+ */
 @Composable
 fun PostGridItem(
     post: Post,
