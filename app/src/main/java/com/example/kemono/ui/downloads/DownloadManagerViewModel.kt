@@ -30,7 +30,7 @@ class DownloadManagerViewModel @Inject constructor(
     val gridDensity = settingsRepository.gridDensity
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Medium")
 
-    private val _downloadStatuses = MutableStateFlow<Map<Long, DownloadStatus>>(emptyMap())
+    private val _downloadStatuses = MutableStateFlow<Map<String, DownloadStatus>>(emptyMap())
 
     val downloadItems: StateFlow<List<DownloadItemUiState>> =
             combine(repository.getAllDownloadedItems(), _downloadStatuses) { items, statuses ->
@@ -50,7 +50,7 @@ class DownloadManagerViewModel @Inject constructor(
                 val currentItems = downloadItems.value
                 val activeDownloads =
                         currentItems.filter {
-                            it.item.downloadId != -1L &&
+                            it.item.downloadId.isNotEmpty() &&
                                     (it.status == null ||
                                             (it.status.status !=
                                                     DownloadManager.STATUS_SUCCESSFUL &&
@@ -73,7 +73,7 @@ class DownloadManagerViewModel @Inject constructor(
 
     fun deleteDownload(item: DownloadedItem) {
         viewModelScope.launch {
-            if (item.downloadId != -1L) {
+            if (item.downloadId.isNotEmpty()) {
                 repository.cancelDownload(item.downloadId)
             }
             repository.deleteDownloadedItem(item)

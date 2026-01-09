@@ -144,7 +144,7 @@ fun DownloadGridItem(
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(java.io.File(item.filePath))
+                            .data(item.filePath)
                     .videoFrameMillis(1000)
                     .build(),
                 contentDescription = null,
@@ -225,7 +225,7 @@ fun DownloadItemCard(uiState: DownloadItemUiState, onDelete: () -> Unit, onOpen:
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(java.io.File(item.filePath))
+                                    .data(item.filePath)
                             .videoFrameMillis(1000)
                             .build(),
                         contentDescription = null,

@@ -123,7 +123,7 @@ fun GalleryItem(item: DownloadedItem, onClick: () -> Unit) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(File(item.filePath))
+                    .data(item.filePath)
                     .videoFrameMillis(1000)
                     .build(),
                 contentDescription = item.fileName,

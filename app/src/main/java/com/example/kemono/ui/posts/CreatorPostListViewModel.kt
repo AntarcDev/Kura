@@ -52,13 +52,7 @@ class CreatorPostListViewModel @Inject constructor(
     private val _fancards = MutableStateFlow<List<com.example.kemono.data.model.Fancard>>(emptyList())
     val fancards: StateFlow<List<com.example.kemono.data.model.Fancard>> = _fancards.asStateFlow()
 
-    init {
-        fetchCreatorProfile()
-        fetchPosts(reset = true)
-        checkIfFavorite()
-        fetchProfileDetails()
-        observeFavoritePosts()
-    }
+
     
     // ... [Other methods unchanged]
 
@@ -385,5 +379,13 @@ class CreatorPostListViewModel @Inject constructor(
                 subFolder = subFolder
             )
         }
+    }
+
+    init {
+        fetchCreatorProfile()
+        fetchPosts(reset = true)
+        checkIfFavorite()
+        fetchProfileDetails()
+        observeFavoritePosts()
     }
 }

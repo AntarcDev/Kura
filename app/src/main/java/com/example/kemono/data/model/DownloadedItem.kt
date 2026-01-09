@@ -12,6 +12,6 @@ data class DownloadedItem(
         val fileName: String,
         val filePath: String,
         val mediaType: String, // "IMAGE" or "VIDEO"
-        val downloadId: Long = -1L,
+        val downloadId: String = "",
         val downloadedAt: Long = System.currentTimeMillis()
 )

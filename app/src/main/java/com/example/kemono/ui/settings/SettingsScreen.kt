@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
+import android.net.Uri
 import com.example.kemono.ui.components.UpdateDialog
 
 enum class SettingsRoute {
@@ -474,10 +478,19 @@ fun SettingsData(viewModel: SettingsViewModel) {
         )
 
         val downloadLocation by viewModel.downloadLocation.collectAsState()
+        
+        val folderPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocumentTree()) { uri ->
+            uri?.let {
+                val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(it, flags)
+                viewModel.setDownloadLocation(it.toString())
+            }
+        }
+
         SettingsItem(
             title = "Download Location",
-            subtitle = downloadLocation ?: "Default",
-            onClick = { /* TODO: Open folder picker */ }
+            subtitle = if (downloadLocation != null) Uri.decode(downloadLocation) else "Default (Downloads/Kemono)",
+            onClick = { folderPicker.launch(null) }
         )
 
         ListItem(

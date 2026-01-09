@@ -85,7 +85,7 @@ fun ImageViewerScreen(viewModel: ImageViewerViewModel = hiltViewModel(), onBackC
                         // Let's use ZoomableImage and if it's a video, show a play icon.
                         Box(modifier = Modifier.fillMaxSize()) {
                             ZoomableImage(
-                                    model = if (item.isLocal) File(item.url) else item.url,
+                                    model = item.url,
                                     contentDescription = item.name
                             )
                             // Play button overlay
@@ -105,10 +105,10 @@ fun ImageViewerScreen(viewModel: ImageViewerViewModel = hiltViewModel(), onBackC
                             )
                         }
                     } else {
-                        ZoomableImage(
-                                model = if (item.isLocal) File(item.url) else item.url,
-                                contentDescription = item.name
-                        )
+                            ZoomableImage(
+                                    model = item.url,
+                                    contentDescription = item.name
+                            )
                     }
                 }
             }

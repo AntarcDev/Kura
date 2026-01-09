@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     ksp(libs.hilt.compiler)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler.androidx)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
@@ -85,6 +87,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

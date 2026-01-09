@@ -15,5 +15,8 @@ interface DownloadDao {
     @Query("SELECT * FROM downloaded_items ORDER BY downloadedAt DESC")
     fun getAllDownloadedItems(): Flow<List<DownloadedItem>>
 
+    @Query("UPDATE downloaded_items SET filePath = :path WHERE downloadId = :workId")
+    suspend fun updateFilePath(workId: String, path: String)
+
     @Delete suspend fun delete(item: DownloadedItem)
 }
