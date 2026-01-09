@@ -56,6 +56,7 @@ fun CreatorScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
     val favoritePostIds by viewModel.favoritePostIds.collectAsState()
+    val downloadedPostIds by viewModel.downloadedPostIds.collectAsState()
     val error by viewModel.error.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -291,6 +292,7 @@ fun CreatorScreen(
                                             },
                                             isFavorite = favoritePostIds.contains(post.id),
                                             onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                            isDownloaded = downloadedPostIds.contains(post.id),
                                             autoplayGifs = autoplayGifs
                                         )
                                     }
@@ -336,6 +338,7 @@ fun CreatorScreen(
                                             },
                                             isFavorite = favoritePostIds.contains(post.id),
                                             onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                            isDownloaded = downloadedPostIds.contains(post.id),
                                             autoplayGifs = autoplayGifs,
                                             showCreator = true,
                                             onCreatorClick = {

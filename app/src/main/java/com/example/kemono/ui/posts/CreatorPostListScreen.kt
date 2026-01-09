@@ -86,7 +86,9 @@ fun CreatorPostListScreen(
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+
     val favoritePostIds by viewModel.favoritePostIds.collectAsState()
+    val downloadedPostIds by viewModel.downloadedPostIds.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
     val postLayoutMode by settingsViewModel.postLayoutMode.collectAsState()
     val gridDensity by settingsViewModel.gridDensity.collectAsState()
@@ -218,6 +220,7 @@ fun CreatorPostListScreen(
                                                     onLongClick = { viewModel.toggleSelection(post) },
                                                     isFavorite = favoritePostIds.contains(post.id),
                                                     onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    isDownloaded = downloadedPostIds.contains(post.id),
                                                     autoplayGifs = autoplayGifs,
                                                     showCreator = false // Already on profile
                                                 )
@@ -252,6 +255,7 @@ fun CreatorPostListScreen(
                                                     showCreator = false,
                                                     isFavorite = favoritePostIds.contains(post.id),
                                                     onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    isDownloaded = downloadedPostIds.contains(post.id),
                                                     autoplayGifs = autoplayGifs,
                                                     showService = false
                                                 )
@@ -465,7 +469,7 @@ fun FancardItem(
                 if (fancard.file?.path != null) {
                     // file.path usually starts with /data, so we just prepend /thumbnail
                     // e.g. /data/72/7b/... -> https://kemono.cr/thumbnail/data/72/7b/...
-                    val path = fancard.file.path
+                    val path = fancard.file.path!!
                     if (path.startsWith("/data")) {
                         "https://kemono.cr/thumbnail$path"
                     } else {

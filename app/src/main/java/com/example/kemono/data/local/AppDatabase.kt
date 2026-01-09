@@ -17,8 +17,9 @@ import com.example.kemono.data.model.SearchHistory
                         CachedCreator::class,
                         CachedPost::class,
                         DownloadedItem::class,
-                        SearchHistory::class],
-        version = 6,
+                        SearchHistory::class,
+                        BlacklistEntity::class],
+        version = 8,
         exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,4 +27,5 @@ abstract class AppDatabase : RoomDatabase() {
         abstract fun cacheDao(): CacheDao
         abstract fun downloadDao(): DownloadDao
         abstract fun searchHistoryDao(): SearchHistoryDao
+        abstract fun blacklistDao(): BlacklistDao
 }

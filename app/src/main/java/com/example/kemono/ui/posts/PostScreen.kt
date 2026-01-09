@@ -197,11 +197,12 @@ fun PostScreen(
                                 currentPost.file?.let { file ->
                                     if (!file.path.isNullOrEmpty()) {
                                         val url = "https://kemono.cr${file.path}"
-                                        val mediaType = com.example.kemono.util.getMediaType(file.path)
-                                        val extension = file.path.substringAfterLast('.', "").lowercase()
+                                        val mediaType = com.example.kemono.util.getMediaType(file.path!!)
+                                        val extension = file.path!!.substringAfterLast('.', "").lowercase()
                                         val isAudio = extension in listOf("mp3", "wav", "ogg", "m4a")
                                         val isArchive = extension in listOf("zip", "rar", "7z", "tar", "gz", "xz")
                                         val isPsd = extension == "psd"
+                                        val isClip = extension in listOf("clip", "csp")
                                         
                                         Box(modifier = Modifier.fillMaxWidth()) {
                                             // Use direct file URL (kemono.cr) for preview
@@ -258,8 +259,9 @@ fun PostScreen(
                                                             )
                                                         }
                                                     } else {
-                                                        com.example.kemono.ui.components.ArchiveCard(
+                                                    com.example.kemono.ui.components.FileCard(
                                                             fileName = file.name ?: "PSD File",
+                                                            path = file.path,
                                                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                                             onDownloadClick = {
                                                                 val safeFileName = (file.name ?: "file").take(50) + "." + extension
@@ -273,8 +275,9 @@ fun PostScreen(
                                                     }
                                                 }
                                                 isArchive -> {
-                                                    com.example.kemono.ui.components.ArchiveCard(
+                                                    com.example.kemono.ui.components.FileCard(
                                                         fileName = file.name ?: "Archive",
+                                                        path = file.path,
                                                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                                                         onDownloadClick = {
                                                             val safeFileName = (file.name ?: "file").take(50) + "." + extension
@@ -282,6 +285,21 @@ fun PostScreen(
                                                                 url = url,
                                                                 fileName = safeFileName,
                                                                 mediaType = "ARCHIVE"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                isClip -> {
+                                                    com.example.kemono.ui.components.FileCard(
+                                                        fileName = file.name ?: "CLIP File",
+                                                        path = file.path,
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (file.name ?: "file").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "IMAGE"
                                                             )
                                                         }
                                                     )
@@ -317,8 +335,8 @@ fun PostScreen(
                                                 }
                                             }
                                             
-                                            // Download button overlay (Only for non-audio, non-archive, and non-psd)
-                                            if (!isAudio && !isArchive && !isPsd) {
+                                            // Download button overlay (Only for non-audio, non-archive, non-psd, non-clip)
+                                            if (!isAudio && !isArchive && !isPsd && !isClip) {
                                                 IconButton(
                                                     onClick = { 
                                                         val safeFileName = (file.name ?: "file").take(50)
@@ -358,12 +376,13 @@ fun PostScreen(
                                         val url = "https://kemono.cr${attachment.path}"
                                         val mediaType =
                                                 com.example.kemono.util.getMediaType(
-                                                        attachment.path
+                                                        attachment.path!!
                                                 )
-                                        val extension = attachment.path.substringAfterLast('.', "").lowercase()
+                                        val extension = attachment.path!!.substringAfterLast('.', "").lowercase()
                                         val isAudio = extension in listOf("mp3", "wav", "ogg", "m4a")
                                         val isArchive = extension in listOf("zip", "rar", "7z", "tar", "gz", "xz")
                                         val isPsd = extension == "psd"
+                                        val isClip = extension in listOf("clip", "csp")
 
                                         val mainFileExists = !currentPost.file?.path.isNullOrEmpty()
                                         val globalIndex = index + (if (mainFileExists) 1 else 0)
@@ -421,8 +440,9 @@ fun PostScreen(
                                                             )
                                                         }
                                                     } else {
-                                                        com.example.kemono.ui.components.ArchiveCard(
+                                                    com.example.kemono.ui.components.FileCard(
                                                             fileName = attachment.name ?: "PSD File",
+                                                            path = attachment.path,
                                                             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                                             onDownloadClick = {
                                                                 val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
@@ -436,8 +456,9 @@ fun PostScreen(
                                                     }
                                                 }
                                                 isArchive -> {
-                                                    com.example.kemono.ui.components.ArchiveCard(
+                                                    com.example.kemono.ui.components.FileCard(
                                                         fileName = attachment.name ?: "Archive",
+                                                        path = attachment.path,
                                                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                                         onDownloadClick = {
                                                             val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
@@ -445,6 +466,21 @@ fun PostScreen(
                                                                 url = url,
                                                                 fileName = safeFileName,
                                                                 mediaType = "ARCHIVE"
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                isClip -> {
+                                                    com.example.kemono.ui.components.FileCard(
+                                                        fileName = attachment.name ?: "CLIP File",
+                                                        path = attachment.path,
+                                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                                        onDownloadClick = {
+                                                            val safeFileName = (attachment.name ?: "attachment").take(50) + "." + extension
+                                                            viewModel.downloadFile(
+                                                                url = url,
+                                                                fileName = safeFileName,
+                                                                mediaType = "IMAGE"
                                                             )
                                                         }
                                                     )
@@ -485,7 +521,7 @@ fun PostScreen(
                                                 }
                                             }
 
-                                            if (!isAudio && !isArchive && !isPsd) {
+                                            if (!isAudio && !isArchive && !isPsd && !isClip) {
                                                 Row(
                                                         modifier = Modifier.fillMaxWidth(),
                                                         horizontalArrangement = Arrangement.SpaceBetween,

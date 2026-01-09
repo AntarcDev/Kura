@@ -12,11 +12,12 @@ data class Post(
     val published: String? = null,
     val file: KemonoFile? = null,
     val attachments: List<KemonoFile> = emptyList(),
-    @SerializedName("fav_count") val favCount: Int? = 0
+    @SerializedName("fav_count") val favCount: Int? = 0,
+    val tags: List<String>? = null
 )
 
 data class KemonoFile(
-    val name: String,
-    val path: String,
+    val name: String? = null,
+    val path: String? = null,
     @SerializedName("thumbnail_path") val thumbnailPath: String? = null
 )

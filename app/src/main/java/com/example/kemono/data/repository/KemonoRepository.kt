@@ -27,6 +27,10 @@ import kotlinx.coroutines.coroutineScope
 import com.example.kemono.data.model.SearchHistory
 import com.example.kemono.data.local.SearchHistoryDao
 
+import com.example.kemono.data.local.BlacklistDao
+import com.example.kemono.data.local.BlacklistEntity
+import com.example.kemono.data.local.BlacklistType
+
 @Singleton
 class KemonoRepository
 @Inject
@@ -35,9 +39,11 @@ constructor(
         private val favoriteDao: FavoriteDao,
         private val cacheDao: CacheDao,
         private val searchHistoryDao: SearchHistoryDao,
+        private val blacklistDao: BlacklistDao,
         private val networkMonitor: com.example.kemono.util.NetworkMonitor
 ) {
     private val _loginEvent = kotlinx.coroutines.flow.MutableSharedFlow<Unit>()
+
     val loginEvent: Flow<Unit> = _loginEvent.asSharedFlow()
     
     // Account State
@@ -92,10 +98,11 @@ constructor(
     }
 
     suspend fun getCreators(): List<Creator> {
+        val blacklist = blacklistDao.getAllBlacklistedItems().first()
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) {
             return try {
-                cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                cacheDao.getAllCachedCreators().first().map { it.toCreator() }.filter { isCreatorAllowed(it, blacklist) }
             } catch (e: Exception) {
                 emptyList()
             }
@@ -127,11 +134,6 @@ constructor(
                     }
                     reader.endArray()
                 } else if (token == com.google.gson.stream.JsonToken.BEGIN_OBJECT) {
-                    // Try to find "creators" or "results" array inside object
-                    // This is complex for streaming, but we can do a simple check
-                    // For now, if it's an object, it might be an error or unexpected format.
-                    // Given we verified it's a list, we focus on that.
-                    // But to be robust:
                     val jsonObject = gson.fromJson<com.google.gson.JsonObject>(reader, com.google.gson.JsonObject::class.java)
                      val list = when {
                         jsonObject.has("creators") -> jsonObject.getAsJsonArray("creators")
@@ -154,15 +156,17 @@ constructor(
                         android.util.Log.e("KemonoRepo", "Failed to cache chunk: ${e.message}")
                     }
                 }
-                creators
+                creators.filter { isCreatorAllowed(it, blacklist) }
             } else {
                 // If parsing resulted in empty list but no exception, try cache
-                cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                val cached = cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                cached.filter { isCreatorAllowed(it, blacklist) }
             }
         } catch (e: Exception) {
             android.util.Log.e("KemonoRepo", "Failed to fetch creators: ${e.message}")
             try {
-                cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                val cached = cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                cached.filter { isCreatorAllowed(it, blacklist) }
             } catch (cacheError: Exception) {
                 // If cache fails too, rethrow original error to let ViewModel handle it
                throw e
@@ -195,13 +199,16 @@ constructor(
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList() // TODO: Implement caching for popular posts?
 
+        val blacklist = blacklistDao.getAllBlacklistedItems().first()
         val response = api.getPopularPosts(limit, date, period, offset)
-        return response.posts
+        return response.posts.filter { isPostAllowed(it, blacklist) }
     }
 
     suspend fun getRandomPosts(): List<Post> {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList()
+
+        val blacklist = blacklistDao.getAllBlacklistedItems().first()
 
         // Fetch 5 random posts in parallel
         return kotlinx.coroutines.coroutineScope {
@@ -215,7 +222,7 @@ constructor(
                         null
                     }
                 }
-            }.awaitAll().filterNotNull().filter { it.id != null }
+            }.awaitAll().filterNotNull().filter { it.id != null && isPostAllowed(it, blacklist) }
         }
     }
 
@@ -223,8 +230,9 @@ constructor(
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList()
 
+        val blacklist = blacklistDao.getAllBlacklistedItems().first()
         val response = api.getRecentPosts(limit, offset, query, tags)
-        return response.posts.filter { it.id != null }
+        return response.posts.filter { it.id != null && isPostAllowed(it, blacklist) }
     }
 
     suspend fun getCreatorProfile(service: String, creatorId: String): Creator {
@@ -266,12 +274,13 @@ constructor(
             offset: Int = 0,
             query: String? = null
     ): List<Post> {
+        val blacklist = blacklistDao.getAllBlacklistedItems().first()
         val isOnline = networkMonitor.isOnline.first()
 
         if (!isOnline) {
              if (offset == 0 && query == null) {
                  return try {
-                    cacheDao.getCachedPosts(service, creatorId).first().map { it.toPost() }
+                    cacheDao.getCachedPosts(service, creatorId).first().map { it.toPost() }.filter { isPostAllowed(it, blacklist) }
                  } catch (e: Exception) {
                      emptyList()
                  }
@@ -283,11 +292,11 @@ constructor(
         return try {
             val posts = api.getCreatorPosts(service, creatorId, limit, offset, query)
             cacheDao.cachePosts(posts.map { it.toCached() })
-            posts.filter { it.id != null }
+            posts.filter { it.id != null && isPostAllowed(it, blacklist) }
         } catch (e: Exception) {
             if (offset == 0 && query == null) {
                 try {
-                    cacheDao.getCachedPosts(service, creatorId).first().map { it.toPost() }
+                    cacheDao.getCachedPosts(service, creatorId).first().map { it.toPost() }.filter { isPostAllowed(it, blacklist) }
                 } catch (cacheError: Exception) {
                     throw e
                 }
@@ -542,5 +551,43 @@ constructor(
 
     suspend fun clearSearchHistory() {
         searchHistoryDao.clear()
+    }
+
+    // Blacklist
+    fun getAllBlacklistedItems(): Flow<List<BlacklistEntity>> {
+        return blacklistDao.getAllBlacklistedItems()
+    }
+
+    suspend fun addToBlacklist(item: BlacklistEntity) {
+        blacklistDao.addToBlacklist(item)
+    }
+
+    suspend fun removeFromBlacklist(item: BlacklistEntity) {
+        blacklistDao.removeFromBlacklist(item)
+    }
+
+    private fun isPostAllowed(post: Post, blacklist: List<BlacklistEntity>): Boolean {
+        val creatorBlacklisted = blacklist.any { it.type == BlacklistType.CREATOR && it.id == post.user }
+        if (creatorBlacklisted) return false
+
+        val postTags = post.tags.orEmpty()
+        val tagBlacklisted = blacklist.any { 
+             it.type == BlacklistType.TAG && postTags.any { tag -> tag.equals(it.id, ignoreCase = true) } 
+        }
+        if (tagBlacklisted) return false
+
+        val keywordBlacklisted = blacklist.any { 
+            it.type == BlacklistType.KEYWORD && (
+                (post.title?.contains(it.id, ignoreCase = true) == true) || 
+                (post.content?.contains(it.id, ignoreCase = true) == true)
+            )
+        }
+        if (keywordBlacklisted) return false
+
+        return true
+    }
+
+    private fun isCreatorAllowed(creator: Creator, blacklist: List<BlacklistEntity>): Boolean {
+        return blacklist.none { it.type == BlacklistType.CREATOR && it.id == creator.id }
     }
 }

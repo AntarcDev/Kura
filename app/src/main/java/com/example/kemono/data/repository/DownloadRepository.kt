@@ -90,6 +90,8 @@ constructor(
 
     fun getAllDownloadedItems() = downloadDao.getAllDownloadedItems()
 
+    fun getDownloadedPostIds() = downloadDao.getDownloadedPostIds()
+
     suspend fun deleteDownloadedItem(item: DownloadedItem) {
         downloadDao.delete(item)
     }

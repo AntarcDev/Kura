@@ -36,6 +36,7 @@ fun ProfileScreen(
     
     val favorites by viewModel.favorites.collectAsState()
     val favoritePosts by viewModel.favoritePosts.collectAsState()
+    val downloadedPostIds by viewModel.downloadedPostIds.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val layoutMode by viewModel.layoutMode.collectAsState()
     val gridDensity by viewModel.gridDensity.collectAsState()
@@ -201,6 +202,7 @@ fun ProfileScreen(
                                           onLongClick = { },
                                           isFavorite = true,
                                           onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                          isDownloaded = downloadedPostIds.contains(post.id),
                                           autoplayGifs = autoplayGifs
                                      )
                                  }
@@ -231,6 +233,7 @@ fun ProfileScreen(
                                             onLongClick = { viewModel.toggleFavoritePost(post) },
                                             isFavorite = true,
                                             onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                            isDownloaded = downloadedPostIds.contains(post.id),
                                             autoplayGifs = autoplayGifs
                                       )
                                   }

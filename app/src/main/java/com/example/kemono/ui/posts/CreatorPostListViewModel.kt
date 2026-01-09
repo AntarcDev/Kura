@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -142,6 +145,15 @@ class CreatorPostListViewModel @Inject constructor(
             }
         }
     }
+
+    // Downloaded Posts State
+    val downloadedPostIds: StateFlow<Set<String>> = downloadRepository.getDownloadedPostIds()
+        .map { it.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptySet()
+        )
 
     fun toggleFavoritePost(post: Post) {
         viewModelScope.launch {
@@ -313,7 +325,7 @@ class CreatorPostListViewModel @Inject constructor(
                 post.file?.let { file ->
                     if (!file.path.isNullOrEmpty()) {
                         val url = "https://kemono.cr${file.path}"
-                        val mediaType = if (com.example.kemono.util.getMediaType(file.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                        val mediaType = if (com.example.kemono.util.getMediaType(file.path!!) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
                             file.name ?: "file",
@@ -330,7 +342,7 @@ class CreatorPostListViewModel @Inject constructor(
                 post.attachments.forEach { attachment ->
                     if (!attachment.path.isNullOrEmpty()) {
                         val url = "https://kemono.cr${attachment.path}"
-                        val mediaType = if (com.example.kemono.util.getMediaType(attachment.path) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                        val mediaType = if (com.example.kemono.util.getMediaType(attachment.path!!) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
                         downloadRepository.downloadFile(
                             url,
                             attachment.name ?: "attachment",

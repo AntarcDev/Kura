@@ -15,6 +15,7 @@ data class CachedPost(
         val published: String?,
         val fileJson: String?, // Serialized JSON
         val attachmentsJson: String?, // Serialized JSON
+        val tagsJson: String? = null, // Serialized JSON
         val cachedAt: Long = System.currentTimeMillis()
 )
 
@@ -26,6 +27,9 @@ fun CachedPost.toPost(): Post {
             if (attachmentsJson != null)
                     gson.fromJson<List<KemonoFile>>(attachmentsJson, attachmentsType)
             else emptyList()
+    
+    val tagsType = object : TypeToken<List<String>>() {}.type
+    val tags = if (tagsJson != null) gson.fromJson<List<String>>(tagsJson, tagsType) else null
 
     return Post(
             id = id,
@@ -35,7 +39,8 @@ fun CachedPost.toPost(): Post {
             content = content,
             published = published,
             file = file,
-            attachments = attachments
+            attachments = attachments,
+            tags = tags
     )
 }
 
@@ -49,6 +54,7 @@ fun Post.toCached(): CachedPost {
             content = content,
             published = published,
             fileJson = if (file != null) gson.toJson(file) else null,
-            attachmentsJson = gson.toJson(attachments)
+            attachmentsJson = gson.toJson(attachments),
+            tagsJson = gson.toJson(tags)
     )
 }

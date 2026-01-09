@@ -123,9 +123,9 @@ constructor(
             currentPost.file?.let { file ->
                 if (!file.path.isNullOrEmpty()) {
                     val url = "https://kemono.cr${file.path}"
-                    val fileName = file.name
+                    val fileName = file.name ?: "file"
                     val mediaType =
-                            if (com.example.kemono.util.getMediaType(file.path) ==
+                            if (com.example.kemono.util.getMediaType(file.path!!) ==
                                             com.example.kemono.util.MediaType.VIDEO
                             )
                                     "VIDEO"
@@ -146,9 +146,9 @@ constructor(
             currentPost.attachments.forEach { attachment ->
                 if (!attachment.path.isNullOrEmpty()) {
                     val url = "https://kemono.cr${attachment.path}"
-                    val fileName = attachment.name
+                    val fileName = attachment.name ?: "attachment"
                     val mediaType =
-                            if (com.example.kemono.util.getMediaType(attachment.path) ==
+                            if (com.example.kemono.util.getMediaType(attachment.path!!) ==
                                             com.example.kemono.util.MediaType.VIDEO
                             )
                                     "VIDEO"

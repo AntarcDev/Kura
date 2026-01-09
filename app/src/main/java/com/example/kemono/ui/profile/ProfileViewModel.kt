@@ -16,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val repository: KemonoRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val downloadRepository: com.example.kemono.data.repository.DownloadRepository
 ) : ViewModel() {
 
     private val _account = MutableStateFlow<Account?>(null)
@@ -37,6 +38,10 @@ class ProfileViewModel @Inject constructor(
 
     val favoritePosts: StateFlow<List<FavoritePost>> = repository.getAllFavoritePosts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val downloadedPostIds: StateFlow<Set<String>> = downloadRepository.getDownloadedPostIds()
+        .map { it.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     val layoutMode = settingsRepository.favoriteLayoutMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "List")

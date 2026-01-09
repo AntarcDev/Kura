@@ -43,4 +43,9 @@ object DatabaseModule {
     fun provideSearchHistoryDao(database: AppDatabase): com.example.kemono.data.local.SearchHistoryDao {
         return database.searchHistoryDao()
     }
+
+    @Provides
+    fun provideBlacklistDao(database: AppDatabase): com.example.kemono.data.local.BlacklistDao {
+        return database.blacklistDao()
+    }
 }

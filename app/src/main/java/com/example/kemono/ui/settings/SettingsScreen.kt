@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,7 +38,8 @@ enum class SettingsRoute {
     Data,
     Advanced,
     Licenses,
-    Privacy
+    Privacy,
+    Blacklist
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +100,7 @@ fun SettingsScreen(
                             SettingsRoute.Advanced -> "Advanced"
                             SettingsRoute.Licenses -> "Licenses"
                             SettingsRoute.Privacy -> "Privacy Policy"
+                            SettingsRoute.Blacklist -> "Blocked Content"
                         }
                     )
                 },
@@ -127,6 +130,7 @@ fun SettingsScreen(
                 SettingsRoute.Advanced -> SettingsAdvanced(viewModel)
                 SettingsRoute.Licenses -> LicensesScreen(onBackClick = { currentRoute = SettingsRoute.Main })
                 SettingsRoute.Privacy -> PrivacyPolicyScreen(onBackClick = { currentRoute = SettingsRoute.Main })
+                SettingsRoute.Blacklist -> BlacklistScreen(onBackClick = { currentRoute = SettingsRoute.Main })
             }
         }
     }
@@ -143,12 +147,19 @@ fun SettingsMain(
             .verticalScroll(rememberScrollState())
     ) {
         val updateAvailable by viewModel.updateAvailable.collectAsState()
-
+        
         SettingsCategoryItem(
              icon = Icons.Default.Person,
              title = "Account",
              subtitle = "Profile, login, and sync settings",
              onClick = { onNavigate(SettingsRoute.Account) }
+        )
+
+        SettingsCategoryItem(
+             icon = Icons.Default.Block,
+             title = "Blocked Content",
+             subtitle = "Manage blocked creators, tags, and keywords",
+             onClick = { onNavigate(SettingsRoute.Blacklist) }
         )
         
         SettingsCategoryItem(

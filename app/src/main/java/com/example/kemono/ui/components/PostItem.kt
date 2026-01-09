@@ -13,16 +13,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.AttachFile
 import com.example.kemono.data.model.Post
-import com.example.kemono.util.ServiceMapper
 import com.example.kemono.util.DateUtils
-import androidx.compose.ui.graphics.Color
+import com.example.kemono.util.ServiceMapper
+import androidx.compose.material.icons.Icons
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -35,6 +38,7 @@ fun PostItem(
     showCreator: Boolean = true,
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {},
+    isDownloaded: Boolean = false,
 
     autoplayGifs: Boolean = true,
     showService: Boolean = true
@@ -49,44 +53,56 @@ fun PostItem(
         border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
-            post.file?.let { file ->
-                if (!file.path.isNullOrEmpty()) {
-                    // Use direct file URL (kemono.cr) as thumbnail since /thumbnail endpoint is unreliable
-                    val url = "https://kemono.cr${file.path}"
-                    val isGif = file.path.endsWith(".gif", ignoreCase = true)
-                    val isPsd = file.path.endsWith(".psd", ignoreCase = true)
-                    
-                    Box(modifier = Modifier.size(80.dp).padding(end = 8.dp)) {
-                        AsyncImage(
-                            model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                .data(url)
-                                .crossfade(!isGif)
-                                .apply {
-                                    if (!autoplayGifs) {
-                                        // Force static image decoding (first frame only) for ALL images if autoplay is off.
-                                        // This ensures GIFs, WebPs, etc. do not animate even if detection fails.
-                                        decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
-                                        // Use a different cache key to avoid retrieving the animated version from memory cache
-                                        memoryCacheKey(url + "_static")
+            val preview = com.example.kemono.util.PostPreviewUtils.getPreviewContent(post)
+            
+            if (preview !is com.example.kemono.util.PreviewContent.None) {
+                Box(modifier = Modifier.size(80.dp).padding(end = 8.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))) {
+                    when (preview) {
+                        is com.example.kemono.util.PreviewContent.Image -> {
+                            val url = preview.url
+                            val isGif = url.endsWith(".gif", ignoreCase = true)
+                             AsyncImage(
+                                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                    .data(url)
+                                    .crossfade(!isGif)
+                                    .apply {
+                                        if (!autoplayGifs) {
+                                            decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                            memoryCacheKey(url + "_static")
+                                        }
                                     }
-                                }
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                        if (isPsd) {
-                            Text(
-                                text = "PSD",
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f), androidx.compose.foundation.shape.RoundedCornerShape(topStart = 4.dp))
-                                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontSize = 8.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
                         }
+                        is com.example.kemono.util.PreviewContent.Icon -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(preview.containerColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                androidx.compose.material3.Icon(
+                                    imageVector = preview.vector,
+                                    contentDescription = preview.label,
+                                    tint = preview.color,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Text(
+                                    text = preview.label,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .background(preview.color.copy(alpha = 0.8f), androidx.compose.foundation.shape.RoundedCornerShape(topStart = 4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 8.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                        else -> {}
                     }
                 }
             }
@@ -136,6 +152,24 @@ fun PostItem(
                             text = "${post.attachments.size}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                if (isDownloaded) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                         androidx.compose.material3.Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.DownloadDone,
+                            contentDescription = "Downloaded",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Downloaded",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

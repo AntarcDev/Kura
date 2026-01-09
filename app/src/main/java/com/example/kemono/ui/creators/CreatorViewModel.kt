@@ -26,7 +26,8 @@ class CreatorViewModel
 constructor(
     private val repository: KemonoRepository,
     networkMonitor: NetworkMonitor,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val downloadRepository: com.example.kemono.data.repository.DownloadRepository
 ) : ViewModel() {
 
     val isOnline =
@@ -103,8 +104,11 @@ constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    @Inject
-    lateinit var downloadRepository: com.example.kemono.data.repository.DownloadRepository
+    val downloadedPostIds: StateFlow<Set<String>> = downloadRepository.getDownloadedPostIds()
+        .map { it.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+
 
     // Combine filter and sort options first
     private val _debouncedSearchQuery = MutableStateFlow("")

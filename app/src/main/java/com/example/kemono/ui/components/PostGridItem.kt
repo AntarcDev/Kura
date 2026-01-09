@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -59,6 +60,7 @@ fun PostGridItem(
     onLongClick: () -> Unit,
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {},
+    isDownloaded: Boolean = false,
     autoplayGifs: Boolean = true,
     showCreator: Boolean = false,
     onCreatorClick: () -> Unit = {}
@@ -81,73 +83,85 @@ fun PostGridItem(
                     .aspectRatio(1f) // Square aspect ratio
                     .background(Color.Gray.copy(alpha = 0.2f))
             ) {
-                // Determine thumbnail URL
-                val file = post.file
-                val attachment = post.attachments?.firstOrNull()
+                val preview = com.example.kemono.util.PostPreviewUtils.getPreviewContent(post)
                 
-                val url = if (file != null) {
-                    "https://kemono.cr${file.path}"
-                } else if (attachment != null) {
-                    "https://kemono.cr${attachment.path}"
-                } else {
-                    null
-                }
-
-                if (url != null) {
-                     // We don't rely on extension checking for autoplay logic anymore.
-                     // If autoplay is off, we force the static decoder for everyone.
-                     
-                     val model = if (!autoplayGifs) {
-                        coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                            .data(url)
-                            .crossfade(true)
-                            .decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
-                            .memoryCacheKey(url + "_static")
-                            .build()
-                     } else {
-                        url
-                     }
-
-                    SubcomposeAsyncImage(
-                        model = model,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                        loading = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Image,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                )
+                when (preview) {
+                    is com.example.kemono.util.PreviewContent.Image -> {
+                        val url = preview.url
+                        val model = if (!autoplayGifs) {
+                            coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                .data(url)
+                                .crossfade(true)
+                                .decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                .memoryCacheKey(url + "_static")
+                                .build()
+                         } else {
+                            url
+                         }
+                        
+                        SubcomposeAsyncImage(
+                            model = model,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                            loading = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Image,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                }
+                            },
+                            error = {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.BrokenImage,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
-                        },
-                        error = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
+                        )
+                    }
+                    is com.example.kemono.util.PreviewContent.Icon -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(preview.containerColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(
-                                    imageVector = Icons.Default.BrokenImage,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error
+                                    imageVector = preview.vector,
+                                    contentDescription = preview.label,
+                                    tint = preview.color,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = preview.label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = preview.color,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                                 )
                             }
                         }
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No Image",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    }
+                    else -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                             // Keep empty or transparent if nothing to show
+                             // Or show specific "Empty" placeholder if desired
+                        }
                     }
                 }
             }
@@ -170,6 +184,23 @@ fun PostGridItem(
                                 imageVector = Icons.Default.AttachFile,
                                 contentDescription = "Attachments",
                                 tint = Color.White,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(4.dp))
+                     }
+
+                     // Downloaded Badge
+                     if (isDownloaded) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Default.DownloadDone,
+                                contentDescription = "Downloaded",
+                                tint = Color.Green,
                                 modifier = Modifier.size(12.dp)
                             )
                         }

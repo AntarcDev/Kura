@@ -71,7 +71,7 @@ constructor(
                                     items.add(
                                             ViewerMediaItem(
                                                     url = "https://kemono.cr${file.path}",
-                                                    type = getMediaType(file.path),
+                                                    type = getMediaType(file.path!!),
                                                     name = file.name ?: "File"
                                             )
                                     )
@@ -83,7 +83,7 @@ constructor(
                                     items.add(
                                             ViewerMediaItem(
                                                     url = "https://kemono.cr${attachment.path}",
-                                                    type = getMediaType(attachment.path),
+                                                    type = getMediaType(attachment.path!!),
                                                     name = attachment.name ?: "Attachment"
                                             )
                                     )
