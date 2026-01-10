@@ -25,6 +25,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -39,6 +42,8 @@ import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.foundation.shape.RoundedCornerShape
+
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,11 +78,16 @@ fun GalleryScreen(
                         modifier = Modifier.align(Alignment.Center)
                 )
             } else {
+                val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+                val scope = androidx.compose.runtime.rememberCoroutineScope()
+
                 LazyVerticalGrid(
+                        state = gridState,
                         columns = GridCells.Adaptive(minSize),
                         contentPadding = PaddingValues(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxSize()
                 ) {
                     items.forEachIndexed { index, item ->
                         when (item) {
@@ -112,6 +122,16 @@ fun GalleryScreen(
                         }
                     }
                 }
+                
+                val showButton by androidx.compose.runtime.remember {
+                    androidx.compose.runtime.derivedStateOf { gridState.firstVisibleItemIndex > 0 }
+                }
+                
+                com.example.kemono.ui.components.ScrollToTopButton(
+                    visible = showButton,
+                    onClick = { scope.launch { gridState.animateScrollToItem(0) } },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                )
             }
         }
     }

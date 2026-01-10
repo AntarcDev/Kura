@@ -80,6 +80,7 @@ constructor(
     val crashReportingEnabled = settingsRepository.crashReportingEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val downloadLocation = settingsRepository.downloadLocation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
     val autoplayGifs = settingsRepository.autoplayGifs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    val lowResMode = settingsRepository.lowResMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     // Stats
     data class CacheStats(val mediaCacheSize: Long, val networkCacheSize: Long, val totalSize: Long)
@@ -91,7 +92,7 @@ constructor(
 
     init {
         // Initialize cache stats
-        calculateCacheStats()
+        refreshCacheStats()
         
         viewModelScope.launch {
             repository.loginEvent.collect {
@@ -127,8 +128,9 @@ constructor(
     fun setCrashReportingEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setCrashReportingEnabled(enabled) }
     fun setDownloadLocation(uri: String) = viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
     fun setAutoplayGifs(enabled: Boolean) = viewModelScope.launch { settingsRepository.setAutoplayGifs(enabled) }
+    fun setLowResMode(enabled: Boolean) = viewModelScope.launch { settingsRepository.setLowResMode(enabled) }
 
-    private fun calculateCacheStats() {
+    fun refreshCacheStats() {
         viewModelScope.launch(Dispatchers.IO) {
             val imageCache = context.cacheDir.resolve("image_cache")
             val imageHttpCache = context.cacheDir.resolve("image_http_cache")
@@ -155,7 +157,7 @@ constructor(
             // For now just file deletion.
             // Coil.imageLoader(context).memoryCache?.clear() // Requires main thread usually or context
             
-            calculateCacheStats()
+            refreshCacheStats()
         }
         viewModelScope.launch(Dispatchers.Main) {
              coil.Coil.imageLoader(context).memoryCache?.clear()
@@ -170,7 +172,7 @@ constructor(
             
             repository.cleanExpiredCache() // Clean internal repo cache
             
-            calculateCacheStats()
+            refreshCacheStats()
         }
     }
     

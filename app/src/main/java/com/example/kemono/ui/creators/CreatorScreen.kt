@@ -3,7 +3,11 @@ package com.example.kemono.ui.creators
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -80,6 +84,24 @@ fun CreatorScreen(
     val sortAscending by viewModel.sortAscending.collectAsState()
     val searchHistory by viewModel.searchHistory.collectAsState()
     
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    
+    // Sync SearchMode -> Pager
+    LaunchedEffect(searchMode) {
+        val targetPage = if (searchMode == SearchMode.Artists) 0 else 1
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+    
+    // Sync Pager -> SearchMode
+    LaunchedEffect(pagerState.currentPage) {
+        val newMode = if (pagerState.currentPage == 0) SearchMode.Artists else SearchMode.Posts
+        if (searchMode != newMode) {
+            viewModel.setSearchMode(newMode)
+        }
+    }
+    
     var showFilterSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -149,40 +171,49 @@ fun CreatorScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Search Mode Toggle (Tabs)
-                TabRow(selectedTabIndex = if (searchMode == SearchMode.Artists) 0 else 1) {
+                val scope = rememberCoroutineScope()
+                TabRow(selectedTabIndex = pagerState.currentPage) {
                     Tab(
-                        selected = searchMode == SearchMode.Artists,
-                        onClick = { viewModel.setSearchMode(SearchMode.Artists) },
+                        selected = pagerState.currentPage == 0,
+                        onClick = { 
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        },
                         text = { Text("Creators") }
                     )
                     Tab(
-                        selected = searchMode == SearchMode.Posts,
-                        onClick = { viewModel.setSearchMode(SearchMode.Posts) },
+                        selected = pagerState.currentPage == 1,
+                        onClick = { 
+                            scope.launch { pagerState.animateScrollToPage(1) }
+                        },
                         text = { Text("Posts") }
                     )
                 }
 
-                if (error != null) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = error ?: "Unknown error", color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.fetchCreators() }) {
-                            Text("Retry")
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.weight(1f) // Fill remaining space
+                ) { page ->
+                    if (error != null) {
+                         Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = error ?: "Unknown error", color = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { 
+                                if (page == 0) viewModel.fetchCreators() else viewModel.fetchPosts() 
+                            }) {
+                                Text("Retry")
+                            }
                         }
-                    }
-                } else {
-                    val density = when (gridDensity) {
-                        "Small" -> 120.dp
-                        "Large" -> 200.dp
-                        else -> 150.dp // Medium
-                    }
-
-                    if (searchMode == SearchMode.Artists) {
-                        // Artists View
+                    } else if (page == 0) {
+                        // Artists View (Moved inside Pager)
+                        val density = when (gridDensity) {
+                            "Small" -> 120.dp
+                            "Large" -> 200.dp
+                            else -> 150.dp // Medium
+                        }
                         if (isLoading && creators.isEmpty()) {
                             // Loading Skeleton
                             LazyVerticalGrid(
@@ -196,176 +227,234 @@ fun CreatorScreen(
                                 }
                             }
                         } else {
-                            if (artistLayoutMode == "List") {
-                                LazyColumn(
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(
-                                        count = creators.size,
-                                        key = { index -> creators[index].id ?: "creator_$index" }
-                                    ) { index ->
-                                        val creator = creators[index]
-                                        CreatorTile(
-                                            creator = creator,
-                                            isFavorite = favorites.any { it.id == creator.id },
-                                            onClick = { onCreatorClick(creator) },
-                                            onFavoriteClick = { viewModel.toggleFavorite(creator) },
-                                            compact = false,
-                                            autoplayGifs = autoplayGifs
-                                        )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                                val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+                                val scope = rememberCoroutineScope()
+                                
+                                if (artistLayoutMode == "List") {
+                                    LazyColumn(
+                                        state = listState,
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(
+                                            count = creators.size,
+                                            key = { index -> creators[index].id ?: "creator_$index" }
+                                        ) { index ->
+                                            val creator = creators[index]
+                                            CreatorTile(
+                                                creator = creator,
+                                                isFavorite = favorites.any { it.id == creator.id },
+                                                onClick = { onCreatorClick(creator) },
+                                                onFavoriteClick = { viewModel.toggleFavorite(creator) },
+                                                compact = false,
+                                                autoplayGifs = autoplayGifs
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    LazyVerticalGrid(
+                                        state = gridState,
+                                        columns = GridCells.Adaptive(minSize = density),
+                                        contentPadding = PaddingValues(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(
+                                            count = creators.size,
+                                            key = { index -> creators[index].id ?: "creator_$index" }
+                                        ) { index ->
+                                            val creator = creators[index]
+                                            CreatorTile(
+                                                creator = creator,
+                                                isFavorite = favorites.any { it.id == creator.id },
+                                                onClick = { onCreatorClick(creator) },
+                                                onFavoriteClick = { viewModel.toggleFavorite(creator) },
+                                                compact = true,
+                                                autoplayGifs = autoplayGifs
+                                            )
+                                        }
                                     }
                                 }
-                            } else {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(minSize = density),
-                                    contentPadding = PaddingValues(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(
-                                        count = creators.size,
-                                        key = { index -> creators[index].id ?: "creator_$index" }
-                                    ) { index ->
-                                        val creator = creators[index]
-                                        CreatorTile(
-                                            creator = creator,
-                                            isFavorite = favorites.any { it.id == creator.id },
-                                            onClick = { onCreatorClick(creator) },
-                                            onFavoriteClick = { viewModel.toggleFavorite(creator) },
-                                            compact = true,
-                                            autoplayGifs = autoplayGifs
-                                        )
+                                
+                                val showButton by remember {
+                                    derivedStateOf {
+                                        if (artistLayoutMode == "List") listState.firstVisibleItemIndex > 0
+                                        else gridState.firstVisibleItemIndex > 0
                                     }
                                 }
+                                
+                                com.example.kemono.ui.components.ScrollToTopButton(
+                                    visible = showButton,
+                                    onClick = {
+                                        scope.launch {
+                                            if (artistLayoutMode == "List") listState.animateScrollToItem(0)
+                                            else gridState.animateScrollToItem(0)
+                                        }
+                                    },
+                                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                                )
                             }
                         }
                     } else {
-                        // Posts View
+                        // Posts View (Moved inside conditional -> else block of Pager page 1)
+                        val density = when (gridDensity) {
+                            "Small" -> 120.dp
+                            "Large" -> 200.dp
+                            else -> 150.dp // Medium
+                        }
                         if (isLoading && posts.isEmpty()) {
                             Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
                         } else {
-                            if (postLayoutMode == "List") {
-                                // List requires state to keep scroll position
-
-                                // We don't need to hoist state manually unless we want to persist it
-                                LazyColumn(
-                                    contentPadding = PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(
-                                        count = posts.size,
-                                        key = { index -> posts[index].id ?: "post_$index" }
-                                    ) { index ->
-                                        val post = posts[index]
-                                        
-                                        LaunchedEffect(index) {
-                                            if (index >= posts.size - 5) {
-                                                viewModel.loadMorePosts()
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                                val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+                                val scope = rememberCoroutineScope()
+                                
+                                if (postLayoutMode == "List") {
+                                    // List requires state to keep scroll position
+    
+                                    // We don't need to hoist state manually unless we want to persist it
+                                    LazyColumn(
+                                        state = listState,
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(
+                                            count = posts.size,
+                                            key = { index -> posts[index].id ?: "post_$index" }
+                                        ) { index ->
+                                            val post = posts[index]
+                                            
+                                            LaunchedEffect(index) {
+                                                if (index >= posts.size - 5) {
+                                                    viewModel.loadMorePosts()
+                                                }
+                                            }
+    
+                                            com.example.kemono.ui.components.PostItem(
+                                                post = post,
+                                                selected = selectedPostIds.contains(post.id),
+                                                onClick = {
+                                                    if (isSelectionMode) {
+                                                        viewModel.toggleSelection(post)
+                                                    } else {
+                                                        onPostClick(post)
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    viewModel.toggleSelection(post)
+                                                },
+                                                onCreatorClick = {
+                                                    val creator = Creator(
+                                                        id = post.user ?: "",
+                                                        service = post.service ?: "",
+                                                        name = "Unknown",
+                                                        updated = 0,
+                                                        indexed = 0
+                                                    )
+                                                    onCreatorClick(creator)
+                                                },
+                                                isFavorite = favoritePostIds.contains(post.id),
+                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                isDownloaded = downloadedPostIds.contains(post.id),
+                                                autoplayGifs = autoplayGifs
+                                            )
+                                        }
+                                        if (isLoading && posts.isNotEmpty()) {
+                                            item {
+                                                Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                                                    CircularProgressIndicator()
+                                                }
                                             }
                                         }
-
-                                        com.example.kemono.ui.components.PostItem(
-                                            post = post,
-                                            selected = selectedPostIds.contains(post.id),
-                                            onClick = {
-                                                if (isSelectionMode) {
-                                                    viewModel.toggleSelection(post)
-                                                } else {
-                                                    onPostClick(post)
-                                                }
-                                            },
-                                            onLongClick = {
-                                                viewModel.toggleSelection(post)
-                                            },
-                                            onCreatorClick = {
-                                                val creator = Creator(
-                                                    id = post.user ?: "",
-                                                    service = post.service ?: "",
-                                                    name = "Unknown",
-                                                    updated = 0,
-                                                    indexed = 0
-                                                )
-                                                onCreatorClick(creator)
-                                            },
-                                            isFavorite = favoritePostIds.contains(post.id),
-                                            onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                            isDownloaded = downloadedPostIds.contains(post.id),
-                                            autoplayGifs = autoplayGifs
-                                        )
                                     }
-                                    if (isLoading && posts.isNotEmpty()) {
-                                        item {
-                                            Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                CircularProgressIndicator()
+                                } else {
+                                    LazyVerticalGrid(
+                                        state = gridState,
+                                        columns = GridCells.Adaptive(minSize = density),
+                                        contentPadding = PaddingValues(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        items(
+                                            count = posts.size,
+                                            key = { index -> posts[index].id ?: "post_$index" }
+                                        ) { index ->
+                                            val post = posts[index]
+    
+                                            LaunchedEffect(index) {
+                                                if (index >= posts.size - 5) {
+                                                    viewModel.loadMorePosts()
+                                                }
+                                            }
+    
+                                            com.example.kemono.ui.components.PostGridItem(
+                                                post = post,
+                                                selected = selectedPostIds.contains(post.id),
+                                                onClick = {
+                                                    if (isSelectionMode) {
+                                                        viewModel.toggleSelection(post)
+                                                    } else {
+                                                        onPostClick(post)
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    viewModel.toggleSelection(post)
+                                                },
+                                                isFavorite = favoritePostIds.contains(post.id),
+                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                isDownloaded = downloadedPostIds.contains(post.id),
+                                                autoplayGifs = autoplayGifs,
+                                                showCreator = true,
+                                                onCreatorClick = {
+                                                     val creator = com.example.kemono.data.model.Creator(
+                                                        id = post.user ?: "",
+                                                        service = post.service ?: "",
+                                                        name = "Unknown",
+                                                        updated = 0,
+                                                        indexed = 0
+                                                    )
+                                                    onCreatorClick(creator)
+                                                }
+                                            )
+                                        }
+                                        if (isLoading && posts.isNotEmpty()) {
+                                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                                Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                                                    CircularProgressIndicator()
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            } else {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(minSize = density),
-                                    contentPadding = PaddingValues(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    items(
-                                        count = posts.size,
-                                        key = { index -> posts[index].id ?: "post_$index" }
-                                    ) { index ->
-                                        val post = posts[index]
-
-                                        LaunchedEffect(index) {
-                                            if (index >= posts.size - 5) {
-                                                viewModel.loadMorePosts()
-                                            }
-                                        }
-
-                                        com.example.kemono.ui.components.PostGridItem(
-                                            post = post,
-                                            selected = selectedPostIds.contains(post.id),
-                                            onClick = {
-                                                if (isSelectionMode) {
-                                                    viewModel.toggleSelection(post)
-                                                } else {
-                                                    onPostClick(post)
-                                                }
-                                            },
-                                            onLongClick = {
-                                                viewModel.toggleSelection(post)
-                                            },
-                                            isFavorite = favoritePostIds.contains(post.id),
-                                            onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                            isDownloaded = downloadedPostIds.contains(post.id),
-                                            autoplayGifs = autoplayGifs,
-                                            showCreator = true,
-                                            onCreatorClick = {
-                                                 val creator = com.example.kemono.data.model.Creator(
-                                                    id = post.user ?: "",
-                                                    service = post.service ?: "",
-                                                    name = "Unknown",
-                                                    updated = 0,
-                                                    indexed = 0
-                                                )
-                                                onCreatorClick(creator)
-                                            }
-                                        )
-                                    }
-                                    if (isLoading && posts.isNotEmpty()) {
-                                        item(span = { GridItemSpan(maxLineSpan) }) {
-                                            Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                CircularProgressIndicator()
-                                            }
-                                        }
+                                
+                                val showButton by remember {
+                                    derivedStateOf {
+                                        if (postLayoutMode == "List") listState.firstVisibleItemIndex > 0
+                                        else gridState.firstVisibleItemIndex > 0
                                     }
                                 }
+                                
+                                com.example.kemono.ui.components.ScrollToTopButton(
+                                    visible = showButton,
+                                    onClick = {
+                                        scope.launch {
+                                            if (postLayoutMode == "List") listState.animateScrollToItem(0)
+                                            else gridState.animateScrollToItem(0)
+                                        }
+                                    },
+                                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                                )
                             }
                         }
-                    }
-                }
+                } 
             }
         }
     }
+    }
 }
+

@@ -206,7 +206,7 @@ constructor(
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(500) // Debounce 500ms for both modes
+            kotlinx.coroutines.delay(1000) // Debounce 1000ms for both modes
 
             if (_searchMode.value == SearchMode.Posts) {
                 fetchPosts()

@@ -473,6 +473,10 @@ fun SettingsData(viewModel: SettingsViewModel) {
     val cacheStats by viewModel.cacheStats.collectAsState()
     val autoplayGifs by viewModel.autoplayGifs.collectAsState()
     val context = LocalContext.current
+    
+    LaunchedEffect(Unit) {
+        viewModel.refreshCacheStats()
+    }
 
 
     Column(
@@ -489,6 +493,28 @@ fun SettingsData(viewModel: SettingsViewModel) {
         )
 
         val downloadLocation by viewModel.downloadLocation.collectAsState()
+        val lowResMode by viewModel.lowResMode.collectAsState()
+        
+        ListItem(
+            headlineContent = { Text("Low Quality Mode") },
+            supportingContent = { 
+                Column {
+                    Text("Load compressed thumbnails instead of original full-resolution images. Significantly improves performance and reduces data usage.")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "⚠ Disabling this may cause high data usage, battery drain, and app stuttering.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            trailingContent = {
+                Switch(
+                    checked = lowResMode,
+                    onCheckedChange = { viewModel.setLowResMode(it) }
+                )
+            }
+        )
         
         val folderPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {

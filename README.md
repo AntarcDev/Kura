@@ -1,7 +1,7 @@
 <div align="center">
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="128" />
-  <h1>Kura 蔵</h1>
-  <p><strong>A Native Client for Kemono (It's trying its best) (；￣Д￣)</strong></p>
+  <h1>Kura</h1>
+  <p><strong>A Native Android Client for Kemono, made with Kotlin and Jetpack Compose</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
@@ -16,7 +16,7 @@
 
 ### *Welcome to the Archives! (≧◡≦)*
 
-**Kura** is a native Android client for Kemono. It *attempts* to provide a fluid, high-performance mobile interface. It works on my machine, at least.
+**Kura** is a native Android client for Kemono. It *attempts* to provide a fluid, high-performance mobile interface.
 
 > [!IMPORTANT]
 > **⚠ Pre-Release Build (v0.8)**

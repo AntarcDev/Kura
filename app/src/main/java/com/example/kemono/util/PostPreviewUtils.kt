@@ -26,17 +26,19 @@ sealed class PreviewContent {
 object PostPreviewUtils {
     
     fun getPreviewContent(post: Post): PreviewContent {
-        // 1. Check Main File for Image
+        // 1. Check Main File for Image (Prioritize Thumbnail)
         post.file?.let { file ->
-            if (isImage(file.path)) {
-                 return PreviewContent.Image("https://kemono.cr${file.path}")
+            val pathToCheck = file.thumbnailPath ?: file.path
+            if (isImage(pathToCheck)) {
+                 return PreviewContent.Image("https://kemono.cr${pathToCheck}")
             }
         }
 
         // 2. Check Attachments (Scan for first image) - Prioritize showing ANY image over an icon
         post.attachments.forEach { file ->
-             if (isImage(file.path)) {
-                 return PreviewContent.Image("https://kemono.cr${file.path}")
+             val pathToCheck = file.thumbnailPath ?: file.path
+             if (isImage(pathToCheck)) {
+                 return PreviewContent.Image("https://kemono.cr${pathToCheck}")
             }
         }
         
@@ -89,13 +91,13 @@ object PostPreviewUtils {
 
     private fun isImage(path: String?): Boolean {
         if (path == null) return false
-        val ext = path.substringAfterLast('.', "").lowercase()
-        return ext in setOf("jpg", "jpeg", "png", "gif", "webp", "bmp")
+        val ext = path.substringAfterLast('.', "").substringBefore('?').lowercase()
+        return ext in setOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "tiff", "heic")
     }
 
     fun getIconForPath(path: String?): PreviewContent.Icon? {
         if (path == null) return null
-        val ext = path.substringAfterLast('.', "").lowercase()
+        val ext = path.substringAfterLast('.', "").substringBefore('?').lowercase()
         return when (ext) {
             "psd" -> PreviewContent.Icon(
                 vector = Icons.Default.Brush,

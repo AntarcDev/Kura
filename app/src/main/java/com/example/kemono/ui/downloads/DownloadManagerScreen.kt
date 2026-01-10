@@ -39,6 +39,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +58,8 @@ import com.example.kemono.util.MediaType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,38 +96,64 @@ fun DownloadManagerScreen(
                                 contentAlignment = Alignment.Center
                         ) { Text("No downloads yet", style = MaterialTheme.typography.bodyLarge) }
                 } else {
-                        if (layoutMode == "Grid") {
-                            LazyVerticalGrid(
-                                columns = GridCells.Adaptive(minSize),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxSize().padding(paddingValues)
-                            ) {
-                                items(items, key = { it.item.id }) { uiState ->
-                                    DownloadGridItem(
-                                        uiState = uiState,
-                                        onDelete = { viewModel.deleteDownload(uiState.item) },
-                                        onOpen = onOpenClick
-                                    )
+                        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                            val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+                            val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+                            if (layoutMode == "Grid") {
+                                LazyVerticalGrid(
+                                    state = gridState,
+                                    columns = GridCells.Adaptive(minSize),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(items, key = { it.item.id }) { uiState ->
+                                        DownloadGridItem(
+                                            uiState = uiState,
+                                            onDelete = { viewModel.deleteDownload(uiState.item) },
+                                            onOpen = onOpenClick
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                        state = listState,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                        items(items, key = { it.item.id }) { uiState ->
+                                                DownloadItemCard(
+                                                        uiState = uiState,
+                                                        onDelete = {
+                                                                viewModel.deleteDownload(uiState.item)
+                                                        },
+                                                        onOpen = onOpenClick
+                                                )
+                                        }
                                 }
                             }
-                        } else {
-                            LazyColumn(
-                                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                    items(items, key = { it.item.id }) { uiState ->
-                                            DownloadItemCard(
-                                                    uiState = uiState,
-                                                    onDelete = {
-                                                            viewModel.deleteDownload(uiState.item)
-                                                    },
-                                                    onOpen = onOpenClick
-                                            )
-                                    }
+                            
+                            val showButton by androidx.compose.runtime.remember {
+                                androidx.compose.runtime.derivedStateOf {
+                                    if (layoutMode == "Grid") gridState.firstVisibleItemIndex > 0
+                                    else listState.firstVisibleItemIndex > 0
+                                }
                             }
+                            
+                            com.example.kemono.ui.components.ScrollToTopButton(
+                                visible = showButton,
+                                onClick = {
+                                    scope.launch {
+                                        if (layoutMode == "Grid") gridState.animateScrollToItem(0)
+                                        else listState.animateScrollToItem(0)
+                                    }
+                                },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                            )
                         }
                 }
         }

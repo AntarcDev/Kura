@@ -84,6 +84,10 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         preferences[AUTOPLAY_GIFS] ?: true // Default to true
     }
 
+    val lowResMode: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[LOW_RES_MODE] ?: true // Default to true for performance
+    }
+
     suspend fun setArtistLayoutMode(mode: String) {
         dataStore.edit { preferences -> preferences[ARTIST_LAYOUT_MODE] = mode }
     }
@@ -103,6 +107,10 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         dataStore.edit { preferences -> preferences[AUTOPLAY_GIFS] = enabled }
     }
 
+    suspend fun setLowResMode(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[LOW_RES_MODE] = enabled }
+    }
+
     // Page Size
     companion object {
         val THEME_MODE = stringPreferencesKey("theme_mode")
@@ -116,5 +124,6 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val FAVORITE_LAYOUT_MODE = stringPreferencesKey("favorite_layout_mode")
         val GRID_DENSITY = stringPreferencesKey("grid_density")
         val AUTOPLAY_GIFS = androidx.datastore.preferences.core.booleanPreferencesKey("autoplay_gifs")
+        val LOW_RES_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("low_res_mode")
     }
 }
