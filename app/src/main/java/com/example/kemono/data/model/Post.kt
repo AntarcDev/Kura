@@ -1,7 +1,9 @@
 package com.example.kemono.data.model
 
 import com.google.gson.annotations.SerializedName
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class Post(
     val id: String? = null,
     val user: String? = null,
@@ -16,6 +18,7 @@ data class Post(
     val tags: List<String>? = null
 )
 
+@Immutable
 data class KemonoFile(
     val name: String? = null,
     val path: String? = null,

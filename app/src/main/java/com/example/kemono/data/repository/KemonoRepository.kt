@@ -108,11 +108,12 @@ constructor(
             }
         }
 
-        return try {
-            val responseBody = api.getCreators()
-            val creators = mutableListOf<Creator>()
-            
-            responseBody.charStream().use { charStream ->
+        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val responseBody = api.getCreators()
+                val creators = mutableListOf<Creator>()
+                
+                responseBody.charStream().use { charStream ->
                 val reader = com.google.gson.stream.JsonReader(charStream)
                 val gson = com.google.gson.GsonBuilder()
                     .registerTypeAdapter(Creator::class.java, com.example.kemono.data.model.CreatorDeserializer())
@@ -162,14 +163,15 @@ constructor(
                 val cached = cacheDao.getAllCachedCreators().first().map { it.toCreator() }
                 cached.filter { isCreatorAllowed(it, blacklist) }
             }
-        } catch (e: Exception) {
-            android.util.Log.e("KemonoRepo", "Failed to fetch creators: ${e.message}")
-            try {
-                val cached = cacheDao.getAllCachedCreators().first().map { it.toCreator() }
-                cached.filter { isCreatorAllowed(it, blacklist) }
-            } catch (cacheError: Exception) {
-                // If cache fails too, rethrow original error to let ViewModel handle it
-               throw e
+            } catch (e: Exception) {
+                android.util.Log.e("KemonoRepo", "Failed to fetch creators: ${e.message}")
+                try {
+                    val cached = cacheDao.getAllCachedCreators().first().map { it.toCreator() }
+                    cached.filter { isCreatorAllowed(it, blacklist) }
+                } catch (cacheError: Exception) {
+                    // If cache fails too, rethrow original error to let ViewModel handle it
+                   throw e
+                }
             }
         }
     }
@@ -243,11 +245,12 @@ constructor(
              return cached?.toCreator() ?: throw Exception("Creator not found in cache")
         }
 
-        return try {
-            val responseBody = api.getCreatorProfile(service, creatorId)
-            val jsonString = responseBody.string()
-            
-            // Debug log content
+        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val responseBody = api.getCreatorProfile(service, creatorId)
+                val jsonString = responseBody.string()
+                
+                // Debug log content
             // android.util.Log.d("KemonoRepo", "Profile JSON for $creatorId: $jsonString")
             
             val gson = com.google.gson.GsonBuilder()
@@ -261,9 +264,10 @@ constructor(
                  android.util.Log.e("KemonoRepo", "Failed to parse profile JSON: $jsonString", e)
                  throw e
             }
-        } catch (e: Exception) {
-            val cached = cacheDao.getCachedCreator(creatorId)
-            cached?.toCreator() ?: throw e
+            } catch (e: Exception) {
+                val cached = cacheDao.getCachedCreator(creatorId)
+                cached?.toCreator() ?: throw e
+            }
         }
     }
 

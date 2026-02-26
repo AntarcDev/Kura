@@ -239,7 +239,13 @@ object NetworkModule {
         val cacheSize = 250L * 1024L * 1024L // 250 MB for images
         val cache = okhttp3.Cache(context.cacheDir.resolve("image_http_cache"), cacheSize)
 
+        val dispatcher = okhttp3.Dispatcher().apply {
+            maxRequests = 64
+            maxRequestsPerHost = 15 // Increase from 5 to 15 to unblock heavy image/video pipelines
+        }
+
         return OkHttpClient.Builder()
+            .dispatcher(dispatcher)
             .cache(cache)
             .cookieJar(cookieJar)
             .connectTimeout(30, TimeUnit.SECONDS)
