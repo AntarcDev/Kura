@@ -23,6 +23,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.example.kemono.data.paging.PostPagingSource
 
 import com.example.kemono.data.model.SearchHistory
 import com.example.kemono.data.local.SearchHistoryDao
@@ -197,6 +201,14 @@ constructor(
         return allCreators.filter { it.id in popularCreatorIds }
     }
 
+    // Pager for Popular Posts
+    fun getPagedPopularPosts(date: String? = null, period: String? = null): Flow<PagingData<Post>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource { limit, offset -> getPopularPosts(limit, date, period, offset) } }
+        ).flow
+    }
+
     suspend fun getPopularPosts(limit: Int = 50, date: String? = null, period: String? = null, offset: Int = 0): List<Post> {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) return emptyList() // TODO: Implement caching for popular posts?
@@ -226,6 +238,14 @@ constructor(
                 }
             }.awaitAll().filterNotNull().filter { it.id != null && isPostAllowed(it, blacklist) }
         }
+    }
+
+    // Pager for Recent Posts
+    fun getPagedRecentPosts(query: String? = null, tags: List<String>? = null): Flow<PagingData<Post>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource { limit, offset -> getRecentPosts(limit, offset, query, tags) } }
+        ).flow
     }
 
     suspend fun getRecentPosts(limit: Int = 50, offset: Int = 0, query: String? = null, tags: List<String>? = null): List<Post> {
@@ -269,6 +289,14 @@ constructor(
                 cached?.toCreator() ?: throw e
             }
         }
+    }
+
+    // Pager for Creator Posts
+    fun getPagedCreatorPosts(service: String, creatorId: String, query: String? = null): Flow<PagingData<Post>> {
+        return Pager(
+            config = PagingConfig(pageSize = 50, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource { limit, offset -> getCreatorPosts(service, creatorId, limit, offset, query) } }
+        ).flow
     }
 
     suspend fun getCreatorPosts(

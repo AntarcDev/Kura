@@ -19,6 +19,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.example.kemono.data.paging.PostPagingSource
 
 @HiltViewModel
 class CreatorViewModel
@@ -83,14 +90,39 @@ constructor(
     private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
     val selectedTags: StateFlow<Set<String>> = _selectedTags.asStateFlow()
 
-    private val _posts = MutableStateFlow<List<com.example.kemono.data.model.Post>>(emptyList())
-    val posts: StateFlow<List<com.example.kemono.data.model.Post>> = _posts.asStateFlow()
+    private val _debouncedSearchQuery = MutableStateFlow("")
 
-    private var currentOffset = 0
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val pagedPosts: Flow<PagingData<com.example.kemono.data.model.Post>> = combine(_debouncedSearchQuery, _sortOption, _selectedTags) { query, sort, tags ->
+        Triple(query, sort, tags)
+    }.flatMapLatest { (query, sort, tags) ->
+        when (sort) {
+            SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
+                val period = when (sort) {
+                    SortOption.PopularDay -> "day"
+                    SortOption.PopularWeek -> "week"
+                    SortOption.PopularMonth -> "month"
+                    else -> "week"
+                }
+                repository.getPagedPopularPosts(period = period)
+            }
+            SortOption.Random -> {
+                Pager(config = PagingConfig(pageSize = 5, initialLoadSize = 5)) {
+                    PostPagingSource { _, _ -> repository.getRandomPosts() }
+                }.flow
+            }
+            else -> {
+                repository.getPagedRecentPosts(
+                    query = query.ifBlank { null },
+                    tags = tags.toList().ifEmpty { null }
+                )
+            }
+        }
+    }.cachedIn(viewModelScope)
 
     // Selection State
-    private val _selectedPostIds = MutableStateFlow<Set<String>>(emptySet())
-    val selectedPostIds: StateFlow<Set<String>> = _selectedPostIds.asStateFlow()
+    private val _selectedPosts = MutableStateFlow<Set<com.example.kemono.data.model.Post>>(emptySet())
+    val selectedPosts: StateFlow<Set<com.example.kemono.data.model.Post>> = _selectedPosts.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
@@ -108,11 +140,7 @@ constructor(
         .map { it.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
-
-
     // Combine filter and sort options first
-    private val _debouncedSearchQuery = MutableStateFlow("")
-
     private data class FilterState(
         val query: String,
         val sort: SortOption,
@@ -182,9 +210,6 @@ constructor(
 
     fun setSearchMode(mode: SearchMode) {
         _searchMode.value = mode
-        if (mode == SearchMode.Posts && _posts.value.isEmpty()) {
-            fetchPosts()
-        }
     }
 
     fun toggleTagFilter(tag: String) {
@@ -193,9 +218,6 @@ constructor(
             _selectedTags.value = current - tag
         } else {
             _selectedTags.value = current + tag
-        }
-        if (_searchMode.value == SearchMode.Posts) {
-            fetchPosts()
         }
     }
 
@@ -206,87 +228,8 @@ constructor(
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(1000) // Debounce 1000ms for both modes
-
-            if (_searchMode.value == SearchMode.Posts) {
-                fetchPosts()
-            } else {
-                _debouncedSearchQuery.value = query
-            }
-        }
-    }
-
-    fun loadMorePosts() {
-        if (!_isLoading.value && !_isRefreshing.value) {
-            fetchPosts(reset = false)
-        }
-    }
-
-    private var fetchPostsJob: kotlinx.coroutines.Job? = null
-
-    fun fetchPosts(reset: Boolean = true, isRefresh: Boolean = false) {
-        fetchPostsJob?.cancel()
-        fetchPostsJob = viewModelScope.launch {
-            if (isRefresh) {
-                _isRefreshing.value = true
-            } else if (reset) {
-                _isLoading.value = true
-                currentOffset = 0
-            }
-            // If just loading more (reset=false, isRefresh=false), we don't set separate loading state yet
-            // or we could use a separate "isLoadingMore" if needed, but for now this is fine.
-            
-            try {
-                val query = _searchQuery.value
-                val tags = _selectedTags.value.toList()
-                val sort = _sortOption.value
-
-
-
-                val result = when (sort) {
-                    SortOption.Popular, SortOption.PopularDay, SortOption.PopularWeek, SortOption.PopularMonth -> {
-                        val period = when (sort) {
-                            SortOption.PopularDay -> "day"
-                            SortOption.PopularWeek -> "week"
-                            SortOption.PopularMonth -> "month"
-                            else -> "week" // Default to week
-                        }
-                        // API limits seem fragile, sticking to 50
-                        repository.getPopularPosts(limit = 50, period = period, offset = currentOffset)
-                    }
-                    SortOption.Random -> {
-                        if (reset) repository.getRandomPosts() else emptyList()
-                    }
-                    else -> {
-                        repository.getRecentPosts(
-                            limit = 50, // Hardcoded to 50 for safety
-                            offset = currentOffset,
-                            query = if (query.isBlank()) null else query,
-                            tags = if (tags.isEmpty()) null else tags
-                        )
-                    }
-                }
-
-                if (reset) {
-                    _posts.value = result
-                } else {
-                    _posts.value = _posts.value + result
-                }
-
-                if (result.isNotEmpty() && sort != SortOption.Random) {
-                    currentOffset += result.size // Critical Fix: Increment by actual count
-                }
-            } catch (e: Exception) {
-                if (e is kotlinx.coroutines.CancellationException) throw e
-                if (e is retrofit2.HttpException && e.code() == 429) {
-                    _error.value = "Too many requests. Please wait a moment."
-                } else {
-                    _error.value = e.message ?: "Failed to fetch posts"
-                }
-            } finally {
-                _isLoading.value = false
-                _isRefreshing.value = false
-            }
+            kotlinx.coroutines.delay(1000) // Debounce 1000ms
+            _debouncedSearchQuery.value = query
         }
     }
 
@@ -306,9 +249,6 @@ constructor(
         if ((option == SortOption.PopularDay || option == SortOption.PopularWeek || option == SortOption.PopularMonth) && _popularCreators.value.isEmpty()) {
             fetchPopularCreators()
         }
-        if (_searchMode.value == SearchMode.Posts) {
-            fetchPosts()
-        }
     }
     
     fun toggleSortAscending() {
@@ -322,18 +262,12 @@ constructor(
         } else {
             _selectedServices.value = current + service
         }
-        if (_searchMode.value == SearchMode.Posts) {
-            fetchPosts()
-        }
     }
 
     fun clearFilters() {
         _selectedServices.value = emptySet()
         _selectedTags.value = emptySet()
         _sortOption.value = SortOption.Updated
-        if (_searchMode.value == SearchMode.Posts) {
-            fetchPosts()
-        }
     }
 
     fun fetchCreators(isRefresh: Boolean = false) {
@@ -428,21 +362,21 @@ constructor(
     }
 
     fun toggleSelection(post: com.example.kemono.data.model.Post) {
-        val current = _selectedPostIds.value
+        val current = _selectedPosts.value
         val postId = post.id ?: return
-        if (current.contains(postId)) {
-            _selectedPostIds.value = current - postId
-            if (_selectedPostIds.value.isEmpty()) {
+        if (current.any { it.id == postId }) {
+            _selectedPosts.value = current.filterNot { it.id == postId }.toSet()
+            if (_selectedPosts.value.isEmpty()) {
                 _isSelectionMode.value = false
             }
         } else {
-            _selectedPostIds.value = current + postId
+            _selectedPosts.value = current + post
             _isSelectionMode.value = true
         }
     }
 
     fun clearSelection() {
-        _selectedPostIds.value = emptySet()
+        _selectedPosts.value = emptySet()
         _isSelectionMode.value = false
     }
 
@@ -471,8 +405,7 @@ constructor(
     // Existing methods...
     
     fun downloadSelectedPosts() {
-        val selectedIds = _selectedPostIds.value
-        val postsToDownload = _posts.value.filter { it.id in selectedIds }
+        val postsToDownload = _selectedPosts.value
         
         viewModelScope.launch {
             postsToDownload.forEach { post ->

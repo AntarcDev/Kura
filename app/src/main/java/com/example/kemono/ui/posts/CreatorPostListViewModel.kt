@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.Flow
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.kemono.util.NetworkMonitor
@@ -32,8 +35,7 @@ class CreatorPostListViewModel @Inject constructor(
     val service: String = checkNotNull(savedStateHandle["service"])
     val creatorId: String = checkNotNull(savedStateHandle["creatorId"])
 
-    private val _posts = MutableStateFlow<List<Post>>(emptyList())
-    val posts: StateFlow<List<Post>> = _posts.asStateFlow()
+    val pagedPosts: Flow<PagingData<Post>> = repository.getPagedCreatorPosts(service, creatorId).cachedIn(viewModelScope)
 
     private val _creator = MutableStateFlow<Creator?>(null)
     val creator: StateFlow<Creator?> = _creator.asStateFlow()
@@ -189,68 +191,6 @@ class CreatorPostListViewModel @Inject constructor(
         }
     }
 
-    private var currentOffset = 0
-    private var fetchJob: kotlinx.coroutines.Job? = null
-
-    fun loadMorePosts() {
-        if (!_isLoading.value) {
-            fetchPosts(reset = false)
-        }
-    }
-
-    fun fetchPosts(reset: Boolean = false) {
-        fetchJob?.cancel()
-        fetchJob = viewModelScope.launch {
-            if (reset) {
-                _isLoading.value = true
-                currentOffset = 0
-            }
-            // If just loading more, we might want a separate loading state or just keep it silent/bottom loader
-            // For now, let's reuse _isLoading but handle UI strictly? 
-            // Better to only set isLoading=true for initial load or full refresh.
-            // But complex. Let's stick to simple isLoading for now.
-             if (reset) _isLoading.value = true
-             
-            _error.value = null
-            try {
-                if (service == "discord") {
-                    fetchDiscordChannels(creatorId)
-                } else {
-                    // API does not reliably support custom limits for this endpoint.
-                    // We rely on the server's default page size (usually 50) to avoid 400 errors or gaps.
-                    val newPosts = repository.getCreatorPosts(
-                        service = service, 
-                        creatorId = creatorId, 
-                        limit = 50, // Hardcoded to 50 as API seems to enforce/expect this
-                        offset = currentOffset
-                    )
-                    
-                    if (reset) {
-                        _posts.value = newPosts
-                    } else {
-                        _posts.value = _posts.value + newPosts
-                    }
-                    
-                    // Critical Fix: Increment offset by actual items received, not expected limit.
-                    // This handles if server returns fewer items or ignores limit.
-                    if (newPosts.isNotEmpty()) {
-                        currentOffset += newPosts.size
-                    }
-                }
-            } catch (e: Exception) {
-                if (e is retrofit2.HttpException && e.code() == 429) {
-                     // Too many requests
-                } else if (e is retrofit2.HttpException && e.code() == 400) {
-                    _error.value = "Error loading posts (400). Limit might be too high."
-                } else {
-                    _error.value = e.message ?: "Failed to load posts"
-                }
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
     // Discord State
     private val _discordChannels = MutableStateFlow<List<com.example.kemono.data.model.DiscordChannel>>(emptyList())
     val discordChannels: StateFlow<List<com.example.kemono.data.model.DiscordChannel>> = _discordChannels.asStateFlow()
@@ -297,34 +237,33 @@ class CreatorPostListViewModel @Inject constructor(
         }
     }
     // Selection State
-    private val _selectedPostIds = MutableStateFlow<Set<String>>(emptySet())
-    val selectedPostIds: StateFlow<Set<String>> = _selectedPostIds.asStateFlow()
+    private val _selectedPosts = MutableStateFlow<Set<Post>>(emptySet())
+    val selectedPosts: StateFlow<Set<Post>> = _selectedPosts.asStateFlow()
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
 
     fun toggleSelection(post: Post) {
-        val current = _selectedPostIds.value
+        val current = _selectedPosts.value
         val postId = post.id ?: return
-        if (current.contains(postId)) {
-            _selectedPostIds.value = current - postId
-            if (_selectedPostIds.value.isEmpty()) {
+        if (current.any { it.id == postId }) {
+            _selectedPosts.value = current.filterNot { it.id == postId }.toSet()
+            if (_selectedPosts.value.isEmpty()) {
                 _isSelectionMode.value = false
             }
         } else {
-            _selectedPostIds.value = current + postId
+            _selectedPosts.value = current + post
             _isSelectionMode.value = true
         }
     }
 
     fun clearSelection() {
-        _selectedPostIds.value = emptySet()
+        _selectedPosts.value = emptySet()
         _isSelectionMode.value = false
     }
 
     fun downloadSelectedPosts() {
-        val selectedIds = _selectedPostIds.value
-        val postsToDownload = _posts.value.filter { it.id in selectedIds }
+        val postsToDownload = _selectedPosts.value
         
         viewModelScope.launch {
             postsToDownload.forEach { post ->
@@ -405,7 +344,7 @@ class CreatorPostListViewModel @Inject constructor(
 
     init {
         fetchCreatorProfile()
-        fetchPosts(reset = true)
+        if (service == "discord") fetchDiscordChannels(creatorId)
         checkIfFavorite()
         fetchProfileDetails()
         observeFavoritePosts()

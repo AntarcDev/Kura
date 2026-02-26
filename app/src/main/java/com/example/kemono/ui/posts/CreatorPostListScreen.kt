@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.model.Creator
@@ -75,7 +76,7 @@ fun CreatorPostListScreen(
     onBackClick: () -> Unit,
     onCreatorClick: (com.example.kemono.data.model.Creator) -> Unit
 ) {
-    val posts by viewModel.posts.collectAsState()
+    val posts = viewModel.pagedPosts.collectAsLazyPagingItems()
     val creator by viewModel.creator.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -87,7 +88,7 @@ fun CreatorPostListScreen(
     val fancards by viewModel.fancards.collectAsState()
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
-    val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+    val selectedPosts by viewModel.selectedPosts.collectAsState()
 
     val favoritePostIds by viewModel.favoritePostIds.collectAsState()
     val downloadedPostIds by viewModel.downloadedPostIds.collectAsState()
@@ -108,7 +109,7 @@ fun CreatorPostListScreen(
         topBar = {
             if (isSelectionMode) {
                 com.example.kemono.ui.components.SelectionTopAppBar(
-                    selectedCount = selectedPostIds.size,
+                    selectedCount = selectedPosts.size,
                     onClearSelection = viewModel::clearSelection,
                     onDownloadSelected = viewModel::downloadSelectedPosts
                 )
@@ -166,7 +167,7 @@ fun CreatorPostListScreen(
                                 if (viewModel.service == "discord") {
                                     Text("Chat")
                                 } else {
-                                    Text("Posts (${posts.size})") 
+                                    Text("Posts") 
                                 }
                             }
                         )
@@ -210,30 +211,41 @@ fun CreatorPostListScreen(
                                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 modifier = Modifier.fillMaxSize()
                                             ) {
-                                                itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
-                                                    if (index >= posts.size - 1) {
-                                                        LaunchedEffect(Unit) {
-                                                            viewModel.loadMorePosts()
+                                                items(count = posts.itemCount, key = { index -> posts[index]?.id ?: index }) { index ->
+                                                    val post = posts[index]
+                                                    if (post != null) {
+                                                        com.example.kemono.ui.components.PostGridItem(
+                                                            post = post,
+                                                            selected = selectedPosts.any { it.id == post.id },
+                                                            onClick = { 
+                                                                if (isSelectionMode) {
+                                                                    viewModel.toggleSelection(post)
+                                                                } else {
+                                                                    onPostClick(post)
+                                                                }
+                                                            },
+                                                            onLongClick = { viewModel.toggleSelection(post) },
+                                                            isFavorite = favoritePostIds.contains(post.id),
+                                                            onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                            isDownloaded = downloadedPostIds.contains(post.id),
+                                                            autoplayGifs = autoplayGifs,
+                                                            imageQuality = imageQuality,
+                                                            showCreator = false // Already on profile
+                                                        )
+                                                    }
+                                                }
+                                                when (val state = posts.loadState.append) {
+                                                    is androidx.paging.LoadState.Loading -> {
+                                                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(this.maxLineSpan) }) {
+                                                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp).wrapContentWidth(Alignment.CenterHorizontally))
                                                         }
                                                     }
-                                                    com.example.kemono.ui.components.PostGridItem(
-                                                        post = post,
-                                                        selected = selectedPostIds.contains(post.id),
-                                                        onClick = { 
-                                                            if (isSelectionMode) {
-                                                                viewModel.toggleSelection(post)
-                                                            } else {
-                                                                onPostClick(post)
-                                                            }
-                                                        },
-                                                        onLongClick = { viewModel.toggleSelection(post) },
-                                                        isFavorite = favoritePostIds.contains(post.id),
-                                                        onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                                        isDownloaded = downloadedPostIds.contains(post.id),
-                                                        autoplayGifs = autoplayGifs,
-                                                        imageQuality = imageQuality,
-                                                        showCreator = false // Already on profile
-                                                    )
+                                                    is androidx.paging.LoadState.Error -> {
+                                                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(this.maxLineSpan) }) {
+                                                            Text("Error appending: ${state.error.localizedMessage}", modifier = Modifier.padding(16.dp))
+                                                        }
+                                                    }
+                                                    else -> {}
                                                 }
                                             }
                                         } else {
@@ -243,34 +255,45 @@ fun CreatorPostListScreen(
                                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 modifier = Modifier.fillMaxSize()
                                             ) {
-                                                itemsIndexed(posts, key = { _, post -> post.id ?: post.hashCode() }) { index, post ->
-                                                    if (index >= posts.size - 1) {
-                                                        LaunchedEffect(Unit) {
-                                                            viewModel.loadMorePosts()
+                                                items(count = posts.itemCount, key = { index -> posts[index]?.id ?: index }) { index ->
+                                                    val post = posts[index]
+                                                    if (post != null) {
+                                                        PostItem(
+                                                            post = post,
+                                                            selected = selectedPosts.any { it.id == post.id },
+                                                            onClick = { 
+                                                                if (isSelectionMode) {
+                                                                    viewModel.toggleSelection(post)
+                                                                } else {
+                                                                    onPostClick(post)
+                                                                }
+                                                            },
+                                                            onLongClick = {
+                                                                viewModel.toggleSelection(post)
+                                                            },
+                                                            onCreatorClick = {},
+                                                            showCreator = false,
+                                                            isFavorite = favoritePostIds.contains(post.id),
+                                                            onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                            isDownloaded = downloadedPostIds.contains(post.id),
+                                                            autoplayGifs = autoplayGifs,
+                                                            imageQuality = imageQuality,
+                                                            showService = false
+                                                        )
+                                                    }
+                                                }
+                                                when (val state = posts.loadState.append) {
+                                                    is androidx.paging.LoadState.Loading -> {
+                                                        item {
+                                                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp).wrapContentWidth(Alignment.CenterHorizontally))
                                                         }
                                                     }
-                                                    PostItem(
-                                                        post = post,
-                                                        selected = selectedPostIds.contains(post.id),
-                                                        onClick = { 
-                                                            if (isSelectionMode) {
-                                                                viewModel.toggleSelection(post)
-                                                            } else {
-                                                                onPostClick(post)
-                                                            }
-                                                        },
-                                                        onLongClick = {
-                                                            viewModel.toggleSelection(post)
-                                                        },
-                                                        onCreatorClick = {},
-                                                        showCreator = false,
-                                                        isFavorite = favoritePostIds.contains(post.id),
-                                                        onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                                        isDownloaded = downloadedPostIds.contains(post.id),
-                                                        autoplayGifs = autoplayGifs,
-                                                        imageQuality = imageQuality,
-                                                        showService = false
-                                                    )
+                                                    is androidx.paging.LoadState.Error -> {
+                                                        item {
+                                                            Text("Error appending: ${state.error.localizedMessage}", modifier = Modifier.padding(16.dp))
+                                                        }
+                                                    }
+                                                    else -> {}
                                                 }
                                             }
                                         }

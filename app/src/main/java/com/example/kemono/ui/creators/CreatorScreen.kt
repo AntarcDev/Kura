@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-// import androidx.compose.foundation.lazy.grid.items as gridItems
-// import androidx.compose.foundation.lazy.items as lazyItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.LoadState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -76,12 +76,12 @@ fun CreatorScreen(
 
 
     val searchMode by viewModel.searchMode.collectAsState()
-    val posts by viewModel.posts.collectAsState()
+    val posts = viewModel.pagedPosts.collectAsLazyPagingItems()
     val tags by viewModel.tags.collectAsState()
     val selectedTags by viewModel.selectedTags.collectAsState()
 
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
-    val selectedPostIds by viewModel.selectedPostIds.collectAsState()
+    val selectedPosts by viewModel.selectedPosts.collectAsState()
     val sortAscending by viewModel.sortAscending.collectAsState()
     val searchHistory by viewModel.searchHistory.collectAsState()
     
@@ -133,7 +133,7 @@ fun CreatorScreen(
         topBar = {
             if (isSelectionMode) {
                 SelectionTopAppBar(
-                    selectedCount = selectedPostIds.size,
+                    selectedCount = selectedPosts.size,
                     onClearSelection = viewModel::clearSelection,
                     onDownloadSelected = viewModel::downloadSelectedPosts
                 )
@@ -143,7 +143,6 @@ fun CreatorScreen(
                     onQueryChange = { viewModel.onSearchQueryChange(it) },
                     onSearch = { 
                         if (searchMode == SearchMode.Artists) viewModel.fetchCreators() 
-                        else viewModel.fetchPosts() 
                         viewModel.addToSearchHistory(searchQuery)
                     },
                     onClearSearch = { viewModel.onSearchQueryChange("") },
@@ -153,7 +152,7 @@ fun CreatorScreen(
                     searchHistory = searchHistory,
                     onHistoryItemClick = { query -> 
                         viewModel.onSearchQueryChange(query)
-                        if (searchMode == SearchMode.Artists) viewModel.fetchCreators() else viewModel.fetchPosts()
+                        if (searchMode == SearchMode.Artists) viewModel.fetchCreators()
                         viewModel.addToSearchHistory(query)
                     },
                     onHistoryItemRemove = { viewModel.removeFromSearchHistory(it) },
@@ -163,10 +162,10 @@ fun CreatorScreen(
         }
     ) { paddingValues ->
         PullToRefreshBox(
-            isRefreshing = isRefreshing,
+            isRefreshing = if (searchMode == SearchMode.Artists) isRefreshing else posts.loadState.refresh is LoadState.Loading,
             onRefresh = { 
                 if (searchMode == SearchMode.Artists) viewModel.fetchCreators(isRefresh = true) 
-                else viewModel.fetchPosts(isRefresh = true) 
+                else posts.refresh() 
             },
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
@@ -203,7 +202,7 @@ fun CreatorScreen(
                             Text(text = error ?: "Unknown error", color = MaterialTheme.colorScheme.error)
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(onClick = { 
-                                if (page == 0) viewModel.fetchCreators() else viewModel.fetchPosts() 
+                                if (page == 0) viewModel.fetchCreators() else posts.retry() 
                             }) {
                                 Text("Retry")
                             }
@@ -305,7 +304,7 @@ fun CreatorScreen(
                             "Large" -> 200.dp
                             else -> 150.dp // Medium
                         }
-                        if (isLoading && posts.isEmpty()) {
+                        if (posts.itemCount == 0 && posts.loadState.refresh is LoadState.Loading) {
                             Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
@@ -325,53 +324,57 @@ fun CreatorScreen(
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         items(
-                                            count = posts.size,
-                                            key = { index -> posts[index].id ?: "post_$index" }
+                                            count = posts.itemCount,
+                                            key = { index -> posts[index]?.id ?: "post_$index" }
                                         ) { index ->
                                             val post = posts[index]
                                             
-                                            LaunchedEffect(index) {
-                                                if (index >= posts.size - 5) {
-                                                    viewModel.loadMorePosts()
-                                                }
-                                            }
-    
-                                            com.example.kemono.ui.components.PostItem(
-                                                post = post,
-                                                selected = selectedPostIds.contains(post.id),
-                                                onClick = {
-                                                    if (isSelectionMode) {
+                                            if (post != null) {
+                                                com.example.kemono.ui.components.PostItem(
+                                                    post = post,
+                                                    selected = selectedPosts.any { it.id == post.id },
+                                                    onClick = {
+                                                        if (isSelectionMode) {
+                                                            viewModel.toggleSelection(post)
+                                                        } else {
+                                                            onPostClick(post)
+                                                        }
+                                                    },
+                                                    onLongClick = {
                                                         viewModel.toggleSelection(post)
-                                                    } else {
-                                                        onPostClick(post)
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    viewModel.toggleSelection(post)
-                                                },
-                                                onCreatorClick = {
-                                                    val creator = Creator(
-                                                        id = post.user ?: "",
-                                                        service = post.service ?: "",
-                                                        name = "Unknown",
-                                                        updated = 0,
-                                                        indexed = 0
-                                                    )
-                                                    onCreatorClick(creator)
-                                                },
-                                                isFavorite = favoritePostIds.contains(post.id),
-                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                                isDownloaded = downloadedPostIds.contains(post.id),
-                                                autoplayGifs = autoplayGifs,
-                                                imageQuality = imageQuality
-                                            )
+                                                    },
+                                                    onCreatorClick = {
+                                                        val creator = Creator(
+                                                            id = post.user ?: "",
+                                                            service = post.service ?: "",
+                                                            name = "Unknown",
+                                                            updated = 0,
+                                                            indexed = 0
+                                                        )
+                                                        onCreatorClick(creator)
+                                                    },
+                                                    isFavorite = favoritePostIds.contains(post.id),
+                                                    onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    isDownloaded = downloadedPostIds.contains(post.id),
+                                                    autoplayGifs = autoplayGifs,
+                                                    imageQuality = imageQuality
+                                                )
+                                            }
                                         }
-                                        if (isLoading && posts.isNotEmpty()) {
-                                            item {
-                                                Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator()
+                                        when (val state = posts.loadState.append) {
+                                            is LoadState.Loading -> {
+                                                item {
+                                                    Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator()
+                                                    }
                                                 }
                                             }
+                                            is LoadState.Error -> {
+                                                item {
+                                                    Text("Error appending: ${state.error.localizedMessage}", modifier = Modifier.padding(16.dp))
+                                                }
+                                            }
+                                            else -> {}
                                         }
                                     }
                                 } else {
@@ -383,54 +386,58 @@ fun CreatorScreen(
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         items(
-                                            count = posts.size,
-                                            key = { index -> posts[index].id ?: "post_$index" }
+                                            count = posts.itemCount,
+                                            key = { index -> posts[index]?.id ?: "post_$index" }
                                         ) { index ->
                                             val post = posts[index]
     
-                                            LaunchedEffect(index) {
-                                                if (index >= posts.size - 5) {
-                                                    viewModel.loadMorePosts()
-                                                }
-                                            }
-    
-                                            com.example.kemono.ui.components.PostGridItem(
-                                                post = post,
-                                                selected = selectedPostIds.contains(post.id),
-                                                onClick = {
-                                                    if (isSelectionMode) {
+                                            if (post != null) {
+                                                com.example.kemono.ui.components.PostGridItem(
+                                                    post = post,
+                                                    selected = selectedPosts.any { it.id == post.id },
+                                                    onClick = {
+                                                        if (isSelectionMode) {
+                                                            viewModel.toggleSelection(post)
+                                                        } else {
+                                                            onPostClick(post)
+                                                        }
+                                                    },
+                                                    onLongClick = {
                                                         viewModel.toggleSelection(post)
-                                                    } else {
-                                                        onPostClick(post)
+                                                    },
+                                                    isFavorite = favoritePostIds.contains(post.id),
+                                                    onFavoriteClick = { viewModel.toggleFavoritePost(post) },
+                                                    isDownloaded = downloadedPostIds.contains(post.id),
+                                                    autoplayGifs = autoplayGifs,
+                                                    imageQuality = imageQuality,
+                                                    showCreator = true,
+                                                    onCreatorClick = {
+                                                         val creator = com.example.kemono.data.model.Creator(
+                                                            id = post.user ?: "",
+                                                            service = post.service ?: "",
+                                                            name = "Unknown",
+                                                            updated = 0,
+                                                            indexed = 0
+                                                        )
+                                                        onCreatorClick(creator)
                                                     }
-                                                },
-                                                onLongClick = {
-                                                    viewModel.toggleSelection(post)
-                                                },
-                                                isFavorite = favoritePostIds.contains(post.id),
-                                                onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                                isDownloaded = downloadedPostIds.contains(post.id),
-                                                autoplayGifs = autoplayGifs,
-                                                imageQuality = imageQuality,
-                                                showCreator = true,
-                                                onCreatorClick = {
-                                                     val creator = com.example.kemono.data.model.Creator(
-                                                        id = post.user ?: "",
-                                                        service = post.service ?: "",
-                                                        name = "Unknown",
-                                                        updated = 0,
-                                                        indexed = 0
-                                                    )
-                                                    onCreatorClick(creator)
-                                                }
-                                            )
+                                                )
+                                            }
                                         }
-                                        if (isLoading && posts.isNotEmpty()) {
-                                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                                Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator()
+                                        when (val state = posts.loadState.append) {
+                                            is LoadState.Loading -> {
+                                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                                    Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator()
+                                                    }
                                                 }
                                             }
+                                            is LoadState.Error -> {
+                                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                                    Text("Error appending: ${state.error.localizedMessage}", modifier = Modifier.padding(16.dp))
+                                                }
+                                            }
+                                            else -> {}
                                         }
                                     }
                                 }
