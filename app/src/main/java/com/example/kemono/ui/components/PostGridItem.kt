@@ -63,7 +63,8 @@ fun PostGridItem(
     isDownloaded: Boolean = false,
     autoplayGifs: Boolean = true,
     showCreator: Boolean = false,
-    onCreatorClick: () -> Unit = {}
+    onCreatorClick: () -> Unit = {},
+    imageQuality: String = "Sample"
 ) {
     Card(
         modifier = Modifier
@@ -88,16 +89,20 @@ fun PostGridItem(
                 when (preview) {
                     is com.example.kemono.util.PreviewContent.Image -> {
                         val url = preview.url
-                        val model = if (!autoplayGifs) {
-                            coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                .data(url)
-                                .crossfade(true)
-                                .decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
-                                .memoryCacheKey(url + "_static")
-                                .build()
-                         } else {
-                            url
-                         }
+                        val model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(url)
+                            .crossfade(true)
+                            .apply {
+                                when (imageQuality) {
+                                    "Low" -> size(300)
+                                    "Sample" -> size(800)
+                                }
+                                if (!autoplayGifs) {
+                                    decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                    memoryCacheKey(url + "_static")
+                                }
+                            }
+                            .build()
                         
                         SubcomposeAsyncImage(
                             model = model,

@@ -44,6 +44,7 @@ fun ProfileScreen(
     val layoutMode by viewModel.layoutMode.collectAsState()
     val gridDensity by viewModel.gridDensity.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    val imageQuality by settingsViewModel.imageQuality.collectAsState()
 
     val minSize = when (gridDensity) {
         "Small" -> 120.dp
@@ -261,7 +262,8 @@ fun ProfileScreen(
                                                  isFavorite = true,
                                                  onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                  isDownloaded = downloadedPostIds.contains(post.id),
-                                                 autoplayGifs = autoplayGifs
+                                                 autoplayGifs = autoplayGifs,
+                                                 imageQuality = imageQuality
                                             )
                                         }
                                     }
@@ -293,7 +295,8 @@ fun ProfileScreen(
                                                    isFavorite = true,
                                                    onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                    isDownloaded = downloadedPostIds.contains(post.id),
-                                                   autoplayGifs = autoplayGifs
+                                                   autoplayGifs = autoplayGifs,
+                                                   imageQuality = imageQuality
                                              )
                                          }
                                      }

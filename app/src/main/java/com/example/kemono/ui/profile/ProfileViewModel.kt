@@ -119,16 +119,18 @@ class ProfileViewModel @Inject constructor(
             // Ideally Repo should have toggle, but we can check flow or try catch insert/delete
             // For now assuming add for simplicity or we need isFavorite check
             // Check if already favorites
-            val exists = favoritePosts.value.any { it.id == post.id }
+            val isFavorite = favoritePosts.value.any { it.id == post.id }
             
-             try {
-                if (exists) {
-                    repository.removeFavoritePost(favPost)
-                } else {
-                    repository.addFavoritePost(favPost)
+            if (isFavorite) {
+                repository.removeFavoritePost(favPost)
+            } else {
+                repository.addFavoritePost(favPost)
+                
+                val autoDownload = settingsRepository.autoDownloadFavorites.firstOrNull() ?: false
+                if (autoDownload) {
+                    val creatorName = post.user ?: "Unknown"
+                    downloadRepository.downloadPostMedia(post, creatorName)
                 }
-            } catch (e: Exception) {
-               // Handle error
             }
         }
     }

@@ -84,8 +84,40 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         preferences[AUTOPLAY_GIFS] ?: true // Default to true
     }
 
-    val lowResMode: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[LOW_RES_MODE] ?: true // Default to true for performance
+    val isAppLockEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[IS_APP_LOCK_ENABLED] ?: false
+    }
+
+    val appLockPin: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[APP_LOCK_PIN]
+    }
+
+    val isIncognitoKeyboardEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[IS_INCOGNITO_KEYBOARD_ENABLED] ?: false
+    }
+
+    val cacheSizeLimitRatio: Flow<Float> = dataStore.data.map { preferences ->
+        preferences[CACHE_SIZE_LIMIT_RATIO] ?: 0f // 0f means "No Limit"
+    }
+
+    val autoDownloadFavorites: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[AUTO_DOWNLOAD_FAVORITES] ?: false
+    }
+
+    val startVideosMuted: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[START_VIDEOS_MUTED] ?: false
+    }
+
+    val useExternalVideoPlayer: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[USE_EXTERNAL_VIDEO_PLAYER] ?: false
+    }
+
+    val imageQuality: Flow<String> = dataStore.data.map { preferences ->
+        preferences[IMAGE_QUALITY] ?: "Sample"
+    }
+
+    val customColorSchemeType: Flow<String> = dataStore.data.map { preferences ->
+        preferences[CUSTOM_COLOR_SCHEME_TYPE] ?: "Default"
     }
 
     suspend fun setArtistLayoutMode(mode: String) {
@@ -107,8 +139,46 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         dataStore.edit { preferences -> preferences[AUTOPLAY_GIFS] = enabled }
     }
 
-    suspend fun setLowResMode(enabled: Boolean) {
-        dataStore.edit { preferences -> preferences[LOW_RES_MODE] = enabled }
+    suspend fun setIsAppLockEnabled(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[IS_APP_LOCK_ENABLED] = enabled }
+    }
+
+    suspend fun setAppLockPin(pin: String?) {
+        dataStore.edit { preferences ->
+            if (pin == null) {
+                preferences.remove(APP_LOCK_PIN)
+            } else {
+                preferences[APP_LOCK_PIN] = pin
+            }
+        }
+    }
+
+    suspend fun setIsIncognitoKeyboardEnabled(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[IS_INCOGNITO_KEYBOARD_ENABLED] = enabled }
+    }
+
+    suspend fun setCacheSizeLimitRatio(ratio: Float) {
+        dataStore.edit { preferences -> preferences[CACHE_SIZE_LIMIT_RATIO] = ratio }
+    }
+
+    suspend fun setAutoDownloadFavorites(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[AUTO_DOWNLOAD_FAVORITES] = enabled }
+    }
+
+    suspend fun setStartVideosMuted(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[START_VIDEOS_MUTED] = enabled }
+    }
+
+    suspend fun setUseExternalVideoPlayer(enabled: Boolean) {
+        dataStore.edit { preferences -> preferences[USE_EXTERNAL_VIDEO_PLAYER] = enabled }
+    }
+
+    suspend fun setImageQuality(quality: String) {
+        dataStore.edit { preferences -> preferences[IMAGE_QUALITY] = quality }
+    }
+
+    suspend fun setCustomColorSchemeType(type: String) {
+        dataStore.edit { preferences -> preferences[CUSTOM_COLOR_SCHEME_TYPE] = type }
     }
 
     // Page Size
@@ -124,6 +194,15 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val FAVORITE_LAYOUT_MODE = stringPreferencesKey("favorite_layout_mode")
         val GRID_DENSITY = stringPreferencesKey("grid_density")
         val AUTOPLAY_GIFS = androidx.datastore.preferences.core.booleanPreferencesKey("autoplay_gifs")
-        val LOW_RES_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("low_res_mode")
+        
+        val IS_APP_LOCK_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("is_app_lock_enabled")
+        val APP_LOCK_PIN = stringPreferencesKey("app_lock_pin")
+        val IS_INCOGNITO_KEYBOARD_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("is_incognito_keyboard_enabled")
+        val CACHE_SIZE_LIMIT_RATIO = androidx.datastore.preferences.core.floatPreferencesKey("cache_size_limit_ratio")
+        val AUTO_DOWNLOAD_FAVORITES = androidx.datastore.preferences.core.booleanPreferencesKey("auto_download_favorites")
+        val START_VIDEOS_MUTED = androidx.datastore.preferences.core.booleanPreferencesKey("start_videos_muted")
+        val USE_EXTERNAL_VIDEO_PLAYER = androidx.datastore.preferences.core.booleanPreferencesKey("use_external_video_player")
+        val IMAGE_QUALITY = stringPreferencesKey("image_quality")
+        val CUSTOM_COLOR_SCHEME_TYPE = stringPreferencesKey("custom_color_scheme_type")
     }
 }

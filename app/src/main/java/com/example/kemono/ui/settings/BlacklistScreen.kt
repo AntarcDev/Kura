@@ -152,21 +152,30 @@ fun AddBlacklistDialog(
                         onValueChange = { creatorId = it },
                         label = { Text("Creator ID") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+                        )
                     )
                      OutlinedTextField(
                         value = text,
                         onValueChange = { text = it },
                         label = { Text("Creator Name (Display)") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+                        )
                     )
                     OutlinedTextField(
                         value = service,
                         onValueChange = { service = it },
                         label = { Text("Service (Optional)") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+                        )
                     )
                 } else {
                     OutlinedTextField(
@@ -174,7 +183,10 @@ fun AddBlacklistDialog(
                         onValueChange = { text = it },
                         label = { Text(if (type == BlacklistType.TAG) "Tag Name" else "Keyword") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+                        )
                     )
                 }
             }

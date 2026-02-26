@@ -19,6 +19,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.Flow
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -264,8 +266,14 @@ object NetworkModule {
     @Singleton
     fun provideImageLoader(
         @ApplicationContext context: Context,
-        @Named("ImageClient") okHttpClient: OkHttpClient
+        @Named("ImageClient") okHttpClient: OkHttpClient,
+        settingsRepository: com.example.kemono.data.repository.SettingsRepository
     ): coil.ImageLoader {
+        val cacheSizeRatio: Float = kotlinx.coroutines.runBlocking {
+            settingsRepository.cacheSizeLimitRatio.firstOrNull() ?: 2.0f
+        }
+        val maxSizeBytes = (cacheSizeRatio * 1073741824f).toLong() // 1 GB in bytes
+
         return coil.ImageLoader.Builder(context)
             .okHttpClient(okHttpClient)
             .components {
@@ -286,7 +294,7 @@ object NetworkModule {
                 .diskCache {
                     coil.disk.DiskCache.Builder()
                             .directory(context.cacheDir.resolve("image_cache"))
-                            .maxSizeBytes(2L * 1024L * 1024L * 1024L) // 2 GB
+                            .maxSizeBytes(maxSizeBytes)
                             .build()
                 }
                 .crossfade(true)

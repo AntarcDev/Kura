@@ -80,7 +80,16 @@ constructor(
     val crashReportingEnabled = settingsRepository.crashReportingEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val downloadLocation = settingsRepository.downloadLocation.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
     val autoplayGifs = settingsRepository.autoplayGifs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-    val lowResMode = settingsRepository.lowResMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val isAppLockEnabled = settingsRepository.isAppLockEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val appLockPin = settingsRepository.appLockPin.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    val isIncognitoKeyboardEnabled = settingsRepository.isIncognitoKeyboardEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val cacheSizeLimitRatio = settingsRepository.cacheSizeLimitRatio.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    val autoDownloadFavorites = settingsRepository.autoDownloadFavorites.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val startVideosMuted = settingsRepository.startVideosMuted.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val useExternalVideoPlayer = settingsRepository.useExternalVideoPlayer.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val imageQuality = settingsRepository.imageQuality.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Sample")
+    val customColorSchemeType = settingsRepository.customColorSchemeType.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Default")
 
     // Stats
     data class CacheStats(val mediaCacheSize: Long, val networkCacheSize: Long, val totalSize: Long)
@@ -128,7 +137,16 @@ constructor(
     fun setCrashReportingEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setCrashReportingEnabled(enabled) }
     fun setDownloadLocation(uri: String) = viewModelScope.launch { settingsRepository.setDownloadLocation(uri) }
     fun setAutoplayGifs(enabled: Boolean) = viewModelScope.launch { settingsRepository.setAutoplayGifs(enabled) }
-    fun setLowResMode(enabled: Boolean) = viewModelScope.launch { settingsRepository.setLowResMode(enabled) }
+    
+    fun setIsAppLockEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setIsAppLockEnabled(enabled) }
+    fun setAppLockPin(pin: String?) = viewModelScope.launch { settingsRepository.setAppLockPin(pin) }
+    fun setIsIncognitoKeyboardEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setIsIncognitoKeyboardEnabled(enabled) }
+    fun setCacheSizeLimitRatio(ratio: Float) = viewModelScope.launch { settingsRepository.setCacheSizeLimitRatio(ratio) }
+    fun setAutoDownloadFavorites(enabled: Boolean) = viewModelScope.launch { settingsRepository.setAutoDownloadFavorites(enabled) }
+    fun setStartVideosMuted(enabled: Boolean) = viewModelScope.launch { settingsRepository.setStartVideosMuted(enabled) }
+    fun setUseExternalVideoPlayer(enabled: Boolean) = viewModelScope.launch { settingsRepository.setUseExternalVideoPlayer(enabled) }
+    fun setImageQuality(quality: String) = viewModelScope.launch { settingsRepository.setImageQuality(quality) }
+    fun setCustomColorSchemeType(type: String) = viewModelScope.launch { settingsRepository.setCustomColorSchemeType(type) }
 
     fun refreshCacheStats() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -300,6 +318,29 @@ constructor(
 
     private val _importStatus = MutableStateFlow<String?>(null)
     val importStatus: StateFlow<String?> = _importStatus.asStateFlow()
+
+    private val _backupRestoreStatus = MutableStateFlow<String?>(null)
+    val backupRestoreStatus: StateFlow<String?> = _backupRestoreStatus.asStateFlow()
+
+    fun clearBackupRestoreStatus() {
+        _backupRestoreStatus.value = null
+    }
+
+    fun backupData(uri: Uri) {
+        viewModelScope.launch {
+            _backupRestoreStatus.value = "Backing up..."
+            val result = com.example.kemono.util.BackupRestoreUtils.createBackup(context, uri)
+            _backupRestoreStatus.value = if (result.isSuccess) "Backup successful!" else "Backup failed: ${result.exceptionOrNull()?.message}"
+        }
+    }
+
+    fun restoreData(uri: Uri) {
+        viewModelScope.launch {
+            _backupRestoreStatus.value = "Restoring..."
+            val result = com.example.kemono.util.BackupRestoreUtils.restoreBackup(context, uri)
+            _backupRestoreStatus.value = if (result.isSuccess) "Restore successful! Please restart the app." else "Restore failed: ${result.exceptionOrNull()?.message}"
+        }
+    }
 
     fun importFavorites() {
         viewModelScope.launch {

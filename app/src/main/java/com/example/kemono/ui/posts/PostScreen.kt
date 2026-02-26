@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -60,7 +61,9 @@ fun PostScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
-    val lowResMode by settingsViewModel.lowResMode.collectAsState()
+    val imageQuality by settingsViewModel.imageQuality.collectAsState()
+    val startVideosMuted by settingsViewModel.startVideosMuted.collectAsState()
+    val useExternalVideoPlayer by settingsViewModel.useExternalVideoPlayer.collectAsState()
 
     Scaffold(
             topBar = {
@@ -176,6 +179,10 @@ fun PostScreen(
                                                         .data(node.url)
                                                         .crossfade(!isGif)
                                                         .apply {
+                                                            when (imageQuality) {
+                                                                "Low" -> size(400)
+                                                                "Sample" -> size(1000)
+                                                            }
                                                             if (!autoplayGifs) {
                                                                 decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
                                                                 memoryCacheKey(node.url + "_static")
@@ -228,8 +235,8 @@ fun PostScreen(
                                         val isClip = extension in listOf("clip", "csp")
                                         
                                         Box(modifier = Modifier.fillMaxWidth()) {
-                                            // Determine Preview URL based on Low Res Mode
-                                            val previewUrl = if (lowResMode && !file.thumbnailPath.isNullOrEmpty()) {
+                                            // Determine Preview URL based on Image Quality
+                                            val previewUrl = if (imageQuality != "Original" && !file.thumbnailPath.isNullOrEmpty()) {
                                                 "https://kemono.cr${file.thumbnailPath}"
                                             } else {
                                                 "https://kemono.cr${file.path}"
@@ -260,6 +267,10 @@ fun PostScreen(
                                                                     .data(thumbnailUrl)
                                                                     .crossfade(true)
                                                                     .apply {
+                                                                        when (imageQuality) {
+                                                                            "Low" -> size(400)
+                                                                            "Sample" -> size(1000)
+                                                                        }
                                                                         if (!autoplayGifs) {
                                                                             decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
                                                                             memoryCacheKey(thumbnailUrl + "_static")
@@ -333,14 +344,36 @@ fun PostScreen(
                                                 }
                                                 mediaType == com.example.kemono.util.MediaType.VIDEO -> {
                                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                                        com.example.kemono.ui.components.VideoPlayer(
-                                                                url = url,
-                                                                modifier =
-                                                                        Modifier.fillMaxWidth()
-                                                                                .height(300.dp)
-                                                                                .padding(vertical = 4.dp)
-                                                                                .clip(RoundedCornerShape(8.dp))
-                                                        )
+                                                        val currentContext = androidx.compose.ui.platform.LocalContext.current
+                                                        if (useExternalVideoPlayer) {
+                                                            androidx.compose.material3.OutlinedButton(
+                                                                onClick = {
+                                                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                                                    intent.setDataAndType(android.net.Uri.parse(url), "video/*")
+                                                                    val headers = android.os.Bundle().apply {
+                                                                        putString("Referer", "https://kemono.cr/")
+                                                                    }
+                                                                    intent.putExtra(android.provider.Browser.EXTRA_HEADERS, headers)
+                                                                    currentContext.startActivity(android.content.Intent.createChooser(intent, "Open Video"))
+                                                                },
+                                                                modifier = Modifier.fillMaxWidth().height(150.dp).padding(vertical = 4.dp),
+                                                                shape = RoundedCornerShape(8.dp)
+                                                            ) {
+                                                                Icon(Icons.Default.PlayArrow, contentDescription = "Play External")
+                                                                Spacer(modifier = Modifier.width(8.dp))
+                                                                Text("Play in External Player")
+                                                            }
+                                                        } else {
+                                                            com.example.kemono.ui.components.VideoPlayer(
+                                                                    url = url,
+                                                                    muted = startVideosMuted,
+                                                                    modifier =
+                                                                            Modifier.fillMaxWidth()
+                                                                                    .height(300.dp)
+                                                                                    .padding(vertical = 4.dp)
+                                                                                    .clip(RoundedCornerShape(8.dp))
+                                                            )
+                                                        }
                                                         Spacer(modifier = Modifier.height(8.dp))
                                                         androidx.compose.material3.Button(
                                                             onClick = { 
@@ -367,6 +400,10 @@ fun PostScreen(
                                                                 .data(previewUrl)
                                                                 .crossfade(mediaType != com.example.kemono.util.MediaType.GIF)
                                                                 .apply {
+                                                                    when (imageQuality) {
+                                                                        "Low" -> size(400)
+                                                                        "Sample" -> size(1000)
+                                                                    }
                                                                     if (!autoplayGifs) {
                                                                         decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
                                                                         memoryCacheKey(previewUrl + "_static")
@@ -440,8 +477,8 @@ fun PostScreen(
                                         val globalIndex = index + (if (mainFileExists) 1 else 0)
 
                                         Column {
-                                            // Determine Preview URL based on Low Res Mode
-                                            val previewUrl = if (lowResMode && !attachment.thumbnailPath.isNullOrEmpty()) {
+                                            // Determine Preview URL based on Image Quality
+                                            val previewUrl = if (imageQuality != "Original" && !attachment.thumbnailPath.isNullOrEmpty()) {
                                                 "https://kemono.cr${attachment.thumbnailPath}"
                                             } else {
                                                 "https://kemono.cr${attachment.path}"
@@ -471,6 +508,10 @@ fun PostScreen(
                                                                     .data(thumbnailUrl)
                                                                     .crossfade(true)
                                                                     .apply {
+                                                                        when (imageQuality) {
+                                                                            "Low" -> size(400)
+                                                                            "Sample" -> size(1000)
+                                                                        }
                                                                         if (!autoplayGifs) {
                                                                             decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
                                                                             memoryCacheKey(thumbnailUrl + "_static")
@@ -543,14 +584,36 @@ fun PostScreen(
                                                 }
                                                 mediaType == com.example.kemono.util.MediaType.VIDEO -> {
                                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                                        com.example.kemono.ui.components.VideoPlayer(
-                                                                url = url,
-                                                                modifier =
-                                                                        Modifier.fillMaxWidth()
-                                                                                .height(300.dp)
-                                                                                .padding(vertical = 4.dp)
-                                                                                .clip(RoundedCornerShape(8.dp))
-                                                        )
+                                                        val currentContext = androidx.compose.ui.platform.LocalContext.current
+                                                        if (useExternalVideoPlayer) {
+                                                            androidx.compose.material3.OutlinedButton(
+                                                                onClick = {
+                                                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                                                    intent.setDataAndType(android.net.Uri.parse(url), "video/*")
+                                                                    val headers = android.os.Bundle().apply {
+                                                                        putString("Referer", "https://kemono.cr/")
+                                                                    }
+                                                                    intent.putExtra(android.provider.Browser.EXTRA_HEADERS, headers)
+                                                                    currentContext.startActivity(android.content.Intent.createChooser(intent, "Open Video"))
+                                                                },
+                                                                modifier = Modifier.fillMaxWidth().height(150.dp).padding(vertical = 4.dp),
+                                                                shape = RoundedCornerShape(8.dp)
+                                                            ) {
+                                                                Icon(Icons.Default.PlayArrow, contentDescription = "Play External")
+                                                                Spacer(modifier = Modifier.width(8.dp))
+                                                                Text("Play in External Player")
+                                                            }
+                                                        } else {
+                                                            com.example.kemono.ui.components.VideoPlayer(
+                                                                    url = url,
+                                                                    muted = startVideosMuted,
+                                                                    modifier =
+                                                                            Modifier.fillMaxWidth()
+                                                                                    .height(300.dp)
+                                                                                    .padding(vertical = 4.dp)
+                                                                                    .clip(RoundedCornerShape(8.dp))
+                                                            )
+                                                        }
                                                         Spacer(modifier = Modifier.height(4.dp))
                                                         androidx.compose.material3.Button(
                                                             onClick = { 
@@ -577,6 +640,10 @@ fun PostScreen(
                                                                 .data(previewUrl)
                                                                 .crossfade(mediaType != com.example.kemono.util.MediaType.GIF)
                                                                 .apply {
+                                                                    when (imageQuality) {
+                                                                        "Low" -> size(400)
+                                                                        "Sample" -> size(1000)
+                                                                    }
                                                                     if (!autoplayGifs) {
                                                                         decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
                                                                         memoryCacheKey(previewUrl + "_static")

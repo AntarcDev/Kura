@@ -12,17 +12,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.kemono.util.NetworkMonitor
 
 @HiltViewModel
 class CreatorPostListViewModel @Inject constructor(
     private val repository: KemonoRepository,
     private val downloadRepository: com.example.kemono.data.repository.DownloadRepository,
-    savedStateHandle: SavedStateHandle
+    private val settingsRepository: com.example.kemono.data.repository.SettingsRepository,
+    savedStateHandle: SavedStateHandle,
+    networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
     val service: String = checkNotNull(savedStateHandle["service"])
@@ -175,6 +179,12 @@ class CreatorPostListViewModel @Inject constructor(
                 repository.removeFavoritePost(favoritePost)
             } else {
                 repository.addFavoritePost(favoritePost)
+                
+                val autoDownload = settingsRepository.autoDownloadFavorites.firstOrNull() ?: false
+                if (autoDownload) {
+                    val creatorName = _creator.value?.name ?: creatorId
+                    downloadRepository.downloadPostMedia(post, creatorName)
+                }
             }
         }
     }

@@ -92,6 +92,7 @@ fun CreatorPostListScreen(
     val favoritePostIds by viewModel.favoritePostIds.collectAsState()
     val downloadedPostIds by viewModel.downloadedPostIds.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    val imageQuality by settingsViewModel.imageQuality.collectAsState()
     val postLayoutMode by settingsViewModel.postLayoutMode.collectAsState()
     val gridDensity by settingsViewModel.gridDensity.collectAsState()
     
@@ -230,6 +231,7 @@ fun CreatorPostListScreen(
                                                         onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                         isDownloaded = downloadedPostIds.contains(post.id),
                                                         autoplayGifs = autoplayGifs,
+                                                        imageQuality = imageQuality,
                                                         showCreator = false // Already on profile
                                                     )
                                                 }
@@ -266,6 +268,7 @@ fun CreatorPostListScreen(
                                                         onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                         isDownloaded = downloadedPostIds.contains(post.id),
                                                         autoplayGifs = autoplayGifs,
+                                                        imageQuality = imageQuality,
                                                         showService = false
                                                     )
                                                 }

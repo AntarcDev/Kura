@@ -152,6 +152,9 @@ fun TagsContent(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             ),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+            ),
             trailingIcon = if (searchQuery.isNotEmpty()) {
                 { IconButton(onClick = { searchQuery = "" }) { Icon(Icons.Default.Close, contentDescription = null) } }
             } else null

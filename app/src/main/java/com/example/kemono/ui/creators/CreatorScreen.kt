@@ -71,6 +71,7 @@ fun CreatorScreen(
     val postLayoutMode by viewModel.postLayoutMode.collectAsState()
     val gridDensity by viewModel.gridDensity.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    val imageQuality by settingsViewModel.imageQuality.collectAsState()
 
 
 
@@ -361,7 +362,8 @@ fun CreatorScreen(
                                                 isFavorite = favoritePostIds.contains(post.id),
                                                 onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                 isDownloaded = downloadedPostIds.contains(post.id),
-                                                autoplayGifs = autoplayGifs
+                                                autoplayGifs = autoplayGifs,
+                                                imageQuality = imageQuality
                                             )
                                         }
                                         if (isLoading && posts.isNotEmpty()) {
@@ -409,6 +411,7 @@ fun CreatorScreen(
                                                 onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                                 isDownloaded = downloadedPostIds.contains(post.id),
                                                 autoplayGifs = autoplayGifs,
+                                                imageQuality = imageQuality,
                                                 showCreator = true,
                                                 onCreatorClick = {
                                                      val creator = com.example.kemono.data.model.Creator(

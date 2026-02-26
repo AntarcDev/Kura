@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,7 +41,8 @@ enum class SettingsRoute {
     Advanced,
     Licenses,
     Privacy,
-    Blacklist
+    Blacklist,
+    Security
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,6 +104,7 @@ fun SettingsScreen(
                             SettingsRoute.Licenses -> "Licenses"
                             SettingsRoute.Privacy -> "Privacy Policy"
                             SettingsRoute.Blacklist -> "Blocked Content"
+                            SettingsRoute.Security -> "Privacy & Security"
                         }
                     )
                 },
@@ -128,6 +132,7 @@ fun SettingsScreen(
                 SettingsRoute.Appearance -> SettingsAppearance(viewModel)
                 SettingsRoute.Data -> SettingsData(viewModel)
                 SettingsRoute.Advanced -> SettingsAdvanced(viewModel)
+                SettingsRoute.Security -> SettingsSecurity(viewModel)
                 SettingsRoute.Licenses -> LicensesScreen(onBackClick = { currentRoute = SettingsRoute.Main })
                 SettingsRoute.Privacy -> PrivacyPolicyScreen(onBackClick = { currentRoute = SettingsRoute.Main })
                 SettingsRoute.Blacklist -> BlacklistScreen(onBackClick = { currentRoute = SettingsRoute.Main })
@@ -160,6 +165,13 @@ fun SettingsMain(
              title = "Blocked Content",
              subtitle = "Manage blocked creators, tags, and keywords",
              onClick = { onNavigate(SettingsRoute.Blacklist) }
+        )
+
+        SettingsCategoryItem(
+            icon = Icons.Default.Lock,
+            title = "Privacy & Security",
+            subtitle = "App lock and incognito keyboard",
+            onClick = { onNavigate(SettingsRoute.Security) }
         )
         
         SettingsCategoryItem(
@@ -440,6 +452,116 @@ fun SettingsAppearance(viewModel: SettingsViewModel) {
     }
 }
 
+@Composable
+fun SettingsSecurity(viewModel: SettingsViewModel) {
+    val isAppLockEnabled by viewModel.isAppLockEnabled.collectAsState()
+    val appLockPin by viewModel.appLockPin.collectAsState()
+    val isIncognitoKeyboardEnabled by viewModel.isIncognitoKeyboardEnabled.collectAsState()
+    
+    var showPinDialog by remember { mutableStateOf(false) }
+    var pinInput by remember { mutableStateOf("") }
+    
+    if (showPinDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showPinDialog = false
+                pinInput = ""
+            },
+            title = { Text(if (isAppLockEnabled) "Disable PIN" else "Set PIN") },
+            text = {
+                OutlinedTextField(
+                    value = pinInput,
+                    onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) pinInput = it },
+                    label = { Text("4-Digit PIN") },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (isAppLockEnabled) {
+                            if (pinInput == appLockPin) {
+                                viewModel.setAppLockPin(null)
+                                viewModel.setIsAppLockEnabled(false)
+                                showPinDialog = false
+                                pinInput = ""
+                            } else {
+                                // Maybe show error toast here, keeping simple for now
+                            }
+                        } else {
+                            if (pinInput.length == 4) {
+                                viewModel.setAppLockPin(pinInput)
+                                viewModel.setIsAppLockEnabled(true)
+                                showPinDialog = false
+                                pinInput = ""
+                            }
+                        }
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        showPinDialog = false
+                        pinInput = ""
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Security",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        ListItem(
+            headlineContent = { Text("App Lock") },
+            supportingContent = { Text(if (isAppLockEnabled) "App is locked with a PIN" else "Require a PIN to open the app") },
+            trailingContent = {
+                Switch(
+                    checked = isAppLockEnabled,
+                    onCheckedChange = { showPinDialog = true }
+                )
+            },
+            modifier = Modifier.clickable { showPinDialog = true }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "Privacy",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        ListItem(
+            headlineContent = { Text("Incognito Keyboard") },
+            supportingContent = { Text("Request the system keyboard not to learn or save history on text fields (e.g., search).") },
+            trailingContent = {
+                Switch(
+                    checked = isIncognitoKeyboardEnabled,
+                    onCheckedChange = { viewModel.setIsIncognitoKeyboardEnabled(it) }
+                )
+            }
+        )
+    }
+}
+
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LayoutOptionSelector(
@@ -493,28 +615,88 @@ fun SettingsData(viewModel: SettingsViewModel) {
         )
 
         val downloadLocation by viewModel.downloadLocation.collectAsState()
-        val lowResMode by viewModel.lowResMode.collectAsState()
+        val imageQuality by viewModel.imageQuality.collectAsState()
+        val cacheSizeRatio by viewModel.cacheSizeLimitRatio.collectAsState()
+        val autoDownload by viewModel.autoDownloadFavorites.collectAsState()
         
-        ListItem(
-            headlineContent = { Text("Low Quality Mode") },
-            supportingContent = { 
-                Column {
-                    Text("Load compressed thumbnails instead of original full-resolution images. Significantly improves performance and reduces data usage.")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "⚠ Disabling this may cause high data usage, battery drain, and app stuttering.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error
+        var showCacheDropdown by remember { mutableStateOf(false) }
+        val cacheOptions = listOf(
+            0.1f to "100 MB",
+            0.5f to "500 MB",
+            1.0f to "1 GB",
+            2.0f to "2 GB",
+            10.0f to "Unlimited (10 GB)"
+        )
+        val selectedCacheLabel = cacheOptions.find { it.first == cacheSizeRatio }?.second ?: "${(cacheSizeRatio * 1024).toInt()} MB"
+
+        Box {
+            ListItem(
+                headlineContent = { Text("Image Cache Limit") },
+                supportingContent = { Text("Current size: $cacheStats\nSelected maximum: $selectedCacheLabel") },
+                modifier = Modifier.clickable { showCacheDropdown = true }
+            )
+            DropdownMenu(
+                expanded = showCacheDropdown,
+                onDismissRequest = { showCacheDropdown = false }
+            ) {
+                cacheOptions.forEach { (ratio, label) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            viewModel.setCacheSizeLimitRatio(ratio)
+                            showCacheDropdown = false
+                        }
                     )
                 }
-            },
+            }
+        }
+        
+        ListItem(
+            headlineContent = { Text("Auto-Download Favorites") },
+            supportingContent = { Text("Automatically download posts when you add them to favorites.") },
             trailingContent = {
                 Switch(
-                    checked = lowResMode,
-                    onCheckedChange = { viewModel.setLowResMode(it) }
+                    checked = autoDownload,
+                    onCheckedChange = { viewModel.setAutoDownloadFavorites(it) }
                 )
             }
         )
+
+        var showQualityDropdown by remember { mutableStateOf(false) }
+        val qualityOptions = listOf("Low", "Sample", "Original")
+
+        Box {
+            ListItem(
+                headlineContent = { Text("Image Quality") },
+                supportingContent = { 
+                    Column {
+                        Text("Controls how large images are decoded in memory. Lower quality drastically improves performance and prevents crashes.")
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "⚠ Original quality may cause severe lag and memory crashes.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                trailingContent = { Text(imageQuality) },
+                modifier = Modifier.clickable { showQualityDropdown = true }
+            )
+            DropdownMenu(
+                expanded = showQualityDropdown,
+                onDismissRequest = { showQualityDropdown = false }
+            ) {
+                qualityOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            viewModel.setImageQuality(option)
+                            showQualityDropdown = false
+                        }
+                    )
+                }
+            }
+        }
         
         val folderPicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {
@@ -619,6 +801,10 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
     val hasSession by viewModel.hasSession.collectAsState()
     val initStatus by viewModel.initStatus.collectAsState()
     val isInitializing by viewModel.isInitializing.collectAsState()
+    
+    val startVideosMuted by viewModel.startVideosMuted.collectAsState()
+    val useExternalVideoPlayer by viewModel.useExternalVideoPlayer.collectAsState()
+
     var cookieInput by remember { mutableStateOf(sessionCookie) }
 
     Column(
@@ -688,7 +874,10 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
             onValueChange = { cookieInput = it },
             label = { Text("Cookie Value") },
             modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            maxLines = 3,
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+            )
         )
 
         Row(
@@ -704,7 +893,7 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
 
 
 
-    if (hasSession) {
+            if (hasSession) {
                 OutlinedButton(
                     onClick = { 
                         viewModel.clearSession()
@@ -717,9 +906,98 @@ fun SettingsAdvanced(viewModel: SettingsViewModel) {
             }
         }
         
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        
+        // Video Player Settings
+        Text(text = "Media Playback", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
 
+        ListItem(
+            headlineContent = { Text("Mute Videos by Default") },
+            supportingContent = { Text("Start playing videos with no sound. You can unmute them from the player.") },
+            trailingContent = {
+                Switch(
+                    checked = startVideosMuted,
+                    onCheckedChange = { viewModel.setStartVideosMuted(it) }
+                )
+            }
+        )
 
+        ListItem(
+            headlineContent = { Text("Use External Video Player") },
+            supportingContent = { Text("Launch videos in an external app like VLC or MX Player instead of the built-in player.") },
+            trailingContent = {
+                Switch(
+                    checked = useExternalVideoPlayer,
+                    onCheckedChange = { viewModel.setUseExternalVideoPlayer(it) }
+                )
+            }
+        )
 
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        
+        // Backup & Restore Section
+        val backupStatus by viewModel.backupRestoreStatus.collectAsState()
+        
+        Text(text = "Backup & Restore", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        
+        Text(
+            text = "Export or import your settings, favorites, and history.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        val createDocumentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/zip")
+        ) { uri ->
+            uri?.let { viewModel.backupData(it) }
+        }
+
+        val openDocumentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let { viewModel.restoreData(it) }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { createDocumentLauncher.launch("KemonoBackup.zip") },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Export Backup")
+            }
+            OutlinedButton(
+                onClick = { openDocumentLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Import Backup")
+            }
+        }
+        
+        if (backupStatus != null) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = if (backupStatus!!.contains("failed")) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = backupStatus!!,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    IconButton(onClick = { viewModel.clearBackupRestoreStatus() }) {
+                        Icon(Icons.Default.Close, contentDescription = "Dismiss")
+                    }
+                }
+            }
+        }
 
         // Crash Reporting Section
         val crashReportingEnabled by viewModel.crashReportingEnabled.collectAsState()

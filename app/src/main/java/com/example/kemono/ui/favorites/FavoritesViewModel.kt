@@ -12,13 +12,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val repository: KemonoRepository,
-    private val settingsRepository: SettingsRepository,
+    private val settingsRepository: com.example.kemono.data.repository.SettingsRepository,
     private val downloadRepository: com.example.kemono.data.repository.DownloadRepository
 ) : ViewModel() {
 
@@ -75,6 +76,13 @@ class FavoritesViewModel @Inject constructor(
                 repository.removeFavoritePost(favoritePost)
             } else {
                 repository.addFavoritePost(favoritePost)
+                
+                val autoDownload = settingsRepository.autoDownloadFavorites.firstOrNull() ?: false
+                if (autoDownload) {
+                    // Try to map to an existing favorite creator name
+                    val creatorName = favorites.value.find { it.id == post.user }?.name ?: post.user ?: "Unknown"
+                    downloadRepository.downloadPostMedia(post, creatorName)
+                }
             }
         }
     }

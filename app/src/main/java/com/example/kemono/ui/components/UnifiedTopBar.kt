@@ -184,7 +184,10 @@ fun UnifiedTopBar(
                             trailingContent?.invoke()
                         }
                     },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Search,
+                        keyboardType = if (com.example.kemono.LocalIncognitoKeyboard.current) androidx.compose.ui.text.input.KeyboardType.Password else androidx.compose.ui.text.input.KeyboardType.Text
+                    ),
                     keyboardActions = KeyboardActions(onSearch = {
                         onSearch()
                         showHistory = false

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -21,6 +23,7 @@ class PostViewModel
 constructor(
         private val repository: KemonoRepository,
         private val downloadRepository: com.example.kemono.data.repository.DownloadRepository,
+        private val settingsRepository: com.example.kemono.data.repository.SettingsRepository,
         savedStateHandle: SavedStateHandle,
         networkMonitor: NetworkMonitor
 ) : ViewModel() {
@@ -67,6 +70,11 @@ constructor(
                 repository.removeFavoritePost(favPost)
             } else {
                 repository.addFavoritePost(favPost)
+                
+                val autoDownload = settingsRepository.autoDownloadFavorites.firstOrNull() ?: false
+                if (autoDownload) {
+                    downloadMedia()
+                }
             }
         }
     }
@@ -118,74 +126,12 @@ constructor(
                     creatorName = currentPost.user // Fallback to ID
                 }
             }
-
-            // Download main file
-            currentPost.file?.let { file ->
-                if (!file.path.isNullOrEmpty()) {
-                    val url = "https://kemono.cr${file.path}"
-                    val fileName = file.name ?: "file"
-                    val mediaType =
-                            if (com.example.kemono.util.getMediaType(file.path!!) ==
-                                            com.example.kemono.util.MediaType.VIDEO
-                            )
-                                    "VIDEO"
-                            else "IMAGE"
-                    downloadRepository.downloadFile(
-                            url,
-                            fileName,
-                            currentPost.id ?: "",
-                            currentPost.title ?: "",
-                            currentPost.user ?: "",
-                            creatorName ?: "",
-                            mediaType
-                    )
-                }
-            }
-
-            // Download attachments
-            currentPost.attachments.forEach { attachment ->
-                if (!attachment.path.isNullOrEmpty()) {
-                    val url = "https://kemono.cr${attachment.path}"
-                    val fileName = attachment.name ?: "attachment"
-                    val mediaType =
-                            if (com.example.kemono.util.getMediaType(attachment.path!!) ==
-                                            com.example.kemono.util.MediaType.VIDEO
-                            )
-                                    "VIDEO"
-                            else "IMAGE"
-                    downloadRepository.downloadFile(
-                            url,
-                            fileName,
-                            currentPost.id ?: "",
-                            currentPost.title ?: "",
-                            currentPost.user ?: "",
-                            creatorName ?: "",
-                            mediaType
-                    )
-                }
-            }
-
-            // Download inline images
-            currentPost.content?.let { htmlContent ->
-                val contentNodes = com.example.kemono.util.HtmlConverter.parseHtmlContent(htmlContent)
-                contentNodes.forEach { node ->
-                    if (node is com.example.kemono.util.ContentNode.Image) {
-                        val url = node.url
-                        val fileName = url.substringAfterLast('/')
-                        downloadRepository.downloadFile(
-                            url,
-                            fileName,
-                            currentPost.id ?: "",
-                            currentPost.title ?: "",
-                            currentPost.user ?: "",
-                            creatorName ?: "",
-                            "IMAGE"
-                        )
-                    }
-                }
-            }
+            
+            downloadRepository.downloadPostMedia(currentPost, creatorName ?: currentPost.user ?: "")
         }
     }
+
+
     fun downloadFile(url: String, fileName: String, mediaType: String) {
         val currentPost = _post.value ?: return
         

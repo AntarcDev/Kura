@@ -41,7 +41,8 @@ fun PostItem(
     isDownloaded: Boolean = false,
 
     autoplayGifs: Boolean = true,
-    showService: Boolean = true
+    showService: Boolean = true,
+    imageQuality: String = "Sample"
 ) {
     Card(
         modifier = Modifier
@@ -61,17 +62,23 @@ fun PostItem(
                         is com.example.kemono.util.PreviewContent.Image -> {
                             val url = preview.url
                             val isGif = url.endsWith(".gif", ignoreCase = true)
-                             AsyncImage(
-                                model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                    .data(url)
-                                    .crossfade(!isGif)
-                                    .apply {
-                                        if (!autoplayGifs) {
-                                            decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
-                                            memoryCacheKey(url + "_static")
-                                        }
+                             val model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                .data(url)
+                                .crossfade(!isGif)
+                                .apply {
+                                    when (imageQuality) {
+                                        "Low" -> size(300)
+                                        "Sample" -> size(800)
                                     }
-                                    .build(),
+                                    if (!autoplayGifs) {
+                                        decoderFactory(coil.decode.BitmapFactoryDecoder.Factory())
+                                        memoryCacheKey(url + "_static")
+                                    }
+                                }
+                                .build()
+                                
+                             AsyncImage(
+                                model = model,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop

@@ -42,6 +42,7 @@ fun FavoritesScreen(
     val layoutMode by viewModel.layoutMode.collectAsState()
     val gridDensity by viewModel.gridDensity.collectAsState()
     val autoplayGifs by settingsViewModel.autoplayGifs.collectAsState()
+    val imageQuality by settingsViewModel.imageQuality.collectAsState()
     
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedPostIds by viewModel.selectedPostIds.collectAsState()
@@ -176,6 +177,7 @@ fun FavoritesScreen(
                                     isFavorite = true,
                                     onFavoriteClick = { viewModel.toggleFavoritePost(post) },
                                     autoplayGifs = autoplayGifs,
+                                    imageQuality = imageQuality,
                                     showCreator = true,
                                     onCreatorClick = { 
                                         if (post.user != null) {
@@ -216,7 +218,8 @@ fun FavoritesScreen(
                                     onLongClick = { viewModel.toggleFavoritePost(post) },
                                     isFavorite = true,
                                     onFavoriteClick = { viewModel.toggleFavoritePost(post) },
-                                    autoplayGifs = autoplayGifs
+                                    autoplayGifs = autoplayGifs,
+                                    imageQuality = imageQuality
                                 )
                             }
                         }

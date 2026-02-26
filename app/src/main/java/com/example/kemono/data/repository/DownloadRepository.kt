@@ -132,6 +132,39 @@ constructor(
             e.printStackTrace()
         }
     }
+
+    suspend fun downloadPostMedia(post: com.example.kemono.data.model.Post, creatorNameFallback: String) {
+        val creatorName = creatorNameFallback.ifBlank { post.user ?: "Unknown" }
+
+        post.file?.let { file ->
+            if (!file.path.isNullOrEmpty()) {
+                val url = "https://kemono.cr${file.path}"
+                val fileName = file.name ?: "file"
+                val mediaType = if (com.example.kemono.util.getMediaType(file.path!!) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                downloadFile(url, fileName, post.id ?: "", post.title ?: "", post.user ?: "", creatorName, mediaType)
+            }
+        }
+
+        post.attachments.forEach { attachment ->
+            if (!attachment.path.isNullOrEmpty()) {
+                val url = "https://kemono.cr${attachment.path}"
+                val fileName = attachment.name ?: "attachment"
+                val mediaType = if (com.example.kemono.util.getMediaType(attachment.path!!) == com.example.kemono.util.MediaType.VIDEO) "VIDEO" else "IMAGE"
+                downloadFile(url, fileName, post.id ?: "", post.title ?: "", post.user ?: "", creatorName, mediaType)
+            }
+        }
+
+        post.content?.let { htmlContent ->
+            val contentNodes = com.example.kemono.util.HtmlConverter.parseHtmlContent(htmlContent)
+            contentNodes.forEach { node ->
+                if (node is com.example.kemono.util.ContentNode.Image) {
+                    val url = node.url
+                    val fileName = url.substringAfterLast('/')
+                    downloadFile(url, fileName, post.id ?: "", post.title ?: "", post.user ?: "", creatorName, "IMAGE")
+                }
+            }
+        }
+    }
 }
 
 data class DownloadStatus(val id: String, val status: Int, val progress: Float, val reason: Int)

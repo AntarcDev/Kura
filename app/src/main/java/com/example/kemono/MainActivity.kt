@@ -4,12 +4,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +39,8 @@ import com.example.kemono.ui.viewer.ImageViewerScreen
 import com.example.kemono.ui.login.LoginScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
+val LocalIncognitoKeyboard = androidx.compose.runtime.compositionLocalOf { false }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -115,9 +130,12 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            KemonoTheme(darkTheme = darkTheme) {
-                Surface(
-                        modifier = Modifier.fillMaxSize(),
+            val isIncognitoKeyboardEnabled by settingsRepository.isIncognitoKeyboardEnabled.collectAsState(initial = false)
+
+            androidx.compose.runtime.CompositionLocalProvider(LocalIncognitoKeyboard provides isIncognitoKeyboardEnabled) {
+                KemonoTheme(darkTheme = darkTheme) {
+                    Surface(
+                            modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
@@ -215,8 +233,91 @@ class MainActivity : ComponentActivity() {
                             ImageViewerScreen(onBackClick = { navController.popBackStack() })
                         }
                     }
+
+                    // --- App Lock Overlay ---
+                    val isAppLockEnabled by settingsRepository.isAppLockEnabled.collectAsState(initial = false)
+                    val appLockPin by settingsRepository.appLockPin.collectAsState(initial = null)
+                    var isUnlocked by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+
+                    if (isAppLockEnabled && !isUnlocked && appLockPin != null) {
+                        var pinInput by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+                        var isError by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+                        androidx.compose.ui.window.Dialog(
+                            onDismissRequest = { /* Prevent dismiss */ },
+                            properties = androidx.compose.ui.window.DialogProperties(
+                                dismissOnBackPress = false,
+                                dismissOnClickOutside = false,
+                                usePlatformDefaultWidth = false
+                            )
+                        ) {
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = MaterialTheme.colorScheme.background
+                            ) {
+                                androidx.compose.foundation.layout.Column(
+                                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                                ) {
+                                    androidx.compose.material3.Icon(
+                                        imageVector = androidx.compose.material.icons.Icons.Default.Lock,
+                                        contentDescription = "App Locked",
+                                        modifier = Modifier.size(64.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(24.dp))
+                                    androidx.compose.material3.Text(
+                                        text = "App Locked",
+                                        style = MaterialTheme.typography.headlineMedium
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
+                                    androidx.compose.material3.Text(
+                                        text = "Please enter your PIN",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(32.dp))
+                                    
+                                    androidx.compose.material3.OutlinedTextField(
+                                        value = pinInput,
+                                        onValueChange = { 
+                                            isError = false
+                                            if (it.length <= 4 && it.all { char -> char.isDigit() }) {
+                                                pinInput = it 
+                                                if (it.length == 4) {
+                                                    if (it == appLockPin) {
+                                                        isUnlocked = true
+                                                    } else {
+                                                        isError = true
+                                                        pinInput = ""
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        label = { androidx.compose.material3.Text("PIN") },
+                                        singleLine = true,
+                                        isError = isError,
+                                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword
+                                        )
+                                    )
+                                    if (isError) {
+                                        androidx.compose.material3.Text(
+                                            text = "Incorrect PIN",
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.padding(top = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }
+            } // End KemonoTheme
+            } // End CompositionLocalProvider
         }
     }
 
