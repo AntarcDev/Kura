@@ -61,11 +61,11 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.hilt.android)
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.work)
     ksp(libs.hilt.compiler.androidx)
@@ -76,18 +76,18 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     implementation(libs.coil.compose)
-    implementation("io.coil-kt:coil-gif:2.5.0")
-    implementation("io.coil-kt:coil-video:2.5.0")
+    implementation(libs.coil.gif)
+    implementation(libs.coil.video)
 
-    implementation("androidx.media3:media3-exoplayer:1.2.0")
-    implementation("androidx.media3:media3-ui:1.2.0")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
     
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
