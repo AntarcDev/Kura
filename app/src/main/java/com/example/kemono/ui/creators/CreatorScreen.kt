@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import androidx.paging.compose.itemContentType
 import androidx.paging.LoadState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -325,7 +326,8 @@ fun CreatorScreen(
                                     ) {
                                         items(
                                             count = posts.itemCount,
-                                            key = posts.itemKey { it.id ?: it.hashCode() }
+                                            key = posts.itemKey { it.id ?: it.hashCode() },
+                                            contentType = posts.itemContentType { "post" }
                                         ) { index ->
                                             val post = posts[index]
                                             
@@ -387,7 +389,8 @@ fun CreatorScreen(
                                     ) {
                                         items(
                                             count = posts.itemCount,
-                                            key = posts.itemKey { it.id ?: it.hashCode() }
+                                            key = posts.itemKey { it.id ?: it.hashCode() },
+                                            contentType = posts.itemContentType { "post" }
                                         ) { index ->
                                             val post = posts[index]
     

@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import androidx.paging.compose.itemContentType
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.model.Creator
@@ -214,7 +215,8 @@ fun CreatorPostListScreen(
                                             ) {
                                                 items(
                                                     count = posts.itemCount,
-                                                    key = posts.itemKey { it.id ?: it.hashCode() }
+                                                    key = posts.itemKey { it.id ?: it.hashCode() },
+                                                    contentType = posts.itemContentType { "post" }
                                                 ) { index ->
                                                     val post = posts[index]
                                                     if (post != null) {
@@ -261,7 +263,8 @@ fun CreatorPostListScreen(
                                             ) {
                                                 items(
                                                     count = posts.itemCount,
-                                                    key = posts.itemKey { it.id ?: it.hashCode() }
+                                                    key = posts.itemKey { it.id ?: it.hashCode() },
+                                                    contentType = posts.itemContentType { "post" }
                                                 ) { index ->
                                                     val post = posts[index]
                                                     if (post != null) {
