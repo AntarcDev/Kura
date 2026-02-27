@@ -158,7 +158,7 @@ fun ProfileScreen(
                         if (filteredFavorites.isEmpty()) {
                             Box(Modifier.fillMaxSize()) {
                                 Text(
-                                    text = "No favorites found",
+                                    text = "You don't have any favorite Creators yet! (╥﹏╥)",
                                     style = MaterialTheme.typography.bodyLarge,
                                     modifier = Modifier.align(Alignment.Center)
                                 )
@@ -232,7 +232,7 @@ fun ProfileScreen(
                          if (filteredPosts.isEmpty()) {
                             Box(Modifier.fillMaxSize()) {
                                 Text(
-                                    text = "No favorite posts found",
+                                    text = "You haven't favorited any posts either... (・_・;)",
                                     style = MaterialTheme.typography.bodyLarge,
                                     modifier = Modifier.align(Alignment.Center)
                                 )

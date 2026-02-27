@@ -94,7 +94,7 @@ fun DownloadManagerScreen(
                         Box(
                                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                                 contentAlignment = Alignment.Center
-                        ) { Text("No downloads yet", style = MaterialTheme.typography.bodyLarge) }
+                        ) { Text("No downloads yet! (´･ᴗ･ ` )", style = MaterialTheme.typography.bodyLarge) }
                 } else {
                         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                             val listState = androidx.compose.foundation.lazy.rememberLazyListState()

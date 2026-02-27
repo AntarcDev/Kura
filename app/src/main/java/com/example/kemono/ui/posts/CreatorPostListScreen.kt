@@ -409,7 +409,7 @@ fun ProfileDetailsContent(
             if (fancards.isEmpty()) {
                 item {
                     Text(
-                        text = "There's nothing here... (╥﹏╥)",
+                        text = "There's nothing here yet... (╥﹏╥)",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 8.dp)
@@ -509,7 +509,7 @@ fun ProfileSection(
         )
         if (isEmpty) {
             Text(
-                text = "There's nothing here... (╥﹏╥)",
+                text = "It's completely empty! (・_・;)",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 8.dp)

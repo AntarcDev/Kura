@@ -226,7 +226,7 @@ fun UnifiedTopBar(
                     DropdownMenuItem(
                         text = { 
                             Text(
-                                "Clear Search History", 
+                                "Clear Search History (=^･ω･^=)", 
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelMedium
                             ) 
