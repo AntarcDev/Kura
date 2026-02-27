@@ -74,7 +74,7 @@ fun AboutSection(
             )
 
             Text(
-                text = "Version 0.8 Pre-Release",
+                text = "Version 0.9 Pre-Release",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
