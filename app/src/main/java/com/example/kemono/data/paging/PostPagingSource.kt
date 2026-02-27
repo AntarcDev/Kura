@@ -20,6 +20,16 @@ class PostPagingSource(
                 prevKey = if (currentOffset == 0) null else Math.max(0, currentOffset - limit),
                 nextKey = if (response.isEmpty()) null else currentOffset + response.size
             )
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 400) {
+                LoadResult.Page(
+                    data = emptyList(),
+                    prevKey = if (currentOffset == 0) null else Math.max(0, currentOffset - limit),
+                    nextKey = null
+                )
+            } else {
+                LoadResult.Error(e)
+            }
         } catch (e: Exception) {
             LoadResult.Error(e)
         }

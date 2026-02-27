@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.example.kemono.data.model.Post
 import com.example.kemono.data.model.Creator
@@ -211,7 +212,10 @@ fun CreatorPostListScreen(
                                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 modifier = Modifier.fillMaxSize()
                                             ) {
-                                                items(count = posts.itemCount, key = { index -> posts[index]?.id ?: index }) { index ->
+                                                items(
+                                                    count = posts.itemCount,
+                                                    key = posts.itemKey { it.id ?: it.hashCode() }
+                                                ) { index ->
                                                     val post = posts[index]
                                                     if (post != null) {
                                                         com.example.kemono.ui.components.PostGridItem(
@@ -255,7 +259,10 @@ fun CreatorPostListScreen(
                                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 modifier = Modifier.fillMaxSize()
                                             ) {
-                                                items(count = posts.itemCount, key = { index -> posts[index]?.id ?: index }) { index ->
+                                                items(
+                                                    count = posts.itemCount,
+                                                    key = posts.itemKey { it.id ?: it.hashCode() }
+                                                ) { index ->
                                                     val post = posts[index]
                                                     if (post != null) {
                                                         PostItem(

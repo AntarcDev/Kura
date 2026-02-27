@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import androidx.paging.LoadState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -317,7 +318,6 @@ fun CreatorScreen(
                                 if (postLayoutMode == "List") {
                                     // List requires state to keep scroll position
     
-                                    // We don't need to hoist state manually unless we want to persist it
                                     LazyColumn(
                                         state = listState,
                                         contentPadding = PaddingValues(16.dp),
@@ -325,7 +325,7 @@ fun CreatorScreen(
                                     ) {
                                         items(
                                             count = posts.itemCount,
-                                            key = { index -> posts[index]?.id ?: "post_$index" }
+                                            key = posts.itemKey { it.id ?: it.hashCode() }
                                         ) { index ->
                                             val post = posts[index]
                                             
@@ -387,7 +387,7 @@ fun CreatorScreen(
                                     ) {
                                         items(
                                             count = posts.itemCount,
-                                            key = { index -> posts[index]?.id ?: "post_$index" }
+                                            key = posts.itemKey { it.id ?: it.hashCode() }
                                         ) { index ->
                                             val post = posts[index]
     
