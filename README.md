@@ -99,6 +99,32 @@
 
 ---
 
+## 🗺️ Roadmap (Coming Soon!)
+*   **Dynamic OLED Themes**: Pure black dark mode to save battery and look sleek!
+*   **Custom Color Schemes**: Build your own Material You palettes! (≧◡≦)
+*   **First Launch Guide**: A quick, cute tutorial for new users to explain permissions and features.
+*   **Tablet Optimization**: A fancy 2-pane dynamic layout specifically designed for bigger screens! 
+*   **Enhanced Download Manager**: Live progress indicators for all concurrent downloads at once.
+*   **Full Post Archiving**: Option to download an entire post (text, attachments, media) into a single neat archive file.
+*   **File Organization**: Better file management and sorting options for your hoarded media!
+*   **Fluid Animations**: Silky smooth transitions between screens and elements.
+*   **More Optimizations**: Hand-tuned performance tweaks to keep Kura running beautifully on any device!
+
+---
+
+## 🛠️ Troubleshooting & FAQ
+
+**Q: The app keeps giving me HTTP 429 or 502 errors! What do I do? (・_・;)**
+> Kemono occasionally goes down or aggressively rate-limits users. Kura has built-in retry logic and DDoS-guard bypasses, but if the server is completely on fire, you might just have to wait a little while!
+
+**Q: Why aren't my downloaded images showing up in my phone's Gallery?**
+> Android's internal Media Scanner can sometimes be sleepy. Try waiting a minute, or restarting your device if they really won't show up in your Pictures app! Also, double-check your custom SAF download directory in the app's Data & Storage Settings.
+
+**Q: How do I sync my favorites with my actual Kemono account?**
+> Head over to **Settings -> Account** to log in, and you'll find options to push your local favorites to the cloud, or pull cloud favorites to your device!
+
+---
+
 <div align="center">
   <p>Developed entirely by <strong>Antarc</strong>.</p>
   <p><i>Luna: "I fixed the memory leak!" (Narrator: She tripped over the ethernet cable).</i></p>
