@@ -17,7 +17,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import com.example.kemono.ui.components.shimmerEffect
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.DownloadDone
@@ -77,11 +78,14 @@ fun PostItem(
                                 }
                                 .build()
                                 
-                             AsyncImage(
+                             SubcomposeAsyncImage(
                                 model = model,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                loading = {
+                                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                                }
                             )
                         }
                         is com.example.kemono.util.PreviewContent.Icon -> {

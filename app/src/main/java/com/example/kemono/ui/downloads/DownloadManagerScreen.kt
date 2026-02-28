@@ -60,6 +60,7 @@ import java.util.Date
 import java.util.Locale
 
 import kotlinx.coroutines.launch
+import com.example.kemono.ui.components.CustomWavyIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,11 +202,12 @@ fun DownloadGridItem(
                     )
                     
                     if (status != null && status.status == DownloadManager.STATUS_RUNNING) {
-                        LinearProgressIndicator(
+                        CustomWavyIndicator(
                             progress = status.progress,
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(2.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(8.dp),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f)
+                            trackColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f),
+                            amplitude = 2.dp
                         )
                     } else if (status?.status == DownloadManager.STATUS_SUCCESSFUL) {
                          Text(
@@ -302,9 +304,10 @@ fun DownloadItemCard(uiState: DownloadItemUiState, onDelete: () -> Unit, onOpen:
             if (status != null) {
                 when (status.status) {
                     DownloadManager.STATUS_RUNNING -> {
-                        LinearProgressIndicator(
+                        CustomWavyIndicator(
                             progress = status.progress,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                            amplitude = 3.dp
                         )
                         Text(
                             text = "Downloading... ${(status.progress * 100).toInt()}%",
@@ -313,13 +316,14 @@ fun DownloadItemCard(uiState: DownloadItemUiState, onDelete: () -> Unit, onOpen:
                         )
                     }
                     DownloadManager.STATUS_PENDING -> {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        CustomWavyIndicator(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), amplitude = 3.dp)
                         Text("Pending...", style = MaterialTheme.typography.bodySmall)
                     }
                     DownloadManager.STATUS_PAUSED -> {
-                        LinearProgressIndicator(
+                        CustomWavyIndicator(
                             progress = status.progress,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                            amplitude = 3.dp
                         )
                         Text("Paused", style = MaterialTheme.typography.bodySmall)
                     }

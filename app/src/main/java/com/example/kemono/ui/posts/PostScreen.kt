@@ -48,6 +48,9 @@ import coil.compose.AsyncImage
 import com.example.kemono.ui.settings.SettingsViewModel
 
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material.icons.filled.BrokenImage
+import com.example.kemono.ui.components.shimmerEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +177,7 @@ fun PostScreen(
                                         is com.example.kemono.util.ContentNode.Image -> {
                                             val isGif = node.url.endsWith(".gif", ignoreCase = true)
                                             Column(modifier = Modifier.fillMaxWidth()) {
-                                                AsyncImage(
+                                                coil.compose.SubcomposeAsyncImage(
                                                     model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                         .data(node.url)
                                                         .crossfade(!isGif)
@@ -194,7 +197,33 @@ fun PostScreen(
                                                         .fillMaxWidth()
                                                         .padding(vertical = 8.dp)
                                                         .clip(RoundedCornerShape(8.dp)),
-                                                    contentScale = ContentScale.FillWidth
+                                                    contentScale = ContentScale.FillWidth,
+                                                    loading = {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .aspectRatio(16f/9f)
+                                                                .padding(vertical = 8.dp)
+                                                                .clip(RoundedCornerShape(8.dp))
+                                                                .shimmerEffect()
+                                                        )
+                                                    },
+                                                    error = {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .aspectRatio(16f/9f)
+                                                                .padding(vertical = 8.dp)
+                                                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.BrokenImage,
+                                                                contentDescription = "Failed to load image",
+                                                                tint = MaterialTheme.colorScheme.error
+                                                            )
+                                                        }
+                                                    }
                                                 )
                                                 
                                                 // Separate Download Button
@@ -503,7 +532,7 @@ fun PostScreen(
                                                     if (!attachment.thumbnailPath.isNullOrEmpty()) {
                                                         val thumbnailUrl = "https://kemono.cr${attachment.path}"
                                                         Box(modifier = Modifier.fillMaxWidth()) {
-                                                            AsyncImage(
+                                                            coil.compose.SubcomposeAsyncImage(
                                                                 model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                                     .data(thumbnailUrl)
                                                                     .crossfade(true)
@@ -523,7 +552,33 @@ fun PostScreen(
                                                                     .fillMaxWidth()
                                                                     .height(300.dp)
                                                                     .clickable { onImageClick(globalIndex) },
-                                                                contentScale = ContentScale.Fit
+                                                                contentScale = ContentScale.Fit,
+                                                                loading = {
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .fillMaxWidth()
+                                                                            .aspectRatio(16f/9f)
+                                                                            .padding(vertical = 8.dp)
+                                                                            .clip(RoundedCornerShape(8.dp))
+                                                                        .shimmerEffect()
+                                                                    )
+                                                                },
+                                                                error = {
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .fillMaxWidth()
+                                                                            .aspectRatio(16f/9f)
+                                                                            .padding(vertical = 8.dp)
+                                                                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                                                                        contentAlignment = Alignment.Center
+                                                                    ) {
+                                                                        Icon(
+                                                                            imageVector = Icons.Default.BrokenImage,
+                                                                            contentDescription = "Failed to load image",
+                                                                            tint = MaterialTheme.colorScheme.error
+                                                                        )
+                                                                    }
+                                                                }
                                                             )
                                                             Text(
                                                                 text = "PSD",
@@ -635,7 +690,7 @@ fun PostScreen(
                                                 }
                                                 else -> {
                                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                                        AsyncImage(
+                                                        coil.compose.SubcomposeAsyncImage(
                                                             model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                                                                 .data(previewUrl)
                                                                 .crossfade(mediaType != com.example.kemono.util.MediaType.GIF)
@@ -660,7 +715,33 @@ fun PostScreen(
                                                                                         globalIndex
                                                                                 )
                                                                             },
-                                                            contentScale = ContentScale.FillWidth
+                                                            contentScale = ContentScale.FillWidth,
+                                                            loading = {
+                                                                Box(
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .aspectRatio(16f/9f)
+                                                                        .padding(vertical = 8.dp)
+                                                                        .clip(RoundedCornerShape(8.dp))
+                                                                        .shimmerEffect()
+                                                                )
+                                                            },
+                                                            error = {
+                                                                Box(
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .aspectRatio(16f/9f)
+                                                                        .padding(vertical = 8.dp)
+                                                                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Default.BrokenImage,
+                                                                        contentDescription = "Failed to load image",
+                                                                        tint = MaterialTheme.colorScheme.error
+                                                                    )
+                                                                }
+                                                            }
                                                         )
                                                         Spacer(modifier = Modifier.height(4.dp))
                                                         androidx.compose.material3.OutlinedButton(

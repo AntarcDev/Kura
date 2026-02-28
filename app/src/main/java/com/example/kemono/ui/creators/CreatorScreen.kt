@@ -45,7 +45,8 @@ import androidx.compose.foundation.verticalScroll
 import com.example.kemono.data.model.Creator
 import com.example.kemono.data.model.Post
 import com.example.kemono.ui.components.CreatorItemSkeleton
-import com.example.kemono.ui.components.PostItemSkeleton
+import com.example.kemono.ui.components.PostGridItemSkeleton
+import com.example.kemono.ui.components.PostListItemSkeleton
 import com.example.kemono.ui.components.CreatorTile
 import com.example.kemono.ui.components.SelectionTopAppBar
 import com.example.kemono.ui.components.UnifiedTopBar
@@ -217,15 +218,26 @@ fun CreatorScreen(
                             else -> 150.dp // Medium
                         }
                         if (isLoading && creators.isEmpty()) {
-                            // Loading Skeleton
-                            LazyVerticalGrid(
-                                columns = GridCells.Adaptive(minSize = density),
-                                contentPadding = PaddingValues(16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(12) {
-                                    CreatorItemSkeleton(compact = true)
+                            // Loading Skeleton respecting Layout Mode
+                            if (artistLayoutMode == "List") {
+                                LazyColumn(
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(12) {
+                                        CreatorItemSkeleton(compact = false)
+                                    }
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = density),
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(12) {
+                                        CreatorItemSkeleton(compact = true)
+                                    }
                                 }
                             }
                         } else {
@@ -307,8 +319,26 @@ fun CreatorScreen(
                             else -> 150.dp // Medium
                         }
                         if (posts.itemCount == 0 && posts.loadState.refresh is LoadState.Loading) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
+                            if (postLayoutMode == "List") {
+                                LazyColumn(
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(6) {
+                                        PostListItemSkeleton()
+                                    }
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = density),
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(12) {
+                                        PostGridItemSkeleton()
+                                    }
+                                }
                             }
                         } else {
                             Box(modifier = Modifier.fillMaxSize()) {
@@ -366,9 +396,7 @@ fun CreatorScreen(
                                         when (val state = posts.loadState.append) {
                                             is LoadState.Loading -> {
                                                 item {
-                                                    Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                        CircularProgressIndicator()
-                                                    }
+                                                    PostListItemSkeleton()
                                                 }
                                             }
                                             is LoadState.Error -> {
@@ -429,10 +457,8 @@ fun CreatorScreen(
                                         }
                                         when (val state = posts.loadState.append) {
                                             is LoadState.Loading -> {
-                                                item(span = { GridItemSpan(maxLineSpan) }) {
-                                                    Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                                                        CircularProgressIndicator()
-                                                    }
+                                                items(2) { // Show a couple of grid skeletons when appending
+                                                    PostGridItemSkeleton()
                                                 }
                                             }
                                             is LoadState.Error -> {

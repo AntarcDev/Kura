@@ -19,7 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import com.example.kemono.ui.components.shimmerEffect
 import com.example.kemono.data.model.Creator
 import com.example.kemono.util.ServiceMapper
 import androidx.compose.ui.unit.sp
@@ -37,7 +38,7 @@ fun CreatorTile(
         if (compact) {
             Box(modifier = Modifier.fillMaxSize().height(180.dp)) {
                 // Banner Background
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                         .data("https://kemono.cr/banners/${creator.service}/${creator.id}")
                         .crossfade(true)
@@ -51,7 +52,12 @@ fun CreatorTile(
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                    error = {
+                        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
+                    },
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
                 
                 // Scrim
@@ -68,7 +74,7 @@ fun CreatorTile(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                             .data("https://kemono.cr/icons/${creator.service}/${creator.id}")
                             .crossfade(true)
@@ -85,7 +91,12 @@ fun CreatorTile(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentScale = ContentScale.Crop,
-                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                        error = {
+                        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
+                    },
+                        loading = {
+                            Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                        }
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -145,7 +156,7 @@ fun CreatorTile(
         } else {
             Box(modifier = Modifier.fillMaxWidth().height(100.dp)) {
                 // Banner Background
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                         .data("https://kemono.cr/banners/${creator.service}/${creator.id}")
                         .crossfade(true)
@@ -159,7 +170,12 @@ fun CreatorTile(
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                    error = {
+                        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
+                    },
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
 
                 // Scrim
@@ -170,7 +186,7 @@ fun CreatorTile(
                 )
 
                 Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                             .data("https://kemono.cr/icons/${creator.service}/${creator.id}")
                             .crossfade(true)
@@ -187,7 +203,12 @@ fun CreatorTile(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentScale = ContentScale.Crop,
-                        error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant)
+                        error = {
+                        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
+                    },
+                        loading = {
+                            Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                        }
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))

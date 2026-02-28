@@ -9,9 +9,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import com.example.kemono.ui.components.CustomWavyIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,9 +33,10 @@ fun UpdateDialog(
                 if (downloadProgress != null) {
                     Text(text = "Downloading update...")
                     Spacer(modifier = Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                        progress = { downloadProgress },
-                        modifier = Modifier.fillMaxWidth(),
+                    CustomWavyIndicator(
+                        progress = downloadProgress,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        amplitude = 3.dp
                     )
                 } else {
                     Text(text = "A new version of Kura is available!")

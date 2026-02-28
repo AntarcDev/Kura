@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import com.example.kemono.ui.components.shimmerEffect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -92,9 +93,9 @@ fun ZoomableImage(model: Any?, contentDescription: String?, modifier: Modifier =
                 }
             }
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = model,
-            contentDescription = contentDescription,
+            contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxSize()
@@ -103,7 +104,10 @@ fun ZoomableImage(model: Any?, contentDescription: String?, modifier: Modifier =
                     scaleY = scale.value
                     translationX = offsetX.value
                     translationY = offsetY.value
-                }
+                },
+            loading = {
+                Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+            }
         )
     }
 }

@@ -199,8 +199,38 @@ fun CreatorPostListScreen(
                                         val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
                                         val scope = rememberCoroutineScope()
 
-                                        if (postLayoutMode == "Grid") {
-                                            val minSize = when (gridDensity) {
+                                        if (posts.itemCount == 0 && posts.loadState.refresh is androidx.paging.LoadState.Loading) {
+                                            if (postLayoutMode == "List") {
+                                                LazyColumn(
+                                                    contentPadding = PaddingValues(16.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.fillMaxSize()
+                                                ) {
+                                                    items(6) {
+                                                        com.example.kemono.ui.components.PostListItemSkeleton()
+                                                    }
+                                                }
+                                            } else {
+                                                val minSize = when (gridDensity) {
+                                                    "Small" -> 120.dp
+                                                    "Large" -> 200.dp
+                                                    else -> 150.dp
+                                                }
+                                                LazyVerticalGrid(
+                                                    columns = GridCells.Adaptive(minSize),
+                                                    contentPadding = PaddingValues(16.dp),
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                                    modifier = Modifier.fillMaxSize()
+                                                ) {
+                                                    items(12) {
+                                                        com.example.kemono.ui.components.PostGridItemSkeleton()
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            if (postLayoutMode == "Grid") {
+                                                val minSize = when (gridDensity) {
                                                 "Small" -> 120.dp
                                                 "Large" -> 200.dp
                                                 else -> 150.dp
@@ -242,8 +272,8 @@ fun CreatorPostListScreen(
                                                 }
                                                 when (val state = posts.loadState.append) {
                                                     is androidx.paging.LoadState.Loading -> {
-                                                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(this.maxLineSpan) }) {
-                                                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp).wrapContentWidth(Alignment.CenterHorizontally))
+                                                        items(2) {
+                                                            com.example.kemono.ui.components.PostGridItemSkeleton()
                                                         }
                                                     }
                                                     is androidx.paging.LoadState.Error -> {
@@ -295,7 +325,7 @@ fun CreatorPostListScreen(
                                                 when (val state = posts.loadState.append) {
                                                     is androidx.paging.LoadState.Loading -> {
                                                         item {
-                                                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp).wrapContentWidth(Alignment.CenterHorizontally))
+                                                            com.example.kemono.ui.components.PostListItemSkeleton()
                                                         }
                                                     }
                                                     is androidx.paging.LoadState.Error -> {
@@ -325,6 +355,7 @@ fun CreatorPostListScreen(
                                             },
                                             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
                                         )
+                                        }
                                     }
                                 }
                             }

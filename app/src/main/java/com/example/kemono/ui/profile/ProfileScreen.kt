@@ -146,8 +146,41 @@ fun ProfileScreen(
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            if (viewModel.isLoading.collectAsState().value && account == null && favorites.isEmpty()) {
-                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            val isLoadingVal by viewModel.isLoading.collectAsState()
+            if (isLoadingVal && favorites.isEmpty() && favoritePosts.isEmpty()) {
+                if (selectedTab == 0) {
+                    if (layoutMode == "List") {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) { items(12) { com.example.kemono.ui.components.CreatorItemSkeleton(compact = false) } }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(minSize),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) { items(12) { com.example.kemono.ui.components.CreatorItemSkeleton(compact = true) } }
+                    }
+                } else {
+                    if (layoutMode == "List") {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) { items(6) { com.example.kemono.ui.components.PostListItemSkeleton() } }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(minSize),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) { items(12) { com.example.kemono.ui.components.PostGridItemSkeleton() } }
+                    }
+                }
             } else {
                 HorizontalPager(
                     state = pagerState,

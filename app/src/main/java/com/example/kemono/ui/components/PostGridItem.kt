@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
+import com.example.kemono.ui.components.shimmerEffect
 import com.example.kemono.data.model.Post
 import com.example.kemono.util.ServiceMapper
 import androidx.compose.material.icons.filled.AttachFile
@@ -111,7 +112,7 @@ fun PostGridItem(
                             modifier = Modifier.fillMaxSize(),
                             loading = {
                                 Box(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.fillMaxSize().shimmerEffect(),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
